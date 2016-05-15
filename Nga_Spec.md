@@ -1,23 +1,13 @@
-=========================
-The Ngaro Virtual Machine
-=========================
+# The Nga Virtual Machine
 
+## Abstract
 
---------
-Abstract
---------
-Ngaro is a minimalistic virtual machine emulating a dual stack computer with
-a simple instruction set and a few basic I/O devices.
+Nga is a minimalistic virtual machine emulating a dual stack computer with
+a simple instruction set. It does not simulate any I/O devices.
 
-At present, there are full implementations in Assembly (x86), C, F#, Go, Common
-Lisp, PHP, Python, and Ruby, and minimal implementations in C#, Forth, Lua, JavaScript,
-Java, Perl, and Scheme.
+## Memory Access
 
-
--------------
-Memory Access
--------------
-Ngaro provides a memory space consisting of 32-bit, signed integer values.
+Nga provides a memory space consisting of 32-bit, signed integer values.
 The first address is mapped to zero, with subsequent values following in a
 strictly linear fashion.
 
@@ -25,16 +15,14 @@ Each addressable 32-bit unit is called a *cell*. There is no support in the
 instruction set for accessing values larger or smaller than a single cell.
 
 
----------
-Registers
----------
-Ngaro exposes no registers directly.
+## Registers
+
+Nga exposes no registers directly.
 
 
-------
-Stacks
-------
-Ngaro emulates two LIFO stacks. The primary one is the *data stack*, and
+## Stacks
+
+Nga emulates two LIFO stacks. The primary one is the *data stack*, and
 serves as a place for holding data, and passing data between instructions.
 
 The other is the *address stack*, which is used to hold return addresses from
@@ -46,381 +34,21 @@ query the VM.
 A standard implementation will provide at least 128 cells for data stack, and
 1024 for the address stack.
 
+## Image Files
 
------------
-Image Files
------------
-On startup, Ngaro will load an *image file*. This is a flat, linear array of
+On startup, Nga will load an *image file*. This is a flat, linear array of
 signed integer values. On disk, images are stored in little endian format, but
 the VM may convert them to big endian internally.
 
-If an implementation uses big endian internally, this must be reported via the
-queries I/O port.
-
 The first value loaded is mapped to address zero, and subsequent values are
-loaded to sequential addresses in the Ngaro memory space.
+loaded to sequential addresses in the Nga memory space.
 
 An image file does not contain copies of the stacks or any internal registers
 used by the VM.
 
 
----------
-I/O Ports
----------
-Interfacing with the underlying OS and hardware devices is done by reading and
-writing I/O ports.
+## Instruction Set
 
-Ports 0 - 12 are reserved for current and future standard I/O devices. A VM
-may provide non-standard devices on port numbers above or below this range.
-
-+------+-----------------------+
-| Port | Used For              |
-+======+=======================+
-| 0    | Triggering I/O events |
-+------+-----------------------+
-| 1    | Keyboard              |
-+------+-----------------------+
-| 2    | Text Output           |
-+------+-----------------------+
-| 3    | Force Video Update    |
-+------+-----------------------+
-| 4    | File I/O              |
-+------+-----------------------+
-| 5    | Querying the VM       |
-+------+-----------------------+
-| 6    | Canvas                |
-+------+-----------------------+
-| 7    | Mouse                 |
-+------+-----------------------+
-
-
-Port 0: Wait for Hardware Event
-===============================
-This port is used to synchronize communication between the ngaro and
-the virtual hardware devices.
-
-See the description of the WAIT opcode for details.
-
-Usage Example:
-
-::
-
-  #0 #0 out, wait,
-
-
-Port 1: Read from the Keyboard
-==============================
-To read a value from the keyboard, set port 1 to 1, wait for an I/O event,
-then read the key value from port 1.
-
-Usage Example:
-
-::
-
-  #1 #1 out,
-  #0 #0 out, wait,
-  #1 in,
-
-
-Port 2: Character Generator
-===========================
-Ngaro provides a hardware character generator. This takes data off the stack,
-so you should make sure the character value is *on the stack* before using it.
-To use this, write the value 1 to port 2 and wait for an I/O event.
-
-When a negative value is passed, the VM should clear the screen and position
-the cursor in the upper left corner.
-
-Usage Example:
-
-::
-
-  #98 #1 #2 out,
-  #0 #0 out, wait,
-
-
-Port 3: Force Video Update
-==========================
-To help improve performance, an Ngaro implementation is permitted to cache
-output and update the display periodically. For implementations that do this,
-seting this port will force an immediate update.
-
-An implementation that caches output must check this routinely, and respond
-immediately. No waiting for an I/O event is neccessary for this.
-
-Example:
-
-::
-
-  #0 #3 out,
-
-
-Port 4: File Operations
-=======================
-If your Ngaro implementation allows saving images, you can use this port
-to do so. To save, set port 4 to 1 and *wait*.
-
-Other operations can be done using negative values, if the VM supports this.
-To use these, setup the stack, write the operation code to port 4, *wait*,
-then read the value back in from port 4.
-
-+------+-----------------------+---------+---------------------------------+
-| Op   | Takes                 | Returns | Notes                           |
-+======+=======================+=========+=================================+
-|  1   | -                     | 0       | Save the image                  |
-+------+-----------------------+---------+---------------------------------+
-|  2   | filename              | 0       | Include a file ( like --with )  |
-+------+-----------------------+---------+---------------------------------+
-| -1   | filename, mode        | handle  | Open a file                     |
-+------+-----------------------+---------+---------------------------------+
-| -2   | handle                | byte    | Read a byte from a file         |
-+------+-----------------------+---------+---------------------------------+
-| -3   | character, handle     | flag    | Write a byte to a file          |
-+------+-----------------------+---------+---------------------------------+
-| -4   | handle                | flag    | Close a file                    |
-+------+-----------------------+---------+---------------------------------+
-| -5   | handle                | offset  | Return current location in file |
-+------+-----------------------+---------+---------------------------------+
-| -6   | offset, handle        | flag    | Seek a new location in file     |
-+------+-----------------------+---------+---------------------------------+
-| -7   | handle                | size    | Return the size of a file       |
-+------+-----------------------+---------+---------------------------------+
-| -8   | filename              | flag    | Delete a file.                  |
-+------+-----------------------+---------+---------------------------------+
-
-Valid modes for opening files are:
-
-+-------+----------------------------+-------------------------+
-| Value | Used For                   | Create if not existing? |
-+=======+============================+=========================+
-| 0     | Open file for reading      | No                      |
-+-------+----------------------------+-------------------------+
-| 1     | Open file for writing      | Yes                     |
-+-------+----------------------------+-------------------------+
-| 2     | Open file for append       | Yes                     |
-+-------+----------------------------+-------------------------+
-| 3     | Open file for modification | No                      |
-+-------+----------------------------+-------------------------+
-
-Reading and modification should *not* create a file if none exist. Writing
-and append modes *should* create a file if it does not exist.
-
-The write mode should create a new file, removing the contents of existing
-files with the same name.
-
-The append mode should set the file read/write position to the end of the
-file.
-
-If opening fails, the returned handle should be zero. Any non-zero handle
-is considered valid.
-
-When closing a valid handle, *close* should return zero.
-
-The *write* operation should return a value of 1. Any other value indicates
-an error.
-
-The *delete* operation should return -1 if the file is deleted, or 0 if
-the deletion fails.
-
-
-Port 5: Queries Into the VM Devices
-===================================
-Set port 5 to one of the following values; wait; then read the result back.
-
-+-------+---------------------------------------+
-| value | returns                               |
-+=======+=======================================+
-| -1    | Memory Size                           |
-+-------+---------------------------------------+
-| -2    | Does a Canvas device exist?           |
-+-------+---------------------------------------+
-| -3    | Canvas Width                          |
-+-------+---------------------------------------+
-| -4    | Canvas Height                         |
-+-------+---------------------------------------+
-| -5    | Data Stack Depth                      |
-+-------+---------------------------------------+
-| -6    | Address Stack Depth                   |
-+-------+---------------------------------------+
-| -7    | Does a Mouse device exist?            |
-+-------+---------------------------------------+
-| -8    | Current time (in seconds, Unix-style) |
-+-------+---------------------------------------+
-| -9    | Exit the VM                           |
-+-------+---------------------------------------+
-| -10   | Query for an enivronment variable     |
-+-------+---------------------------------------+
-| -11   | Console Width                         |
-+-------+---------------------------------------+
-| -12   | Console Height                        |
-+-------+---------------------------------------+
-| -13   | Number of bits per cell               |
-+-------+---------------------------------------+
-| -14   | 0 for little endian, 1 for big endian |
-+-------+---------------------------------------+
-| -15   | -1 if Port 8 enabled, 0 if disabled   |
-+-------+---------------------------------------+
-| -16   | Return max depth of data stack        |
-+-------+---------------------------------------+
-| -17   | Return max depth of address stack     |
-+-------+---------------------------------------+
-
-At a minimum, an implementation must provide support for -1, -5, -6, -8, and -9.
-
-For -5 and -6, "depth" refers to the number of items on the specified stack.
-
-For -10, the application must provide a buffer address on the stack, and a
-pointer to a string. The VM should search the system environment for the
-string and copy its value to the application memory, starting at the provided
-buffer address. If an environment variable is not found, the VM should store a
-value of zero in the provided buffer address.
-
-For -13, if the returned value is zero, the image can assume a 32-bit environment.
-
-For -14, if the VM is using big endian internally, this should return a value of 1.
-
-
-Port 6: Canvas
-==============
-Some Ngaro implementations allow for drawing to a *canvas* device. Setup
-the data stack as shown in the table, and write the appropriate values
-to port 6.
-
-*This device is optional.*
-
-+-------+-------+-------------------------------------------------------------+
-| value | stack | action performed                                            |
-+=======+=======+=============================================================+
-| 1     | n-    | set color for drawing operations                            |
-+-------+-------+-------------------------------------------------------------+
-| 2     | xy-   | draw a pixel at coordinates x, y                            |
-+-------+-------+-------------------------------------------------------------+
-| 3     | xyhw- | draw a rectangle of specified width (w) and height (h). The |
-|       |       | top corner is denoted by the x, y pair                      |
-+-------+-------+-------------------------------------------------------------+
-| 4     | xyhw- | draw a filled rectangle of specified width (w) and height   |
-|       |       | (h). The top corner is denoted by the x, y pair             |
-+-------+-------+-------------------------------------------------------------+
-| 5     | xyh-  | draw a vertical line of height (h) starting at x, y         |
-+-------+-------+-------------------------------------------------------------+
-| 6     | xyw-  | draw a horizontal line of width (w) starting at x, y        |
-+-------+-------+-------------------------------------------------------------+
-| 7     | xyw-  | draw a circle of width (w) starting at x, y                 |
-+-------+-------+-------------------------------------------------------------+
-| 8     | xyw-  | draw a filled circle of width (w) starting at x, y          |
-+-------+-------+-------------------------------------------------------------+
-
-For setting colors, the following values are guarateed safe:
-
-+------+--------------+
-| code | name         |
-+======+==============+
-| 0    | black        |
-+------+--------------+
-| 1    | dark blue    |
-+------+--------------+
-| 2    | dark green   |
-+------+--------------+
-| 3    | dark cyan    |
-+------+--------------+
-| 4    | dark red     |
-+------+--------------+
-| 5    | purple       |
-+------+--------------+
-| 6    | brown        |
-+------+--------------+
-| 7    | dark gray    |
-+------+--------------+
-| 8    | gray         |
-+------+--------------+
-| 9    | blue         |
-+------+--------------+
-| 10   | green        |
-+------+--------------+
-| 11   | cyan         |
-+------+--------------+
-| 12   | red          |
-+------+--------------+
-| 13   | magenta      |
-+------+--------------+
-| 14   | yellow       |
-+------+--------------+
-| 15   | white        |
-+------+--------------+
-
-Additional colors may be supported, but are not guaranteed to exist.
-
-
-Port 7: Mouse
-=============
-Set port 7 to one of the following values and wait. The results will be
-pushed to the data stack.
-
-*This device is optional.*
-
-+-------+---------------------------------------+
-| value | returns                               |
-+=======+=======================================+
-| 1     | Mouse X and Y coordinates. Y will be  |
-|       | on TOS when done. X will be NOS.      |
-+-------+---------------------------------------+
-| 2     | Is mouse button pressed? 0 = false,   |
-|       | non-zero is true. True values *may*   |
-|       | indicate the button being pressed, but|
-|       | this is not required.                 |
-+-------+---------------------------------------+
-
-
-Port 8: Enhanced Text Console
-=============================
-Set port 8 to one of the following values and wait.
-
-*This device is optional.*
-
-Due to platform constraints, implementations may not offer all of these
-functions. An implementation providing this port should at least support
-cursor positioning. *Any non-implemented functions should be silently
-ignored.*
-
-An implementation may provide additional, non-standard functionality
-using negative values.
-
-+-------+-------+--------------------------------------------------------+
-| value | stack | action                                                 |
-+=======+=======+========================================================+
-| 1     | rc-   | Move the cursor to the specified row and column        |
-+-------+-------+--------------------------------------------------------+
-| 2     | n-    | Set the foreground text color                          |
-+-------+-------+--------------------------------------------------------+
-| 3     | n-    | Set the background color                               |
-+-------+-------+--------------------------------------------------------+
-
-The VM is expected to understand the following colors:
-
-+-------+-----------------+
-| value | color           |
-+=======+=================+
-| 0     | Black           |
-+-------+-----------------+
-| 1     | Red             |
-+-------+-----------------+
-| 2     | Green           |
-+-------+-----------------+
-| 3     | Yellow          |
-+-------+-----------------+
-| 4     | Blue            |
-+-------+-----------------+
-| 5     | Magenta         |
-+-------+-----------------+
-| 6     | Cyan            |
-+-------+-----------------+
-| 7     | White           |
-+-------+-----------------+
-
-
----------------
-Instruction Set
----------------
 One instruction per memory location. Instructions with an *x* in the *A*
 column take an additional value in the following memory location.
 
@@ -494,8 +122,8 @@ data stack.
 +--------+-----------+-----------+---+-----------+
 
 
-Instruction Processing
-======================
+## Instruction Processing
+
 The instruction pointer is incremented, then the opcode at the current address
 is handled. Execution ends when the instruction pointer is greater than the
 end of the simulated memory space.
