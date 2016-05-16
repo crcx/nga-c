@@ -101,6 +101,8 @@ def comma(v):
 This next one maps a symbolic name to its opcode. It requires a two character
 string (this is sufficent to identify any of the instructions).
 
+*It may be worth looking into using a simple lookup table instead of this.*
+
 ````
 def map_to_inst(s):
     inst = -1
@@ -134,6 +136,7 @@ def map_to_inst(s):
     return inst
 ````
 
+This next function saves the memory image to a file.
 
 ````
 def save(filename):
@@ -144,8 +147,6 @@ def save(filename):
             file.write(struct.pack('i', memory[j]))
             j = j + 1
 ````
-
-The final bits load the source file, compile it. This is not finished yet.
 
 An image starts with a jump to the main entry point (the *:main* label).
 Since the offset of *:main* isn't known initially, this compiles a jump to
@@ -158,6 +159,8 @@ def preamble():
     comma(7)
 ````
 
+**patch_entry()** replaces the target of the jump compiled by **preamble()**
+with the offset of the *:main* label.
 
 ````
 def patch_entry():
@@ -186,6 +189,10 @@ def load_source(filename):
     return final
 ````
 
+We now have a couple of routines that are intended to make future maintenance
+easier by keeping the source more readable. It should be pretty obvious what
+these do.
+
 ````
 def is_label(token):
     if token[0:1] == ':':
@@ -198,8 +205,20 @@ def is_inst(token):
         return False
     else:
         return True
+````
 
+Ok, now for a somewhat messier bit. The **LIT** instruction is two part: the
+first is the actual opcode (1), the second (stored in the following cell) is
+the value to push to the stack. A source line is setup like:
 
+    lit 100
+    lit increment
+
+In the first case, we want to compile the number 100 in the following cell.
+But in the second, we need to lookup the *:increment* label and compile a
+pointer to it.
+
+````
 def handle_lit(line):
     parts = line.split()
     try:
@@ -213,7 +232,13 @@ def handle_lit(line):
             print('LIT encountered with a value that is not an integer or label')
             print(line)
             exit()
+````
 
+Now for the meat of the assembler. This takes a single line of input, checks
+to see if it's a label or instruction, and lays down the appropriate code,
+calling whatever helper functions are needed (**handle_lit()** being notable).
+
+````
 def assemble(line):
     token = line[0:2]
     if is_label(token):
@@ -228,7 +253,11 @@ def assemble(line):
         print('Line was not a label or instruction.')
         print(line)
         exit()
+````
 
+And finally we can tie everything together into a coherent package.
+
+````
 if __name__ == '__main__':
     preamble()
     src = load_source('test.naje')
@@ -248,5 +277,3 @@ There is still some work needed on this.
 
 * ability to specify input file name from command line
 * ability to specify output file name from the command line
-* finish factoring the assembly steps
-* consider replacing **map_to_inst()** with a lookup table

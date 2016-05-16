@@ -54,49 +54,72 @@ def save(filename):
         while j < i:
             file.write(struct.pack('i', memory[j]))
             j = j + 1
-## WIP
+def preamble():
+    comma(1)
+    comma(0)
+    comma(7)
+def patch_entry():
+    memory[1] = lookup('main')
+def load_source(filename):
+    with open(filename, 'r') as f:
+        raw = f.readlines()
 
-comma(1)
-comma(0)
-comma(7)
+    cleaned = []
+    for line in raw:
+        cleaned.append(line.strip())
 
-with open('test.naje', 'r') as f:
-    raw = f.readlines()
+    final = []
+    for line in cleaned:
+        if line != '':
+            final.append(line)
 
-src = []
-for line in raw:
-    src.append(line.strip())
+    return final
+def is_label(token):
+    if token[0:1] == ':':
+        return True
+    else:
+        return False
 
-print(src)
-
-for line in src:
-    if line != '':
-        token = line[0:2]
-        if token[0:1] == ':':
-            labels.append((line[1:], i))
-            print('label = ', line, '@', i)
+def is_inst(token):
+    if map_to_inst(token) == -1:
+        return False
+    else:
+        return True
+def handle_lit(line):
+    parts = line.split()
+    try:
+        a = int(parts[1])
+        comma(a)
+    except:
+        xt = lookup(parts[1])
+        if xt != -1:
+            comma(xt)
         else:
-            op = map_to_inst(token)
-            if op == -1:
-                print('error detected', line)
-                exit()
-            else:
-                comma(op)
-                if op == 1:
-                    parts = line.split()
-                    try:
-                        a = int(parts[1])
-                        comma(a)
-                    except:
-                        xt = lookup(parts[1])
-                        if xt != -1:
-                            comma(xt)
-                        else:
-                            print('error detected', line)
-                            exit()
+            print('LIT encountered with a value that is not an integer or label')
+            print(line)
+            exit()
+def assemble(line):
+    token = line[0:2]
+    if is_label(token):
+        labels.append((line[1:], i))
+        print('label = ', line, '@', i)
+    elif is_inst(token):
+        op = map_to_inst(token)
+        comma(op)
+        if op == 1:
+            handle_lit(line)
+    else:
+        print('Line was not a label or instruction.')
+        print(line)
+        exit()
+if __name__ == '__main__':
+    preamble()
+    src = load_source('test.naje')
+    for line in src:
+        assemble(line)
+    patch_entry()
+    save('test.bin')
 
-memory[1] = lookup('main')
-
-print(labels)
-print(memory)
-save('test.bin')
+    print(src)
+    print(labels)
+    print(memory)
