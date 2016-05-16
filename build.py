@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 
 def extract_from_markdown(name):
