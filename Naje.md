@@ -134,6 +134,17 @@ def map_to_inst(s):
     return inst
 ````
 
+
+````
+def save(filename):
+    import struct
+    with open(filename, 'wb') as file:
+        j = 0
+        while j < i:
+            file.write(struct.pack('i', memory[j]))
+            j = j + 1
+````
+
 The final bits load the source file, compile it. This is not finished yet.
 
 ````
@@ -182,4 +193,5 @@ memory[1] = lookup('main')
 
 print(labels)
 print(memory)
+save('test.bin')
 ````

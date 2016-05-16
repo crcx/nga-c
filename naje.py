@@ -47,6 +47,13 @@ def map_to_inst(s):
     if s == 'zr': inst = 25
     if s == 'en': inst = 26
     return inst
+def save(filename):
+    import struct
+    with open(filename, 'wb') as file:
+        j = 0
+        while j < i:
+            file.write(struct.pack('i', memory[j]))
+            j = j + 1
 ## WIP
 
 comma(1)
@@ -92,3 +99,4 @@ memory[1] = lookup('main')
 
 print(labels)
 print(memory)
+save('test.bin')
