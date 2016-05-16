@@ -19,9 +19,12 @@ def extract_from_markdown(name):
     return s
 
 
-if __name__ == '__main__':
-    with open('naje.py', 'w') as file:
-        lines = extract_from_markdown('Naje.md')
+def convert(s, d):
+    with open(d, 'w') as file:
+        lines = extract_from_markdown(s)
         for line in lines:
             file.write(line)
             file.write('\n')
+
+if __name__ == '__main__':
+    convert('Naje.md', 'naje.py')
