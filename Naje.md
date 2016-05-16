@@ -187,10 +187,6 @@ def load_source(filename):
 ````
 
 ````
-preamble()
-src = load_source('test.naje')
-print(src)
-
 def is_label(token):
     if token[0:1] == ':':
         return True
@@ -218,27 +214,32 @@ def handle_lit(line):
             print(line)
             exit()
 
-for line in src:
-    if line != '':
-        token = line[0:2]
-        if is_label(token):
-            labels.append((line[1:], i))
-            print('label = ', line, '@', i)
-        elif is_inst(token):
-            op = map_to_inst(token)
-            comma(op)
-            if op == 1:
-                handle_lit()
-        else:
-            print('Line was not a label or instruction.')
-            print(line)
-            exit()
+def assemble(line):
+    token = line[0:2]
+    if is_label(token):
+        labels.append((line[1:], i))
+        print('label = ', line, '@', i)
+    elif is_inst(token):
+        op = map_to_inst(token)
+        comma(op)
+        if op == 1:
+            handle_lit(line)
+    else:
+        print('Line was not a label or instruction.')
+        print(line)
+        exit()
 
-patch_entry()
+if __name__ == '__main__':
+    preamble()
+    src = load_source('test.naje')
+    for line in src:
+        assemble(line)
+    patch_entry()
+    save('test.bin')
 
-print(labels)
-print(memory)
-save('test.bin')
+    print(src)
+    print(labels)
+    print(memory)
 ````
 
 ## TODO
@@ -248,3 +249,4 @@ There is still some work needed on this.
 * ability to specify input file name from command line
 * ability to specify output file name from the command line
 * finish factoring the assembly steps
+* consider replacing **map_to_inst()** with a lookup table
