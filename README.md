@@ -15,9 +15,7 @@ primary repository is hosted on Github
 
 You can obtain a current copy of the code by doing:
 
-::
-
-  git clone <url>
+    git clone https://github.com/crcx/nga.git
 
 ## Documentation
 
