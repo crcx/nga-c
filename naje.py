@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import sys
 
 labels = []
 resolve = []
@@ -113,12 +114,17 @@ def assemble(line):
         print(line)
         exit()
 if __name__ == '__main__':
+    if len(sys.argv) < 3:
+        print('Naje requires two arguments:')
+        print('naje.py input output')
+        exit()
+
     preamble()
-    src = load_source('test.naje')
+    src = load_source(sys.argv[1])
     for line in src:
         assemble(line)
     patch_entry()
-    save('test.bin')
+    save(sys.argv[2])
 
     print(src)
     print(labels)
