@@ -147,51 +147,104 @@ def save(filename):
 
 The final bits load the source file, compile it. This is not finished yet.
 
+An image starts with a jump to the main entry point (the *:main* label).
+Since the offset of *:main* isn't known initially, this compiles a jump to
+offset 0, which will be patched by a later routine.
+
 ````
-## WIP
+def preamble():
+    comma(1)
+    comma(0)
+    comma(7)
+````
 
-comma(1)
-comma(0)
-comma(7)
 
-with open('test.naje', 'r') as f:
-    raw = f.readlines()
+````
+def patch_entry():
+    memory[1] = lookup('main')
+````
 
-src = []
-for line in raw:
-    src.append(line.strip())
+A source file consists of a series of lines, with one instruction (or label)
+per line. While minimalistic, Naje does allow for blank lines and indention.
+This function strips out the leading and trailing whitespace as well as blank
+lines so that the rest of the assembler doesn't need to deal with it.
 
+````
+def load_source(filename):
+    with open(filename, 'r') as f:
+        raw = f.readlines()
+
+    cleaned = []
+    for line in raw:
+        cleaned.append(line.strip())
+
+    final = []
+    for line in cleaned:
+        if line != '':
+            final.append(line)
+
+    return final
+````
+
+````
+preamble()
+src = load_source('test.naje')
 print(src)
+
+def is_label(token):
+    if token[0:1] == ':':
+        return True
+    else:
+        return False
+
+def is_inst(token):
+    if map_to_inst(token) == -1:
+        return False
+    else:
+        return True
+
+
+def handle_lit(line):
+    parts = line.split()
+    try:
+        a = int(parts[1])
+        comma(a)
+    except:
+        xt = lookup(parts[1])
+        if xt != -1:
+            comma(xt)
+        else:
+            print('LIT encountered with a value that is not an integer or label')
+            print(line)
+            exit()
 
 for line in src:
     if line != '':
         token = line[0:2]
-        if token[0:1] == ':':
+        if is_label(token):
             labels.append((line[1:], i))
             print('label = ', line, '@', i)
-        else:
+        elif is_inst(token):
             op = map_to_inst(token)
-            if op == -1:
-                print('error detected', line)
-                exit()
-            else:
-                comma(op)
-                if op == 1:
-                    parts = line.split()
-                    try:
-                        a = int(parts[1])
-                        comma(a)
-                    except:
-                        xt = lookup(parts[1])
-                        if xt != -1:
-                            comma(xt)
-                        else:
-                            print('error detected', line)
-                            exit()
+            comma(op)
+            if op == 1:
+                handle_lit()
+        else:
+            print('Line was not a label or instruction.')
+            print(line)
+            exit()
 
-memory[1] = lookup('main')
+patch_entry()
 
 print(labels)
 print(memory)
 save('test.bin')
 ````
+
+## TODO
+
+There is still some work needed on this.
+
+* ability to specify input file name from command line
+* ability to specify output file name from the command line
+* finish factoring the assembly steps
