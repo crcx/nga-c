@@ -31,25 +31,25 @@ for the instruction and one for the value to push to the stack.
 
 Naje provides a simple syntax. A short example:
 
-   :add
-     add
-     return
-   :subtract
-     sub
-     return
-   :increment
-     lit 1
-     lit add
-     call
-     return
-   :main
-     lit 100
-     lit 95
-     lit subtract
-     call
-     lit increment
-     call
-     end
+    :add
+      add
+      return
+    :subtract
+      sub
+      return
+    :increment
+      lit 1
+      lit add
+      call
+      return
+    :main
+      lit 100
+      lit 95
+      lit subtract
+      call
+      lit increment
+      call
+      end
 
 Blank lines are ok, one instruction per line, labels start with a colon. A
 **lit** can be followed by a number or a label name. Labels must be defined
