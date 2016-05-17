@@ -11,6 +11,14 @@ into the form required for Naje.
 As with Naje, the Nabk preprocessor assumes one instrution per line, with
 labels on their own lines.
 
+### Comments
+
+Comments begin with a # followed by a space. Comments can either be on a
+line by themselves, or at the end of a line of input.
+
+    # this is a comment
+    call foo      # so is this
+
 ### Labels
 
 A label starts with a colon, as in:
@@ -88,6 +96,11 @@ for line in src:
             if tokens[0] == 'jump':
                 print('lit', tokens[1])
                 print('jump')
-
-## TODO: implement data:
+            if tokens[0] == 'data:':
+                ignore = False
+                for i in tokens[1:]:
+                    if i == '#':
+                        ignore = True
+                    elif ignore != True:
+                        print('lit', i)
 ````

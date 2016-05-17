@@ -19,5 +19,10 @@ for line in src:
             if tokens[0] == 'jump':
                 print('lit', tokens[1])
                 print('jump')
-
-## TODO: implement data:
+            if tokens[0] == 'data:':
+                ignore = False
+                for i in tokens[1:]:
+                    if i == '#':
+                        ignore = True
+                    elif ignore != True:
+                        print('lit', i)
