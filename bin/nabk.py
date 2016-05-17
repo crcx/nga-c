@@ -6,7 +6,7 @@ with open('test.nabk') as f:
     src = f.readlines()
 
 for line in src:
-    tokens = line.split()
+    tokens = line.strip().split()
     if len(tokens) > 0:
         if len(tokens) == 1:
             print(tokens[0])

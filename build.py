@@ -27,5 +27,5 @@ def convert(s, d):
             file.write('\n')
 
 if __name__ == '__main__':
-    convert('Naje.md', 'naje.py')
-    convert('Nabk.md', 'nabk.py')
+    convert('Naje.md', 'bin/naje.py')
+    convert('Nabk.md', 'bin/nabk.py')
