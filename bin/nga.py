@@ -2,15 +2,11 @@
 
 # Nga
 # Copyright (c) 2010 - 2016, Charles Childers
-# Copyright (c) 2011 Greg Copeland ( optimizations and process() rewrite )
-# Copyright (c) 2012 Michal J Wallace ( --dump )
+# Copyright (c) 2011 Greg Copeland (optimizations and process() rewrite)
+# Copyright (c) 2012 Michal J Wallace (--dump)
 import os, sys, math, struct
 from struct import pack, unpack
-
-EXIT = 0x0FFFFFFF # preliminary value
-
-# -----------------------------------------------------------------------------
-def rxDivMod( a, b ):
+def ngaDivMod(a, b):
   x = abs(a)
   y = abs(b)
   q, r = divmod(x, y)
@@ -24,12 +20,9 @@ def rxDivMod( a, b ):
     q *= -1
 
   return q, r
-
-# -----------------------------------------------------------------------------
-def process( memory ):
+def process(memory):
   ip = 0
-  global EXIT
-  EXIT = len( memory )
+  EXIT = len(memory)
   stack = [] * 128
   address = [] * 1024
   opcode = 0
@@ -37,6 +30,7 @@ def process( memory ):
   while ip < EXIT:
     opcode = memory[ip]
     print('o:', opcode, 'ip:', ip, 'd:', stack, 'a:', address)
+
     if opcode >= 0 and opcode <= 26:
 
       if   opcode ==  0:   # nop
@@ -44,10 +38,10 @@ def process( memory ):
 
       elif opcode ==  1:   # lit
         ip += 1
-        stack.append( memory[ip] )
+        stack.append(memory[ip])
 
       elif opcode ==  2:   # dup
-        stack.append( stack[-1] )
+        stack.append(stack[-1])
 
       elif opcode ==  3:   # drop
         stack.pop()
@@ -58,17 +52,17 @@ def process( memory ):
         stack[-1] = a
 
       elif opcode ==  5:   # push
-        address.append( stack.pop() )
+        address.append(stack.pop())
 
       elif opcode ==  6:   # pop
-        stack.append( address.pop() )
+        stack.append(address.pop())
 
       elif opcode ==  7:   # jump
         a = stack.pop()
         ip = a - 1
 
       elif opcode ==  8:   # call
-        address.append( ip )
+        address.append(ip)
         ip = stack.pop() - 1
 
       elif opcode ==  9:   # if
@@ -76,10 +70,10 @@ def process( memory ):
         t = stack_pop()
         v = stack_pop()
         if v != 0:
-          address.append( ip )
+          address.append(ip)
           ip = t - 1
         else:
-          address.append( ip )
+          address.append(ip)
           ip = f - 1
 
       elif opcode ==  10:  # return
@@ -89,33 +83,33 @@ def process( memory ):
         a = stack.pop()
         b = stack.pop()
         if b == a:
-          stack.append( -1 )
+          stack.append(-1)
         else:
-          stack.append( 0 )
+          stack.append(0)
 
       elif opcode == 12:   # -EQ
         a = stack.pop()
         b = stack.pop()
         if b != a:
-          stack.append( -1 )
+          stack.append(-1)
         else:
-          stack.append( 0 )
+          stack.append(0)
 
       elif opcode == 13:   # LT
         a = stack.pop()
         b = stack.pop()
         if b < a:
-          stack.append( -1 )
+          stack.append(-1)
         else:
-          stack.append( 0 )
+          stack.append(0)
 
       elif opcode == 14:   # GT
         a = stack.pop()
         b = stack.pop()
         if b > a:
-          stack.append( -1 )
+          stack.append(-1)
         else:
-          stack.append( 0 )
+          stack.append(0)
 
       elif opcode == 15:   # @
         stack[-1] = memory[stack[-1]]
@@ -142,7 +136,7 @@ def process( memory ):
       elif opcode == 20:   # /mod
         a = stack[-1]
         b = stack[-2]
-        stack[-1], stack[-2] = rxDivMod( b, a )
+        stack[-1], stack[-2] = ngaDivMod(b, a)
         stack[-1] = unpack('=l', pack('=L', stack[-1] & 0xffffffff))[0]
         stack[-2] = unpack('=l', pack('=L', stack[-2] & 0xffffffff))[0]
 
@@ -162,9 +156,9 @@ def process( memory ):
         a = stack.pop()
         b = stack_pop()
         if a < 0:
-          stack.append( b << (a * -1) )
+          stack.append(b << (a * -1))
         else:
-          stack.append( b >> a )
+          stack.append(b >> a)
 
       elif opcode == 25:   # 0;
         if stack[-1] == 0:
@@ -178,24 +172,24 @@ def process( memory ):
 
     ip += 1
   return stack, address, memory
-
-
-def dump( stack, address, memory ):
+def dump(stack, address, memory):
   """
   dumps the vm state. for use with /test/ngarotest.py
   triggered when --dump passed to the program.
   """
-  fsep = chr( 28 ) # file separator
-  gsep = chr( 29 ) # group separator
-  sys.stdout.write( fsep )
-  sys.stdout.write( ' '.join( map( str, stack )))
-  sys.stdout.write( gsep )
-  sys.stdout.write( ' '.join( map( str, address )))
-  sys.stdout.write( gsep )
-  sys.stdout.write( ' '.join( map( str, memory )))
-
-
-# -----------------------------------------------------------------------------
+  fsep = chr(28) # file separator
+  gsep = chr(29) # group separator
+  sys.stdout.write(fsep)
+  sys.stdout.write(' '.join(map(str, stack)))
+  sys.stdout.write(gsep)
+  sys.stdout.write(' '.join(map(str, address)))
+  sys.stdout.write(gsep)
+  sys.stdout.write(' '.join(map(str, memory)))
+def load_image(named):
+    cells = int(os.path.getsize(named) / 4)
+    with open(named, 'rb') as f:
+        memory = list(struct.unpack(cells * 'i', f.read()))
+    return memory, cells
 def run():
 
   imgpath = None
@@ -218,14 +212,11 @@ def run():
   imgpath = imgpath or 'ngaImage'
 
   # print "imgpath:", imgpath
-  cells = int(os.path.getsize(imgpath) / 4)
-  f = open( imgpath, 'rb' )
-  memory = list(struct.unpack( cells * 'i', f.read() ))
-  f.close()
+  memory, cells = load_image(imgpath)
 
   if not dump_after:
     remaining = 1000000 - cells
-    memory.extend( [0] * remaining )
+    memory.extend([0] * remaining)
 
   try:
     stack, address, memory = process(memory)
@@ -234,7 +225,5 @@ def run():
     raise
   finally:
     exit()
-
-# -----------------------------------------------------------------------------
 if __name__ == "__main__":
   run()
