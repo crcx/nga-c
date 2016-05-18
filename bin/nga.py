@@ -4,19 +4,11 @@
 # Copyright (c) 2010 - 2016, Charles Childers
 # Copyright (c) 2011 Greg Copeland ( optimizations and process() rewrite )
 # Copyright (c) 2012 Michal J Wallace ( --dump )
-# -----------------------------------------------------------------------------
-
 import os, sys, math, struct
 from struct import pack, unpack
 
-set_termio = False
-try:
-    import termios
-    set_termio = True
-except: pass
-
 EXIT = 0x0FFFFFFF # preliminary value
-
+
 # -----------------------------------------------------------------------------
 def rxDivMod( a, b ):
   x = abs(a)
@@ -32,7 +24,7 @@ def rxDivMod( a, b ):
     q *= -1
 
   return q, r
-
+
 # -----------------------------------------------------------------------------
 def process( memory ):
   ip = 0
@@ -43,9 +35,8 @@ def process( memory ):
   opcode = 0
 
   while ip < EXIT:
-    print('A opcode', opcode, 'ip', ip, 'stack', stack, 'adr', address)
     opcode = memory[ip]
-    print('B opcode', opcode, 'ip', ip, 'stack', stack, 'adr', address)
+    print('o:', opcode, 'ip:', ip, 'd:', stack, 'a:', address)
     if opcode >= 0 and opcode <= 26:
 
       if   opcode ==  0:   # nop
@@ -188,7 +179,7 @@ def process( memory ):
     ip += 1
   return stack, address, memory
 
-
+
 def dump( stack, address, memory ):
   """
   dumps the vm state. for use with /test/ngarotest.py
@@ -203,7 +194,7 @@ def dump( stack, address, memory ):
   sys.stdout.write( gsep )
   sys.stdout.write( ' '.join( map( str, memory )))
 
-
+
 # -----------------------------------------------------------------------------
 def run():
 
@@ -236,24 +227,14 @@ def run():
     remaining = 1000000 - cells
     memory.extend( [0] * remaining )
 
-  global set_termio
-  if set_termio:
-    try: old = termios.tcgetattr(sys.stdin.fileno())
-    except: set_termio = False
-  if set_termio:
-    t = termios.tcgetattr(sys.stdin.fileno())
-    t[3] = t[3] & ~(termios.ICANON | termios.ECHO | termios.ISIG)
-    t[0] = 0
-    termios.tcsetattr(sys.stdin.fileno(), termios.TCSANOW, t)
   try:
     stack, address, memory = process(memory)
     if dump_after: dump(stack, address, memory)
   except:
     raise
   finally:
-    if set_termio:
-      termios.tcsetattr(sys.stdin.fileno(), termios.TCSANOW, old)
-
+    exit()
+
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
   run()
