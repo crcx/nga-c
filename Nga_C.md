@@ -47,47 +47,93 @@ pool of memory needed.
 
 ````
 #define CELL         int32_t
-#define IMAGE_SIZE   80
-#define ADDRESSES    10
-#define STACK_DEPTH  10
-#define LOCAL        "retroImage"
+#define IMAGE_SIZE   256*1024
+#define ADDRESSES    128
+#define STACK_DEPTH  32
 #define CELLSIZE     32
 ````
 
 #### Naming The Instructions
 
-For this implementation an enum is used to name each of the instructions.
+For this implementation an enum is used to name each of the instructions. For
+reference, here are the instructions and their corresponding values (in
+decimal):
+
+    0  nop        7  jump      14  gt        21  and
+    1  lit <v>    8  call      15  fetch     22  or
+    2  dup        9  if        16  store     23  xor
+    3  drop      10  return    17  add       24  shift
+    4  swap      11  eq        18  sub       25  zret
+    5  push      12  neq       19  mul       26  end
+    6  pop       13  lt        20  divmod
 
 ````
-enum vm_opcode {VM_NOP,  VM_LIT,   VM_DUP,    VM_DROP,   VM_SWAP,   VM_PUSH,
-                VM_POP,  VM_JUMP,  VM_CALL,   VM_IF,     VM_RETURN,
-                VM_EQ,   VM_NEQ,   VM_LT,     VM_GT,     VM_FETCH,  VM_STORE,
-                VM_ADD,  VM_SUB,   VM_MUL,    VM_DIVMOD, VM_AND,    VM_OR,
-                VM_XOR,  VM_SHIFT, VM_ZRET,   VM_END };
+enum vm_opcode {
+  VM_NOP,  VM_LIT,    VM_DUP,   VM_DROP,    VM_SWAP,   VM_PUSH,
+  VM_POP,  VM_JUMP,   VM_CALL,  VM_IF,      VM_RETURN,
+  VM_EQ,   VM_NEQ,    VM_LT,    VM_GT,      VM_FETCH,  VM_STORE,
+  VM_ADD,  VM_SUB,    VM_MUL,   VM_DIVMOD,  VM_AND,    VM_OR,
+  VM_XOR,  VM_SHIFT,  VM_ZRET,  VM_END
+};
 #define NUM_OPS VM_END + 1
 ````
 
+The VM state is held in a few global variables. (It'd be better to use a
+struct here, as Ngaro does, but this makes everything else a bit less
+readable.
+
+Some things to note:
+
+The data stack (**data**), address stack (**address**), and memory (**image**)
+are simple linear arrays.
+
+There are stack pointers (**sp** for **data** and **rp** for **address**),
+and an instruction pointer (**ip**). These are *not* exposed via the
+instruction set.
+
+There are three additional items that aren't strictly necessary:
+
+* **stats** is used to hold the number of times an instruction is executed
+* **max_sp** holds the highest value **sp** has been assigned to
+* **max_rp** holds the highest value **rp** has been assigned to
+
 ````
-CELL sp, rsp, ip;
+CELL sp, rp, ip;
 CELL data[STACK_DEPTH];
 CELL address[ADDRESSES];
 CELL image[IMAGE_SIZE];
-CELL filecells;
 int stats[NUM_OPS];
-int max_sp, max_rsp;
+int max_sp, max_rp;
+````
 
+The final thing before we enter the actual code is a couple of snippits that
+we let the preprocessor inline for us. These are intended to make the code a
+bit more readable later.
 
-/* Macros ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+````
 #define DROP { data[sp] = 0; if (--sp < 0) ip = IMAGE_SIZE; }
 #define TOS  data[sp]
 #define NOS  data[sp-1]
-#define TORS address[rsp]
+#define TORS address[rp]
+````
 
+#### Loading an Image File
+
+A standard image file is a raw memory dump of 32-bit, signed integer values.
+
+What we do here is:
+
+* attempt to open the file
+* use **fseek()** and **ftell()** to find the length of the file.
+* divide the length by the size of a cell to determine the number of cells
+* read the cells into memory (**image**)
+* return the size of the data read (in bytes)
+
+````
 CELL ngaLoadImage(char *imageFile) {
   FILE *fp;
   CELL imageSize;
   long fileLen;
-  imageSize = 0;
 
   if ((fp = fopen(imageFile, "rb")) != NULL) {
     fseek(fp, 0, SEEK_END);
@@ -100,10 +146,183 @@ CELL ngaLoadImage(char *imageFile) {
     printf("Unable to find the ngaImage!\n");
     exit(1);
   }
-  filecells = imageSize;
   return imageSize;
 }
+````
 
+#### Preparations
+
+This function initializes all of the variables and fills the arrays with
+known values. Memory is filled with **VM_NOP** instructions; the others are
+populated with zeros.
+
+````
+void ngaPrepare() {
+  ip = sp = rp = max_sp = max_rp = 0;
+
+  for (ip = 0; ip < IMAGE_SIZE; ip++)
+    image[ip] = VM_NOP;
+
+  for (ip = 0; ip < STACK_DEPTH; ip++)
+    data[ip] = 0;
+
+  for (ip = 0; ip < ADDRESSES; ip++)
+    address[ip] = 0;
+
+  for (ip = 0; ip < NUM_OPS; ip++)
+    stats[ip] = 0;
+}
+````
+
+#### WIP
+
+Todo here:
+
+* move all of the instructions to separate functions
+* dispatch table ?
+* or at least a shorter switch()
+
+The **NOP** instruction does nothing.
+
+````
+void check_max() {
+  if (max_sp < sp)
+    max_sp = sp;
+  if (max_rp < rp)
+    max_rp = rp;
+}
+
+void inst_nop() {
+}
+````
+
+**LIT** is a special case: it's followed by a value to push to the stack. This
+needs to increment the **sp** and **ip** and push the value at the incremented
+*ip** to the stack.
+
+````
+void inst_lit() {
+  sp++;
+  ip++;
+  TOS = image[ip];
+  check_max();
+}
+````
+
+````
+void inst_dup() {
+  check_max();
+}
+
+void inst_drop() {
+}
+
+void inst_swap() {
+}
+
+void inst_push() {
+  check_max();
+}
+
+void inst_pop() {
+}
+
+void inst_jump() {
+}
+
+void inst_call() {
+  check_max();
+}
+
+void inst_if() {
+}
+
+void inst_return() {
+}
+
+void inst_eq() {
+  int a, b;
+  a = TOS; DROP;
+  b = TOS; DROP;
+  if (b == a)
+    TOS = -1;
+  else
+    TOS = 0;
+}
+
+void inst_neq() {
+  int a, b;
+  a = TOS; DROP;
+  b = TOS; DROP;
+  if (b != a)
+    TOS = -1;
+  else
+    TOS = 0;
+}
+
+void inst_lt() {
+  int a, b;
+  a = TOS; DROP;
+  b = TOS; DROP;
+  if (b < a)
+    TOS = -1;
+  else
+    TOS = 0;
+}
+
+void inst_gt() {
+  int a, b;
+  a = TOS; DROP;
+  b = TOS; DROP;
+  if (b > a)
+    TOS = -1;
+  else
+    TOS = 0;
+}
+
+void inst_fetch() {
+  TOS = image[TOS];
+}
+
+void inst_store() {
+  image[TOS] = NOS;
+  DROP
+  DROP
+}
+
+void inst_add() {
+}
+
+void inst_sub() {
+}
+
+void inst_mul() {
+}
+
+void inst_divmod() {
+}
+
+void inst_and() {
+}
+
+void inst_or() {
+}
+
+void inst_xor() {
+}
+
+void inst_shift() {
+}
+
+void inst_zret() {
+}
+
+void inst_end() {
+}
+
+````
+
+````
 void ngaProcessOpcode() {
   CELL a, b, c, opcode;
   opcode = image[ip];
@@ -113,15 +332,8 @@ void ngaProcessOpcode() {
   printf("%d: %d\n", ip, opcode);
 
   switch(opcode) {
-    case VM_NOP:
-         break;
-    case VM_LIT:
-         sp++;
-         ip++;
-         TOS = image[ip];
-         if (max_sp < sp)
-           max_sp = sp;
-         break;
+    case VM_NOP: inst_nop();   break;
+    case VM_LIT: inst_lit();   break;
     case VM_DUP:
          sp++;
          data[sp] = NOS;
@@ -137,34 +349,34 @@ void ngaProcessOpcode() {
          NOS = a;
          break;
     case VM_PUSH:
-         rsp++;
+         rp++;
          TORS = TOS;
          DROP
-         if (max_rsp < rsp)
-           max_rsp = rsp;
+         if (max_rp < rp)
+           max_rp = rp;
          break;
     case VM_POP:
          sp++;
          TOS = TORS;
-         rsp--;
+         rp--;
          break;
     case VM_JUMP:
          ip = TOS - 1;
          DROP;
          break;
     case VM_CALL:
-         rsp++;
+         rp++;
          TORS = ip;
-         if (max_rsp < rsp)
-           max_rsp = rsp;
+         if (max_rp < rp)
+           max_rp = rp;
          ip = TOS - 1;
          DROP;
          break;
     case VM_IF:
-         rsp++;
+         rp++;
          TORS = ip;
-         if (max_rsp < rsp)
-           max_rsp = rsp;
+         if (max_rp < rp)
+           max_rp = rp;
          a = TOS; DROP;  /* False */
          b = TOS; DROP;  /* True  */
          c = TOS; DROP;  /* Flag  */
@@ -175,55 +387,14 @@ void ngaProcessOpcode() {
          break;
     case VM_RETURN:
          ip = TORS;
-         rsp--;
+         rp--;
          break;
-    case VM_GT:
-         a = TOS; DROP;
-         b = TOS; DROP;
-         if(b > a)
-             TOS = -1;
-         else
-             TOS = 0;
-         if (max_sp < sp)
-           max_sp = sp;
-         break;
-    case VM_LT:
-         a = TOS; DROP;
-         b = TOS; DROP;
-         if(b < a)
-             TOS = -1;
-         else
-             TOS = 0;
-         if (max_sp < sp)
-           max_sp = sp;
-         break;
-    case VM_NEQ:
-         a = TOS; DROP;
-         b = TOS; DROP;
-         if(b != a)
-             TOS = -1;
-         else
-             TOS = 0;
-         if (max_sp < sp)
-           max_sp = sp;
-         break;
-    case VM_EQ:
-         a = TOS; DROP;
-         b = TOS; DROP;
-         if(b == a)
-             TOS = -1;
-         else
-             TOS = 0;
-         if (max_sp < sp)
-           max_sp = sp;
-         break;
-    case VM_FETCH:
-         TOS = image[TOS];
-         break;
-    case VM_STORE:
-         image[TOS] = NOS;
-         DROP DROP
-         break;
+    case VM_GT:   inst_gt();   break;
+    case VM_LT:   inst_lt();   break;
+    case VM_NEQ:  inst_neq();  break;
+    case VM_EQ:   inst_eq();   break;
+    case VM_FETCH: inst_fetch();     break;
+    case VM_STORE: inst_store(); break;
     case VM_ADD:
          NOS += TOS;
          DROP
@@ -276,7 +447,7 @@ void ngaProcessOpcode() {
          if (TOS == 0) {
            DROP
            ip = TORS;
-           rsp--;
+           rp--;
          }
          break;
     case VM_END:
@@ -288,8 +459,19 @@ void ngaProcessOpcode() {
          break;
   }
 }
+````
 
-/* Stats ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+#### Statistics
+
+This implementation of Nga tracks the number of times each instruction is
+reached during an application's run. It also tracks the maximum stack depth
+for both stacks.
+
+This information can be useful when debugging and profiling code. If your
+host system is resource contrained it may be worth dropping this to save a
+little space and processing time.
+
+````
 void ngaDisplayStats()
 {
   int s, i;
@@ -323,33 +505,20 @@ void ngaDisplayStats()
   printf("ZRET:    %d\n", stats[VM_ZRET]);
   printf("END:     %d\n", stats[VM_END]);
   printf("Max sp:  %d\n", max_sp);
-  printf("Max rsp: %d\n", max_rsp);
+  printf("Max rp:  %d\n", max_rp);
 
   for (s = i = 0; s < NUM_OPS; s++)
     i += stats[s];
   printf("Total opcodes processed: %d\n", i);
 }
+````
 
-
-/* Main ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+````
 int main(int argc, char **argv) {
   int wantsStats, i;
   wantsStats = 1;
 
-  ip = 0;
-  sp = 0;
-  rsp = 0;
-  max_sp = 0;
-  max_rsp = 0;
-
-  for (ip = 0; ip < IMAGE_SIZE; ip++)
-    image[ip] = VM_NOP;
-
-  for (ip = 0; ip < STACK_DEPTH; ip++)
-    data[ip] = 0;
-
-  for (ip = 0; ip < ADDRESSES; ip++)
-    address[ip] = 0;
+  ngaPrepare();
 
   ngaLoadImage("ngaImage");
 
