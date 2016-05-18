@@ -27,6 +27,7 @@ def convert(s, d):
             file.write('\n')
 
 if __name__ == '__main__':
+    convert('Nga_C.md', 'bin/nga.c')
     convert('Nga_Python.md', 'bin/nga.py')
     convert('Naje.md', 'bin/naje.py')
     convert('Nabk.md', 'bin/nabk.py')
