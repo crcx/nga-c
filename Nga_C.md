@@ -211,33 +211,65 @@ void inst_lit() {
 
 ````
 void inst_dup() {
+  sp++;
+  data[sp] = NOS;
   check_max();
 }
 
 void inst_drop() {
+  DROP
 }
 
 void inst_swap() {
+  int a;
+  a = TOS;
+  TOS = NOS;
+  NOS = a;
 }
 
 void inst_push() {
+  rp++;
+  TORS = TOS;
+  DROP
   check_max();
 }
 
 void inst_pop() {
+  sp++;
+  TOS = TORS;
+  rp--;
 }
 
 void inst_jump() {
+  ip = TOS - 1;
+  DROP
 }
 
 void inst_call() {
+  rp++;
+  TORS = ip;
+  ip = TOS - 1;
+  DROP
   check_max();
 }
 
 void inst_if() {
+  int a, b, c;
+  rp++;
+  TORS = ip;
+  a = TOS; DROP;  /* False */
+  b = TOS; DROP;  /* True  */
+  c = TOS; DROP;  /* Flag  */
+  if (c != 0)
+    ip = b - 1;
+  else
+    ip = a - 1;
+  check_max();
 }
 
 void inst_return() {
+  ip = TORS;
+  rp--;
 }
 
 void inst_eq() {
@@ -291,15 +323,26 @@ void inst_store() {
 }
 
 void inst_add() {
+  NOS += TOS;
+  DROP
 }
 
 void inst_sub() {
+  NOS -= TOS;
+  DROP
 }
 
 void inst_mul() {
+  NOS *= TOS;
+  DROP
 }
 
 void inst_divmod() {
+  int a, b;
+  a = TOS;
+  b = NOS;
+  TOS = b / a;
+  NOS = b % a;
 }
 
 void inst_and() {
@@ -334,85 +377,25 @@ void ngaProcessOpcode() {
   switch(opcode) {
     case VM_NOP: inst_nop();   break;
     case VM_LIT: inst_lit();   break;
-    case VM_DUP:
-         sp++;
-         data[sp] = NOS;
-         if (max_sp < sp)
-           max_sp = sp;
-         break;
-    case VM_DROP:
-         DROP
-         break;
-    case VM_SWAP:
-         a = TOS;
-         TOS = NOS;
-         NOS = a;
-         break;
-    case VM_PUSH:
-         rp++;
-         TORS = TOS;
-         DROP
-         if (max_rp < rp)
-           max_rp = rp;
-         break;
-    case VM_POP:
-         sp++;
-         TOS = TORS;
-         rp--;
-         break;
-    case VM_JUMP:
-         ip = TOS - 1;
-         DROP;
-         break;
-    case VM_CALL:
-         rp++;
-         TORS = ip;
-         if (max_rp < rp)
-           max_rp = rp;
-         ip = TOS - 1;
-         DROP;
-         break;
-    case VM_IF:
-         rp++;
-         TORS = ip;
-         if (max_rp < rp)
-           max_rp = rp;
-         a = TOS; DROP;  /* False */
-         b = TOS; DROP;  /* True  */
-         c = TOS; DROP;  /* Flag  */
-         if (c != 0)
-             ip = b - 1;
-         else
-             ip = a - 1;
-         break;
-    case VM_RETURN:
-         ip = TORS;
-         rp--;
-         break;
+    case VM_DUP: inst_dup();   break;
+    case VM_DROP: inst_drop();         break;
+    case VM_SWAP: inst_swap();         break;
+    case VM_PUSH: inst_push();         break;
+    case VM_POP: inst_pop();         break;
+    case VM_JUMP: inst_jump();         break;
+    case VM_CALL: inst_call();         break;
+    case VM_IF: inst_if();         break;
+    case VM_RETURN: inst_return(); break;
     case VM_GT:   inst_gt();   break;
     case VM_LT:   inst_lt();   break;
     case VM_NEQ:  inst_neq();  break;
     case VM_EQ:   inst_eq();   break;
     case VM_FETCH: inst_fetch();     break;
     case VM_STORE: inst_store(); break;
-    case VM_ADD:
-         NOS += TOS;
-         DROP
-         break;
-    case VM_SUB:
-         NOS -= TOS;
-         DROP
-         break;
-    case VM_MUL:
-         NOS *= TOS;
-         DROP
-         break;
-    case VM_DIVMOD:
-         a = TOS;
-         b = NOS;
-         TOS = b / a;
-         NOS = b % a;
-         break;
+    case VM_ADD: inst_add();         break;
+    case VM_SUB: inst_sub(); break;
+    case VM_MUL: inst_mul(); break;
+    case VM_DIVMOD: inst_divmod(); break;
     case VM_AND:
          a = TOS;
          b = NOS;
