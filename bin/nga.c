@@ -216,23 +216,54 @@ void inst_divmod() {
 }
 
 void inst_and() {
+  int a, b;
+  a = TOS;
+  b = NOS;
+  DROP
+  TOS = a & b;
 }
 
 void inst_or() {
+  int a, b;
+  a = TOS;
+  b = NOS;
+  DROP
+  TOS = a | b;
 }
 
 void inst_xor() {
+  int a, b;
+  a = TOS;
+  b = NOS;
+  DROP
+  TOS = a ^ b;
 }
 
 void inst_shift() {
+  int a, b;
+  /* Left -- TODO */
+  a = TOS;
+  b = NOS;
+  DROP
+  TOS = b << a;
+
+  /* Right -- TODO */
+  a = TOS;
+  DROP
+  TOS >>= a;
 }
 
 void inst_zret() {
+  if (TOS == 0) {
+    DROP
+    ip = TORS;
+    rp--;
+  }
 }
 
 void inst_end() {
+  ip = IMAGE_SIZE;
 }
-
 void ngaProcessOpcode() {
   CELL a, b, c, opcode;
   opcode = image[ip];
@@ -242,67 +273,33 @@ void ngaProcessOpcode() {
   printf("%d: %d\n", ip, opcode);
 
   switch(opcode) {
-    case VM_NOP: inst_nop();   break;
-    case VM_LIT: inst_lit();   break;
-    case VM_DUP: inst_dup();   break;
-    case VM_DROP: inst_drop();         break;
-    case VM_SWAP: inst_swap();         break;
-    case VM_PUSH: inst_push();         break;
-    case VM_POP: inst_pop();         break;
-    case VM_JUMP: inst_jump();         break;
-    case VM_CALL: inst_call();         break;
-    case VM_IF: inst_if();         break;
-    case VM_RETURN: inst_return(); break;
-    case VM_GT:   inst_gt();   break;
-    case VM_LT:   inst_lt();   break;
-    case VM_NEQ:  inst_neq();  break;
-    case VM_EQ:   inst_eq();   break;
-    case VM_FETCH: inst_fetch();     break;
-    case VM_STORE: inst_store(); break;
-    case VM_ADD: inst_add();         break;
-    case VM_SUB: inst_sub(); break;
-    case VM_MUL: inst_mul(); break;
-    case VM_DIVMOD: inst_divmod(); break;
-    case VM_AND:
-         a = TOS;
-         b = NOS;
-         DROP
-         TOS = a & b;
-         break;
-    case VM_OR:
-         a = TOS;
-         b = NOS;
-         DROP
-         TOS = a | b;
-         break;
-    case VM_XOR:
-         a = TOS;
-         b = NOS;
-         DROP
-         TOS = a ^ b;
-         break;
-    case VM_SHIFT:
-         /* Left -- TODO */
-         a = TOS;
-         b = NOS;
-         DROP
-         TOS = b << a;
-
-         /* Right -- TODO */
-         a = TOS;
-         DROP
-         TOS >>= a;
-         break;
-    case VM_ZRET:
-         if (TOS == 0) {
-           DROP
-           ip = TORS;
-           rp--;
-         }
-         break;
-    case VM_END:
-         ip = IMAGE_SIZE;
-         break;
+    case VM_NOP:    inst_nop();     break;
+    case VM_LIT:    inst_lit();     break;
+    case VM_DUP:    inst_dup();     break;
+    case VM_DROP:   inst_drop();    break;
+    case VM_SWAP:   inst_swap();    break;
+    case VM_PUSH:   inst_push();    break;
+    case VM_POP:    inst_pop();     break;
+    case VM_JUMP:   inst_jump();    break;
+    case VM_CALL:   inst_call();    break;
+    case VM_IF:     inst_if();      break;
+    case VM_RETURN: inst_return();  break;
+    case VM_GT:     inst_gt();      break;
+    case VM_LT:     inst_lt();      break;
+    case VM_NEQ:    inst_neq();     break;
+    case VM_EQ:     inst_eq();      break;
+    case VM_FETCH:  inst_fetch();   break;
+    case VM_STORE:  inst_store();   break;
+    case VM_ADD:    inst_add();     break;
+    case VM_SUB:    inst_sub();     break;
+    case VM_MUL:    inst_mul();     break;
+    case VM_DIVMOD: inst_divmod();  break;
+    case VM_AND:    inst_and();     break;
+    case VM_OR:     inst_or();      break;
+    case VM_XOR:    inst_xor();     break;
+    case VM_SHIFT:  inst_shift();   break;
+    case VM_ZRET:   inst_zret();    break;
+    case VM_END:    inst_end();     break;
     default:
          printf("Error: %d opcode encountered\n", opcode);
          exit(1);
