@@ -21,6 +21,20 @@ import os, sys, math, struct
 from struct import pack, unpack
 ````
 
+From the spec:
+
+    Take two values from the data stack. The
+    top item is the divisor, and the second
+    item is the dividend. Perform the division,
+    and push the quotient and remainder to the
+    stack. After execution the quotient should
+    be on top, with the remainder below it.
+
+    Division is symmetric, not floored.
+
+The raw Python **divmod()** doesn't quite meet the requirements for this, so
+we implement a wrapper over it to take care of this.
+
 ````
 def ngaDivMod(a, b):
   x = abs(a)
@@ -38,6 +52,8 @@ def ngaDivMod(a, b):
   return q, r
 ````
 
+This is the majority of the code; it iterates over each instruction,
+processing them as it goes.
 
 ````
 def process(memory):
