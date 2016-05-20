@@ -174,15 +174,20 @@ void ngaPrepare() {
 }
 ````
 
-#### WIP
+#### Statistics
 
-Todo here:
+This implementation of Nga tracks the number of times each instruction is
+reached during an application's run. It also tracks the maximum stack depth
+for both stacks.
 
-* move all of the instructions to separate functions
-* dispatch table ?
-* or at least a shorter switch()
+This information can be useful when debugging and profiling code. If your
+host system is resource contrained it may be worth dropping this to save a
+little space and processing time.
 
-The **NOP** instruction does nothing.
+**check_max()** is used by a few of the instructions to check the current
+stack depths against the previous maximum and updates it if necessary. Only
+instructions that push more than they consume need to call this. These are
+**LIT**, **DUP**, **PUSH**, **CALL**, and **IF**.
 
 ````
 void check_max() {
@@ -191,7 +196,70 @@ void check_max() {
   if (max_rp < rp)
     max_rp = rp;
 }
+````
 
+The other function of interest is **ngaDisplayStats()**. It provides the basic
+output on the usage of each instruction and the maximum stack depths.
+
+````
+void ngaDisplayStats()
+{
+  int s, i;
+
+  printf("Runtime Statistics\n");
+  printf("NOP:     %d\n", stats[VM_NOP]);
+  printf("LIT:     %d\n", stats[VM_LIT]);
+  printf("DUP:     %d\n", stats[VM_DUP]);
+  printf("DROP:    %d\n", stats[VM_DROP]);
+  printf("SWAP:    %d\n", stats[VM_SWAP]);
+  printf("PUSH:    %d\n", stats[VM_PUSH]);
+  printf("POP:     %d\n", stats[VM_POP]);
+  printf("JUMP:    %d\n", stats[VM_JUMP]);
+  printf("CALL:    %d\n", stats[VM_CALL]);
+  printf("IF:      %d\n", stats[VM_IF]);
+  printf("RETURN:  %d\n", stats[VM_RETURN]);
+  printf("EQ:      %d\n", stats[VM_EQ]);
+  printf("NEQ:     %d\n", stats[VM_NEQ]);
+  printf("LT:      %d\n", stats[VM_LT]);
+  printf("GT:      %d\n", stats[VM_GT]);
+  printf("FETCH:   %d\n", stats[VM_FETCH]);
+  printf("STORE:   %d\n", stats[VM_STORE]);
+  printf("ADD:     %d\n", stats[VM_ADD]);
+  printf("SUB:     %d\n", stats[VM_SUB]);
+  printf("MUL:     %d\n", stats[VM_MUL]);
+  printf("DIVMOD:  %d\n", stats[VM_DIVMOD]);
+  printf("AND:     %d\n", stats[VM_AND]);
+  printf("OR:      %d\n", stats[VM_OR]);
+  printf("XOR:     %d\n", stats[VM_XOR]);
+  printf("SHIFT:   %d\n", stats[VM_SHIFT]);
+  printf("ZRET:    %d\n", stats[VM_ZRET]);
+  printf("END:     %d\n", stats[VM_END]);
+  printf("Max sp:  %d\n", max_sp);
+  printf("Max rp:  %d\n", max_rp);
+
+  for (s = i = 0; s < NUM_OPS; s++)
+    i += stats[s];
+  printf("Total opcodes processed: %d\n", i);
+}
+````
+
+
+#### The Instructions
+
+I've chosen to implement each instruction as a separate function. This keeps
+them shorter, and lets me simplify the instruction processor later on.
+
+There is a bit of commentary on each one, but see the Nga Specification for
+full details.
+
+Todo here:
+
+* dispatch table ?
+* or at least a shorter switch()
+
+The **NOP** instruction does nothing.
+
+````
 void inst_nop() {
 }
 ````
@@ -209,42 +277,68 @@ void inst_lit() {
 }
 ````
 
+**DUP** duplicates the top item on the stack.
+
 ````
 void inst_dup() {
   sp++;
   data[sp] = NOS;
   check_max();
 }
+````
 
+**DROP** removes the top item from the stack.
+
+````
 void inst_drop() {
   DROP
 }
+````
 
+**SWAP** switches the top and second items on the stack.
+
+````
 void inst_swap() {
   int a;
   a = TOS;
   TOS = NOS;
   NOS = a;
 }
+````
 
+**PUSH** moves the top value from the data stack to the address stack.
+
+````
 void inst_push() {
   rp++;
   TORS = TOS;
   DROP
   check_max();
 }
+````
 
+**POP** moves the top item on the address stack to the data stack.
+
+````
 void inst_pop() {
   sp++;
   TOS = TORS;
   rp--;
 }
+````
 
+**JUMP** moves execution to the address on the top of the stack.
+
+````
 void inst_jump() {
   ip = TOS - 1;
   DROP
 }
+````
 
+**CALL** calls a subroutine at the address on the top of the stack.
+
+````
 void inst_call() {
   rp++;
   TORS = ip;
@@ -252,7 +346,32 @@ void inst_call() {
   DROP
   check_max();
 }
+````
 
+**IF** is a conditional call. It takes three values: a flag, a pointer for
+a subroutine to call if the flag is true, and a pointer to a subroutine to
+call when the flag is false.
+
+A false flag is zero. Any other value is true.
+
+Example:
+
+    :t
+      lit 100
+      return
+    :f
+      lit 200
+      return
+    :main
+      lit 1
+      lit 2
+      eq
+      lit t
+      lit f
+      if
+    end
+
+````
 void inst_if() {
   int a, b, c;
   rp++;
@@ -266,12 +385,21 @@ void inst_if() {
     ip = a - 1;
   check_max();
 }
+````
 
+**RETURN** ends a subroutine and returns flow to the instruction following
+the last **CALL**.
+
+````
 void inst_return() {
   ip = TORS;
   rp--;
 }
+````
 
+**EQ** compares two values for equality and returns a flag.
+
+````
 void inst_eq() {
   int a, b;
   a = TOS; DROP;
@@ -281,7 +409,11 @@ void inst_eq() {
   else
     TOS = 0;
 }
+````
 
+**NEQ** compares two values for inequality and returns a flag.
+
+````
 void inst_neq() {
   int a, b;
   a = TOS; DROP;
@@ -291,7 +423,11 @@ void inst_neq() {
   else
     TOS = 0;
 }
+````
 
+**LT** compares two values for less than and returns a flag.
+
+````
 void inst_lt() {
   int a, b;
   a = TOS; DROP;
@@ -301,7 +437,11 @@ void inst_lt() {
   else
     TOS = 0;
 }
+````
 
+**GT** compares two values for greater than and returns a flag.
+
+````
 void inst_gt() {
   int a, b;
   a = TOS; DROP;
@@ -311,32 +451,58 @@ void inst_gt() {
   else
     TOS = 0;
 }
+````
 
+## TODO: document these
+
+**FETCH** takes an address and returns the value stored there.
+
+````
 void inst_fetch() {
   TOS = image[TOS];
 }
+````
 
+**STORE** stores a value into an address.
+
+````
 void inst_store() {
   image[TOS] = NOS;
   DROP
   DROP
 }
+````
 
+**ADD* adds two numbers together.
+
+````
 void inst_add() {
   NOS += TOS;
   DROP
 }
+````
 
+**SUB** subtracts two numbers.
+
+````
 void inst_sub() {
   NOS -= TOS;
   DROP
 }
+````
 
+**MUL** multiplies two numbers.
+
+````
 void inst_mul() {
   NOS *= TOS;
   DROP
 }
+````
 
+**DIVMOD** divides and returns the quotient and remainder.
+
+````
 void inst_divmod() {
   int a, b;
   a = TOS;
@@ -344,7 +510,11 @@ void inst_divmod() {
   TOS = b / a;
   NOS = b % a;
 }
+````
 
+**AND** performs a bitwise AND operation.
+
+````
 void inst_and() {
   int a, b;
   a = TOS;
@@ -352,7 +522,11 @@ void inst_and() {
   DROP
   TOS = a & b;
 }
+````
 
+**OR** performs a bitwise OR operation.
+
+````
 void inst_or() {
   int a, b;
   a = TOS;
@@ -360,7 +534,11 @@ void inst_or() {
   DROP
   TOS = a | b;
 }
+````
 
+**XOR** performs a bitwise XOR operation.
+
+````
 void inst_xor() {
   int a, b;
   a = TOS;
@@ -368,7 +546,11 @@ void inst_xor() {
   DROP
   TOS = a ^ b;
 }
+````
 
+**SHIFT** performs a bitwise SHIFT operation.
+
+````
 void inst_shift() {
   int a, b;
   /* Left -- TODO */
@@ -382,7 +564,9 @@ void inst_shift() {
   DROP
   TOS >>= a;
 }
+````
 
+````
 void inst_zret() {
   if (TOS == 0) {
     DROP
@@ -390,7 +574,9 @@ void inst_zret() {
     rp--;
   }
 }
+````
 
+````
 void inst_end() {
   ip = IMAGE_SIZE;
 }
@@ -441,57 +627,6 @@ void ngaProcessOpcode() {
 }
 ````
 
-#### Statistics
-
-This implementation of Nga tracks the number of times each instruction is
-reached during an application's run. It also tracks the maximum stack depth
-for both stacks.
-
-This information can be useful when debugging and profiling code. If your
-host system is resource contrained it may be worth dropping this to save a
-little space and processing time.
-
-````
-void ngaDisplayStats()
-{
-  int s, i;
-
-  printf("Runtime Statistics\n");
-  printf("NOP:     %d\n", stats[VM_NOP]);
-  printf("LIT:     %d\n", stats[VM_LIT]);
-  printf("DUP:     %d\n", stats[VM_DUP]);
-  printf("DROP:    %d\n", stats[VM_DROP]);
-  printf("SWAP:    %d\n", stats[VM_SWAP]);
-  printf("PUSH:    %d\n", stats[VM_PUSH]);
-  printf("POP:     %d\n", stats[VM_POP]);
-  printf("JUMP:    %d\n", stats[VM_JUMP]);
-  printf("CALL:    %d\n", stats[VM_CALL]);
-  printf(":IF      %d\n", stats[VM_IF]);
-  printf("RETURN:  %d\n", stats[VM_RETURN]);
-  printf(":EQ      %d\n", stats[VM_EQ]);
-  printf(":NEQ     %d\n", stats[VM_NEQ]);
-  printf(":LT      %d\n", stats[VM_LT]);
-  printf(":GT      %d\n", stats[VM_GT]);
-  printf("FETCH:   %d\n", stats[VM_FETCH]);
-  printf("STORE:   %d\n", stats[VM_STORE]);
-  printf("ADD:     %d\n", stats[VM_ADD]);
-  printf("SUB:     %d\n", stats[VM_SUB]);
-  printf("MUL:     %d\n", stats[VM_MUL]);
-  printf("DIVMOD:  %d\n", stats[VM_DIVMOD]);
-  printf("AND:     %d\n", stats[VM_AND]);
-  printf("OR:      %d\n", stats[VM_OR]);
-  printf("XOR:     %d\n", stats[VM_XOR]);
-  printf("SHIFT:   %d\n", stats[VM_SHIFT]);
-  printf("ZRET:    %d\n", stats[VM_ZRET]);
-  printf("END:     %d\n", stats[VM_END]);
-  printf("Max sp:  %d\n", max_sp);
-  printf("Max rp:  %d\n", max_rp);
-
-  for (s = i = 0; s < NUM_OPS; s++)
-    i += stats[s];
-  printf("Total opcodes processed: %d\n", i);
-}
-````
 
 ````
 int main(int argc, char **argv) {

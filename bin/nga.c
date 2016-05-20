@@ -71,7 +71,45 @@ void check_max() {
   if (max_rp < rp)
     max_rp = rp;
 }
+void ngaDisplayStats()
+{
+  int s, i;
 
+  printf("Runtime Statistics\n");
+  printf("NOP:     %d\n", stats[VM_NOP]);
+  printf("LIT:     %d\n", stats[VM_LIT]);
+  printf("DUP:     %d\n", stats[VM_DUP]);
+  printf("DROP:    %d\n", stats[VM_DROP]);
+  printf("SWAP:    %d\n", stats[VM_SWAP]);
+  printf("PUSH:    %d\n", stats[VM_PUSH]);
+  printf("POP:     %d\n", stats[VM_POP]);
+  printf("JUMP:    %d\n", stats[VM_JUMP]);
+  printf("CALL:    %d\n", stats[VM_CALL]);
+  printf("IF:      %d\n", stats[VM_IF]);
+  printf("RETURN:  %d\n", stats[VM_RETURN]);
+  printf("EQ:      %d\n", stats[VM_EQ]);
+  printf("NEQ:     %d\n", stats[VM_NEQ]);
+  printf("LT:      %d\n", stats[VM_LT]);
+  printf("GT:      %d\n", stats[VM_GT]);
+  printf("FETCH:   %d\n", stats[VM_FETCH]);
+  printf("STORE:   %d\n", stats[VM_STORE]);
+  printf("ADD:     %d\n", stats[VM_ADD]);
+  printf("SUB:     %d\n", stats[VM_SUB]);
+  printf("MUL:     %d\n", stats[VM_MUL]);
+  printf("DIVMOD:  %d\n", stats[VM_DIVMOD]);
+  printf("AND:     %d\n", stats[VM_AND]);
+  printf("OR:      %d\n", stats[VM_OR]);
+  printf("XOR:     %d\n", stats[VM_XOR]);
+  printf("SHIFT:   %d\n", stats[VM_SHIFT]);
+  printf("ZRET:    %d\n", stats[VM_ZRET]);
+  printf("END:     %d\n", stats[VM_END]);
+  printf("Max sp:  %d\n", max_sp);
+  printf("Max rp:  %d\n", max_rp);
+
+  for (s = i = 0; s < NUM_OPS; s++)
+    i += stats[s];
+  printf("Total opcodes processed: %d\n", i);
+}
 void inst_nop() {
 }
 void inst_lit() {
@@ -85,36 +123,30 @@ void inst_dup() {
   data[sp] = NOS;
   check_max();
 }
-
 void inst_drop() {
   DROP
 }
-
 void inst_swap() {
   int a;
   a = TOS;
   TOS = NOS;
   NOS = a;
 }
-
 void inst_push() {
   rp++;
   TORS = TOS;
   DROP
   check_max();
 }
-
 void inst_pop() {
   sp++;
   TOS = TORS;
   rp--;
 }
-
 void inst_jump() {
   ip = TOS - 1;
   DROP
 }
-
 void inst_call() {
   rp++;
   TORS = ip;
@@ -122,7 +154,6 @@ void inst_call() {
   DROP
   check_max();
 }
-
 void inst_if() {
   int a, b, c;
   rp++;
@@ -136,12 +167,10 @@ void inst_if() {
     ip = a - 1;
   check_max();
 }
-
 void inst_return() {
   ip = TORS;
   rp--;
 }
-
 void inst_eq() {
   int a, b;
   a = TOS; DROP;
@@ -151,7 +180,6 @@ void inst_eq() {
   else
     TOS = 0;
 }
-
 void inst_neq() {
   int a, b;
   a = TOS; DROP;
@@ -161,7 +189,6 @@ void inst_neq() {
   else
     TOS = 0;
 }
-
 void inst_lt() {
   int a, b;
   a = TOS; DROP;
@@ -171,7 +198,6 @@ void inst_lt() {
   else
     TOS = 0;
 }
-
 void inst_gt() {
   int a, b;
   a = TOS; DROP;
@@ -181,32 +207,26 @@ void inst_gt() {
   else
     TOS = 0;
 }
-
 void inst_fetch() {
   TOS = image[TOS];
 }
-
 void inst_store() {
   image[TOS] = NOS;
   DROP
   DROP
 }
-
 void inst_add() {
   NOS += TOS;
   DROP
 }
-
 void inst_sub() {
   NOS -= TOS;
   DROP
 }
-
 void inst_mul() {
   NOS *= TOS;
   DROP
 }
-
 void inst_divmod() {
   int a, b;
   a = TOS;
@@ -214,7 +234,6 @@ void inst_divmod() {
   TOS = b / a;
   NOS = b % a;
 }
-
 void inst_and() {
   int a, b;
   a = TOS;
@@ -222,7 +241,6 @@ void inst_and() {
   DROP
   TOS = a & b;
 }
-
 void inst_or() {
   int a, b;
   a = TOS;
@@ -230,7 +248,6 @@ void inst_or() {
   DROP
   TOS = a | b;
 }
-
 void inst_xor() {
   int a, b;
   a = TOS;
@@ -238,7 +255,6 @@ void inst_xor() {
   DROP
   TOS = a ^ b;
 }
-
 void inst_shift() {
   int a, b;
   /* Left -- TODO */
@@ -252,7 +268,6 @@ void inst_shift() {
   DROP
   TOS >>= a;
 }
-
 void inst_zret() {
   if (TOS == 0) {
     DROP
@@ -260,7 +275,6 @@ void inst_zret() {
     rp--;
   }
 }
-
 void inst_end() {
   ip = IMAGE_SIZE;
 }
@@ -305,45 +319,6 @@ void ngaProcessOpcode() {
          exit(1);
          break;
   }
-}
-void ngaDisplayStats()
-{
-  int s, i;
-
-  printf("Runtime Statistics\n");
-  printf("NOP:     %d\n", stats[VM_NOP]);
-  printf("LIT:     %d\n", stats[VM_LIT]);
-  printf("DUP:     %d\n", stats[VM_DUP]);
-  printf("DROP:    %d\n", stats[VM_DROP]);
-  printf("SWAP:    %d\n", stats[VM_SWAP]);
-  printf("PUSH:    %d\n", stats[VM_PUSH]);
-  printf("POP:     %d\n", stats[VM_POP]);
-  printf("JUMP:    %d\n", stats[VM_JUMP]);
-  printf("CALL:    %d\n", stats[VM_CALL]);
-  printf(":IF      %d\n", stats[VM_IF]);
-  printf("RETURN:  %d\n", stats[VM_RETURN]);
-  printf(":EQ      %d\n", stats[VM_EQ]);
-  printf(":NEQ     %d\n", stats[VM_NEQ]);
-  printf(":LT      %d\n", stats[VM_LT]);
-  printf(":GT      %d\n", stats[VM_GT]);
-  printf("FETCH:   %d\n", stats[VM_FETCH]);
-  printf("STORE:   %d\n", stats[VM_STORE]);
-  printf("ADD:     %d\n", stats[VM_ADD]);
-  printf("SUB:     %d\n", stats[VM_SUB]);
-  printf("MUL:     %d\n", stats[VM_MUL]);
-  printf("DIVMOD:  %d\n", stats[VM_DIVMOD]);
-  printf("AND:     %d\n", stats[VM_AND]);
-  printf("OR:      %d\n", stats[VM_OR]);
-  printf("XOR:     %d\n", stats[VM_XOR]);
-  printf("SHIFT:   %d\n", stats[VM_SHIFT]);
-  printf("ZRET:    %d\n", stats[VM_ZRET]);
-  printf("END:     %d\n", stats[VM_END]);
-  printf("Max sp:  %d\n", max_sp);
-  printf("Max rp:  %d\n", max_rp);
-
-  for (s = i = 0; s < NUM_OPS; s++)
-    i += stats[s];
-  printf("Total opcodes processed: %d\n", i);
 }
 int main(int argc, char **argv) {
   int wantsStats, i;
