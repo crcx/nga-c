@@ -47,7 +47,7 @@ pool of memory needed.
 
 ````
 #define CELL         int32_t
-#define IMAGE_SIZE   256*1024
+#define IMAGE_SIZE   262144
 #define ADDRESSES    128
 #define STACK_DEPTH  32
 #define CELLSIZE     32
@@ -84,7 +84,7 @@ readable.
 
 Some things to note:
 
-The data stack (**data**), address stack (**address**), and memory (**image**)
+The data stack (**data**), address stack (**address**), and memory (**memory**)
 are simple linear arrays.
 
 There are stack pointers (**sp** for **data** and **rp** for **address**),
@@ -101,7 +101,7 @@ There are three additional items that aren't strictly necessary:
 CELL sp, rp, ip;
 CELL data[STACK_DEPTH];
 CELL address[ADDRESSES];
-CELL image[IMAGE_SIZE];
+CELL memory[IMAGE_SIZE];
 int stats[NUM_OPS];
 int max_sp, max_rp;
 ````
@@ -139,7 +139,7 @@ CELL ngaLoadImage(char *imageFile) {
     fseek(fp, 0, SEEK_END);
     fileLen = ftell(fp) / sizeof(CELL);
     rewind(fp);
-    imageSize = fread(&image, sizeof(CELL), fileLen, fp);
+    imageSize = fread(&memory, sizeof(CELL), fileLen, fp);
     fclose(fp);
   }
   else {
@@ -161,7 +161,7 @@ void ngaPrepare() {
   ip = sp = rp = max_sp = max_rp = 0;
 
   for (ip = 0; ip < IMAGE_SIZE; ip++)
-    image[ip] = VM_NOP;
+    memory[ip] = VM_NOP;
 
   for (ip = 0; ip < STACK_DEPTH; ip++)
     data[ip] = 0;
@@ -252,11 +252,6 @@ them shorter, and lets me simplify the instruction processor later on.
 There is a bit of commentary on each one, but see the Nga Specification for
 full details.
 
-Todo here:
-
-* dispatch table ?
-* or at least a shorter switch()
-
 The **NOP** instruction does nothing.
 
 ````
@@ -266,13 +261,13 @@ void inst_nop() {
 
 **LIT** is a special case: it's followed by a value to push to the stack. This
 needs to increment the **sp** and **ip** and push the value at the incremented
-*ip** to the stack.
+**ip** to the stack.
 
 ````
 void inst_lit() {
   sp++;
   ip++;
-  TOS = image[ip];
+  TOS = memory[ip];
   check_max();
 }
 ````
@@ -459,7 +454,7 @@ void inst_gt() {
 
 ````
 void inst_fetch() {
-  TOS = image[TOS];
+  TOS = memory[TOS];
 }
 ````
 
@@ -467,7 +462,7 @@ void inst_fetch() {
 
 ````
 void inst_store() {
-  image[TOS] = NOS;
+  memory[TOS] = NOS;
   DROP
   DROP
 }
@@ -566,6 +561,9 @@ void inst_shift() {
 }
 ````
 
+**ZRET** returns from a subroutine if the top item on the stack is zero. If
+not, it acts like a **NOP** instead.
+
 ````
 void inst_zret() {
   if (TOS == 0) {
@@ -576,6 +574,8 @@ void inst_zret() {
 }
 ````
 
+**END** tells Nga that execution should end.
+
 ````
 void inst_end() {
   ip = IMAGE_SIZE;
@@ -584,13 +584,9 @@ void inst_end() {
 
 ````
 void ngaProcessOpcode() {
-  CELL a, b, c, opcode;
-  opcode = image[ip];
-
+  CELL opcode;
+  opcode = memory[ip];
   stats[opcode]++;
-
-  printf("%d: %d\n", ip, opcode);
-
   switch(opcode) {
     case VM_NOP:    inst_nop();     break;
     case VM_LIT:    inst_lit();     break;
@@ -620,9 +616,9 @@ void ngaProcessOpcode() {
     case VM_ZRET:   inst_zret();    break;
     case VM_END:    inst_end();     break;
     default:
-         printf("Error: %d opcode encountered\n", opcode);
-         exit(1);
-         break;
+       printf("Error: %d opcode encountered\n", opcode);
+       exit(1);
+       break;
   }
 }
 ````
@@ -637,8 +633,10 @@ int main(int argc, char **argv) {
 
   ngaLoadImage("ngaImage");
 
-  for (ip = 0; ip < IMAGE_SIZE; ip++)
+  for (ip = 0; ip < IMAGE_SIZE; ip++) {
+    printf("@ %d\top %d\n", ip, memory[ip]);
     ngaProcessOpcode();
+  }
 
   if (wantsStats == 1)
     ngaDisplayStats();

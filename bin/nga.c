@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <string.h>
 #define CELL         int32_t
-#define IMAGE_SIZE   256*1024
+#define IMAGE_SIZE   262144
 #define ADDRESSES    128
 #define STACK_DEPTH  32
 #define CELLSIZE     32
@@ -25,7 +25,7 @@ enum vm_opcode {
 CELL sp, rp, ip;
 CELL data[STACK_DEPTH];
 CELL address[ADDRESSES];
-CELL image[IMAGE_SIZE];
+CELL memory[IMAGE_SIZE];
 int stats[NUM_OPS];
 int max_sp, max_rp;
 #define DROP { data[sp] = 0; if (--sp < 0) ip = IMAGE_SIZE; }
@@ -41,7 +41,7 @@ CELL ngaLoadImage(char *imageFile) {
     fseek(fp, 0, SEEK_END);
     fileLen = ftell(fp) / sizeof(CELL);
     rewind(fp);
-    imageSize = fread(&image, sizeof(CELL), fileLen, fp);
+    imageSize = fread(&memory, sizeof(CELL), fileLen, fp);
     fclose(fp);
   }
   else {
@@ -54,7 +54,7 @@ void ngaPrepare() {
   ip = sp = rp = max_sp = max_rp = 0;
 
   for (ip = 0; ip < IMAGE_SIZE; ip++)
-    image[ip] = VM_NOP;
+    memory[ip] = VM_NOP;
 
   for (ip = 0; ip < STACK_DEPTH; ip++)
     data[ip] = 0;
@@ -115,7 +115,7 @@ void inst_nop() {
 void inst_lit() {
   sp++;
   ip++;
-  TOS = image[ip];
+  TOS = memory[ip];
   check_max();
 }
 void inst_dup() {
@@ -208,10 +208,10 @@ void inst_gt() {
     TOS = 0;
 }
 void inst_fetch() {
-  TOS = image[TOS];
+  TOS = memory[TOS];
 }
 void inst_store() {
-  image[TOS] = NOS;
+  memory[TOS] = NOS;
   DROP
   DROP
 }
@@ -279,13 +279,9 @@ void inst_end() {
   ip = IMAGE_SIZE;
 }
 void ngaProcessOpcode() {
-  CELL a, b, c, opcode;
-  opcode = image[ip];
-
+  CELL opcode;
+  opcode = memory[ip];
   stats[opcode]++;
-
-  printf("%d: %d\n", ip, opcode);
-
   switch(opcode) {
     case VM_NOP:    inst_nop();     break;
     case VM_LIT:    inst_lit();     break;
@@ -315,9 +311,9 @@ void ngaProcessOpcode() {
     case VM_ZRET:   inst_zret();    break;
     case VM_END:    inst_end();     break;
     default:
-         printf("Error: %d opcode encountered\n", opcode);
-         exit(1);
-         break;
+       printf("Error: %d opcode encountered\n", opcode);
+       exit(1);
+       break;
   }
 }
 int main(int argc, char **argv) {
@@ -328,8 +324,10 @@ int main(int argc, char **argv) {
 
   ngaLoadImage("ngaImage");
 
-  for (ip = 0; ip < IMAGE_SIZE; ip++)
+  for (ip = 0; ip < IMAGE_SIZE; ip++) {
+    printf("@ %d\top %d\n", ip, memory[ip]);
     ngaProcessOpcode();
+  }
 
   if (wantsStats == 1)
     ngaDisplayStats();
