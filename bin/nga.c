@@ -15,11 +15,10 @@
 #define STACK_DEPTH  32
 #define CELLSIZE     32
 enum vm_opcode {
-  VM_NOP,  VM_LIT,    VM_DUP,   VM_DROP,    VM_SWAP,   VM_PUSH,
-  VM_POP,  VM_JUMP,   VM_CALL,  VM_IF,      VM_RETURN,
-  VM_EQ,   VM_NEQ,    VM_LT,    VM_GT,      VM_FETCH,  VM_STORE,
-  VM_ADD,  VM_SUB,    VM_MUL,   VM_DIVMOD,  VM_AND,    VM_OR,
-  VM_XOR,  VM_SHIFT,  VM_ZRET,  VM_END
+  VM_NOP,  VM_LIT,    VM_DUP,   VM_DROP,    VM_SWAP,   VM_PUSH,  VM_POP,
+  VM_JUMP, VM_CALL,   VM_IF,    VM_RETURN,  VM_EQ,     VM_NEQ,   VM_LT,
+  VM_GT,   VM_FETCH,  VM_STORE, VM_ADD,     VM_SUB,    VM_MUL,   VM_DIVMOD,
+  VM_AND,  VM_OR,     VM_XOR,   VM_SHIFT,   VM_ZRET,   VM_END
 };
 #define NUM_OPS VM_END + 1
 CELL sp, rp, ip;
@@ -172,40 +171,32 @@ void inst_return() {
   rp--;
 }
 void inst_eq() {
-  int a, b;
-  a = TOS; DROP;
-  b = TOS; DROP;
-  if (b == a)
-    TOS = -1;
+  if (NOS == TOS)
+    NOS = -1;
   else
-    TOS = 0;
+    NOS = 0;
+  DROP
 }
 void inst_neq() {
-  int a, b;
-  a = TOS; DROP;
-  b = TOS; DROP;
-  if (b != a)
-    TOS = -1;
+  if (NOS != TOS)
+    NOS = -1;
   else
-    TOS = 0;
+    NOS = 0;
+  DROP
 }
 void inst_lt() {
-  int a, b;
-  a = TOS; DROP;
-  b = TOS; DROP;
-  if (b < a)
-    TOS = -1;
+  if (NOS < TOS)
+    NOS = -1;
   else
-    TOS = 0;
+    NOS = 0;
+  DROP
 }
 void inst_gt() {
-  int a, b;
-  a = TOS; DROP;
-  b = TOS; DROP;
-  if (b > a)
-    TOS = -1;
+  if (NOS > TOS)
+    NOS = -1;
   else
-    TOS = 0;
+    NOS = 0;
+  DROP
 }
 void inst_fetch() {
   TOS = memory[TOS];
