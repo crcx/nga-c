@@ -27,7 +27,6 @@ CELL address[ADDRESSES];
 CELL memory[IMAGE_SIZE];
 int stats[NUM_OPS];
 int max_sp, max_rp;
-#define DROP { data[sp] = 0; if (--sp < 0) ip = IMAGE_SIZE; }
 #define TOS  data[sp]
 #define NOS  data[sp-1]
 #define TORS address[rp]
@@ -126,7 +125,9 @@ void inst_dup() {
   ngaStatsCheckMax();
 }
 void inst_drop() {
-  DROP
+  data[sp] = 0;
+   if (--sp < 0)
+     ip = IMAGE_SIZE;
 }
 void inst_swap() {
   int a;
@@ -137,7 +138,7 @@ void inst_swap() {
 void inst_push() {
   rp++;
   TORS = TOS;
-  DROP
+  inst_drop();
   ngaStatsCheckMax();
 }
 void inst_pop() {
@@ -147,22 +148,22 @@ void inst_pop() {
 }
 void inst_jump() {
   ip = TOS - 1;
-  DROP
+  inst_drop();
 }
 void inst_call() {
   rp++;
   TORS = ip;
   ip = TOS - 1;
-  DROP
+  inst_drop();
   ngaStatsCheckMax();
 }
 void inst_if() {
   int a, b, c;
   rp++;
   TORS = ip;
-  a = TOS; DROP;  /* False */
-  b = TOS; DROP;  /* True  */
-  c = TOS; DROP;  /* Flag  */
+  a = TOS; inst_drop();  /* False */
+  b = TOS; inst_drop();  /* True  */
+  c = TOS; inst_drop();  /* Flag  */
   if (c != 0)
     ip = b - 1;
   else
@@ -178,48 +179,48 @@ void inst_eq() {
     NOS = -1;
   else
     NOS = 0;
-  DROP
+  inst_drop();
 }
 void inst_neq() {
   if (NOS != TOS)
     NOS = -1;
   else
     NOS = 0;
-  DROP
+  inst_drop();
 }
 void inst_lt() {
   if (NOS < TOS)
     NOS = -1;
   else
     NOS = 0;
-  DROP
+  inst_drop();
 }
 void inst_gt() {
   if (NOS > TOS)
     NOS = -1;
   else
     NOS = 0;
-  DROP
+  inst_drop();
 }
 void inst_fetch() {
   TOS = memory[TOS];
 }
 void inst_store() {
   memory[TOS] = NOS;
-  DROP
-  DROP
+  inst_drop();
+  inst_drop();
 }
 void inst_add() {
   NOS += TOS;
-  DROP
+  inst_drop();
 }
 void inst_sub() {
   NOS -= TOS;
-  DROP
+  inst_drop();
 }
 void inst_mul() {
   NOS *= TOS;
-  DROP
+  inst_drop();
 }
 void inst_divmod() {
   int a, b;
@@ -230,26 +231,26 @@ void inst_divmod() {
 }
 void inst_and() {
   NOS = TOS & NOS;
-  DROP
+  inst_drop();
 }
 void inst_or() {
   NOS = TOS | NOS;
-  DROP
+  inst_drop();
 }
 void inst_xor() {
   NOS = TOS ^ NOS;
-  DROP
+  inst_drop();
 }
 void inst_shift() {
   if (TOS < 0)
-      NOS = NOS << (TOS * -1);
+    NOS = NOS << (TOS * -1);
   else
-      NOS >>= TOS;
-  DROP
+    NOS >>= TOS;
+  inst_drop();
 }
 void inst_zret() {
   if (TOS == 0) {
-    DROP
+    inst_drop();
     ip = TORS;
     rp--;
   }
@@ -265,12 +266,9 @@ Handler instructions[NUM_OPS] = {
   inst_gt, inst_fetch, inst_store, inst_add, inst_sub, inst_mul, inst_divmod,
   inst_and, inst_or, inst_xor, inst_shift, inst_zret, inst_end
 };
-
 void ngaProcessOpcode() {
-  CELL opcode;
-  opcode = memory[ip];
-  stats[opcode]++;
-  instructions[opcode]();
+  stats[memory[ip]]++;
+  instructions[memory[ip]]();
 }
 int main(int argc, char **argv) {
   int wantsStats, i;
@@ -280,9 +278,13 @@ int main(int argc, char **argv) {
 
   ngaLoadImage("ngaImage");
 
+  CELL opcode;
+
   for (ip = 0; ip < IMAGE_SIZE; ip++) {
+    opcode = memory[ip];
     printf("@ %d\top %d\n", ip, memory[ip]);
-    ngaProcessOpcode();
+    if (opcode >= 0 && opcode < NUM_OPS)
+      ngaProcessOpcode();
   }
 
   if (wantsStats == 1)

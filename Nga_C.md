@@ -110,7 +110,6 @@ we let the preprocessor inline for us. These are intended to make the code a
 bit more readable later.
 
 ````
-#define DROP { data[sp] = 0; if (--sp < 0) ip = IMAGE_SIZE; }
 #define TOS  data[sp]
 #define NOS  data[sp-1]
 #define TORS address[rp]
@@ -284,11 +283,13 @@ void inst_dup() {
 }
 ````
 
-**DROP** removes the top item from the stack.
+**inst_drop();** removes the top item from the stack.
 
 ````
 void inst_drop() {
-  DROP
+  data[sp] = 0;
+   if (--sp < 0)
+     ip = IMAGE_SIZE;
 }
 ````
 
@@ -309,7 +310,7 @@ void inst_swap() {
 void inst_push() {
   rp++;
   TORS = TOS;
-  DROP
+  inst_drop();
   ngaStatsCheckMax();
 }
 ````
@@ -329,7 +330,7 @@ void inst_pop() {
 ````
 void inst_jump() {
   ip = TOS - 1;
-  DROP
+  inst_drop();
 }
 ````
 
@@ -340,7 +341,7 @@ void inst_call() {
   rp++;
   TORS = ip;
   ip = TOS - 1;
-  DROP
+  inst_drop();
   ngaStatsCheckMax();
 }
 ````
@@ -373,9 +374,9 @@ void inst_if() {
   int a, b, c;
   rp++;
   TORS = ip;
-  a = TOS; DROP;  /* False */
-  b = TOS; DROP;  /* True  */
-  c = TOS; DROP;  /* Flag  */
+  a = TOS; inst_drop();  /* False */
+  b = TOS; inst_drop();  /* True  */
+  c = TOS; inst_drop();  /* Flag  */
   if (c != 0)
     ip = b - 1;
   else
@@ -402,7 +403,7 @@ void inst_eq() {
     NOS = -1;
   else
     NOS = 0;
-  DROP
+  inst_drop();
 }
 ````
 
@@ -414,7 +415,7 @@ void inst_neq() {
     NOS = -1;
   else
     NOS = 0;
-  DROP
+  inst_drop();
 }
 ````
 
@@ -426,7 +427,7 @@ void inst_lt() {
     NOS = -1;
   else
     NOS = 0;
-  DROP
+  inst_drop();
 }
 ````
 
@@ -438,7 +439,7 @@ void inst_gt() {
     NOS = -1;
   else
     NOS = 0;
-  DROP
+  inst_drop();
 }
 ````
 
@@ -455,8 +456,8 @@ void inst_fetch() {
 ````
 void inst_store() {
   memory[TOS] = NOS;
-  DROP
-  DROP
+  inst_drop();
+  inst_drop();
 }
 ````
 
@@ -465,7 +466,7 @@ void inst_store() {
 ````
 void inst_add() {
   NOS += TOS;
-  DROP
+  inst_drop();
 }
 ````
 
@@ -474,7 +475,7 @@ void inst_add() {
 ````
 void inst_sub() {
   NOS -= TOS;
-  DROP
+  inst_drop();
 }
 ````
 
@@ -483,7 +484,7 @@ void inst_sub() {
 ````
 void inst_mul() {
   NOS *= TOS;
-  DROP
+  inst_drop();
 }
 ````
 
@@ -504,7 +505,7 @@ void inst_divmod() {
 ````
 void inst_and() {
   NOS = TOS & NOS;
-  DROP
+  inst_drop();
 }
 ````
 
@@ -513,7 +514,7 @@ void inst_and() {
 ````
 void inst_or() {
   NOS = TOS | NOS;
-  DROP
+  inst_drop();
 }
 ````
 
@@ -522,7 +523,7 @@ void inst_or() {
 ````
 void inst_xor() {
   NOS = TOS ^ NOS;
-  DROP
+  inst_drop();
 }
 ````
 
@@ -534,7 +535,7 @@ void inst_shift() {
     NOS = NOS << (TOS * -1);
   else
     NOS >>= TOS;
-  DROP
+  inst_drop();
 }
 ````
 
@@ -544,7 +545,7 @@ not, it acts like a **NOP** instead.
 ````
 void inst_zret() {
   if (TOS == 0) {
-    DROP
+    inst_drop();
     ip = TORS;
     rp--;
   }
