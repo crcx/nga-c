@@ -500,11 +500,8 @@ void inst_divmod() {
 
 ````
 void inst_and() {
-  int a, b;
-  a = TOS;
-  b = NOS;
+  NOS = TOS & NOS;
   DROP
-  TOS = a & b;
 }
 ````
 
@@ -512,11 +509,8 @@ void inst_and() {
 
 ````
 void inst_or() {
-  int a, b;
-  a = TOS;
-  b = NOS;
+  NOS = TOS | NOS;
   DROP
-  TOS = a | b;
 }
 ````
 
@@ -524,11 +518,8 @@ void inst_or() {
 
 ````
 void inst_xor() {
-  int a, b;
-  a = TOS;
-  b = NOS;
+  NOS = TOS ^ NOS;
   DROP
-  TOS = a ^ b;
 }
 ````
 
@@ -536,14 +527,11 @@ void inst_xor() {
 
 ````
 void inst_shift() {
-  int a, b;
-  a = TOS;
-  b = NOS;
-  DROP
-  if (a < 0)
-      TOS = b << (a * -1);
+  if (TOS < 0)
+      NOS = NOS << (TOS * -1);
   else
-      TOS >>= a;
+      NOS >>= TOS;
+  DROP
 }
 ````
 
