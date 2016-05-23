@@ -531,9 +531,9 @@ void inst_xor() {
 ````
 void inst_shift() {
   if (TOS < 0)
-      NOS = NOS << (TOS * -1);
+    NOS = NOS << (TOS * -1);
   else
-      NOS >>= TOS;
+    NOS >>= TOS;
   DROP
 }
 ````
@@ -559,6 +559,15 @@ void inst_end() {
 }
 ````
 
+## Instruction Handler
+
+In the past I handled the instructions via a big switch. With Nga, I changed
+this to use a jump table. This is significantly more concise and makes
+maintenance easier overall.
+
+So first up, the jump table itself. Just a list of pointers to the instruction
+implementations, in the proper order.
+
 ````
 typedef void (*Handler)(void);
 
@@ -568,12 +577,15 @@ Handler instructions[NUM_OPS] = {
   inst_gt, inst_fetch, inst_store, inst_add, inst_sub, inst_mul, inst_divmod,
   inst_and, inst_or, inst_xor, inst_shift, inst_zret, inst_end
 };
+````
 
+And now **ngaProcessOpcode()** which calls the functions in the jump table.
+This also updates the statistics for each.
+
+````
 void ngaProcessOpcode() {
-  CELL opcode;
-  opcode = memory[ip];
-  stats[opcode]++;
-  instructions[opcode]();
+  stats[memory[ip]]++;
+  instructions[memory[ip]]();
 }
 ````
 
@@ -587,9 +599,13 @@ int main(int argc, char **argv) {
 
   ngaLoadImage("ngaImage");
 
+  CELL opcode;
+
   for (ip = 0; ip < IMAGE_SIZE; ip++) {
+    opcode = memory[ip];
     printf("@ %d\top %d\n", ip, memory[ip]);
-    ngaProcessOpcode();
+    if (opcode >= 0 && opcode < NUM_OPS)
+      ngaProcessOpcode();
   }
 
   if (wantsStats == 1)
