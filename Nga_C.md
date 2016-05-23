@@ -135,9 +135,12 @@ CELL ngaLoadImage(char *imageFile) {
   long fileLen;
 
   if ((fp = fopen(imageFile, "rb")) != NULL) {
+    /* Determine length (in cells) */
     fseek(fp, 0, SEEK_END);
     fileLen = ftell(fp) / sizeof(CELL);
     rewind(fp);
+
+    /* Read the file into memory */
     imageSize = fread(&memory, sizeof(CELL), fileLen, fp);
     fclose(fp);
   }
@@ -183,13 +186,13 @@ This information can be useful when debugging and profiling code. If your
 host system is resource contrained it may be worth dropping this to save a
 little space and processing time.
 
-**check_max()** is used by a few of the instructions to check the current
-stack depths against the previous maximum and updates it if necessary. Only
-instructions that push more than they consume need to call this. These are
-**LIT**, **DUP**, **PUSH**, **CALL**, and **IF**.
+**ngaStatsCheckMax()** is used by a few of the instructions to check the
+current stack depths against the previous maximum and updates it if
+necessary. Only instructions that push more than they consume need to call
+this. These are **LIT**, **DUP**, **PUSH**, **CALL**, and **IF**.
 
 ````
-void check_max() {
+void ngaStatsCheckMax() {
   if (max_sp < sp)
     max_sp = sp;
   if (max_rp < rp)
@@ -267,7 +270,7 @@ void inst_lit() {
   sp++;
   ip++;
   TOS = memory[ip];
-  check_max();
+  ngaStatsCheckMax();
 }
 ````
 
@@ -277,7 +280,7 @@ void inst_lit() {
 void inst_dup() {
   sp++;
   data[sp] = NOS;
-  check_max();
+  ngaStatsCheckMax();
 }
 ````
 
@@ -307,7 +310,7 @@ void inst_push() {
   rp++;
   TORS = TOS;
   DROP
-  check_max();
+  ngaStatsCheckMax();
 }
 ````
 
@@ -338,7 +341,7 @@ void inst_call() {
   TORS = ip;
   ip = TOS - 1;
   DROP
-  check_max();
+  ngaStatsCheckMax();
 }
 ````
 
@@ -377,7 +380,7 @@ void inst_if() {
     ip = b - 1;
   else
     ip = a - 1;
-  check_max();
+  ngaStatsCheckMax();
 }
 ````
 
@@ -557,43 +560,20 @@ void inst_end() {
 ````
 
 ````
+typedef void (*Handler)(void);
+
+Handler instructions[NUM_OPS] = {
+  inst_nop, inst_lit, inst_dup, inst_drop, inst_swap, inst_push, inst_pop,
+  inst_jump, inst_call, inst_if, inst_return, inst_eq, inst_neq, inst_lt,
+  inst_gt, inst_fetch, inst_store, inst_add, inst_sub, inst_mul, inst_divmod,
+  inst_and, inst_or, inst_xor, inst_shift, inst_zret, inst_end
+};
+
 void ngaProcessOpcode() {
   CELL opcode;
   opcode = memory[ip];
   stats[opcode]++;
-  switch(opcode) {
-    case VM_NOP:    inst_nop();     break;
-    case VM_LIT:    inst_lit();     break;
-    case VM_DUP:    inst_dup();     break;
-    case VM_DROP:   inst_drop();    break;
-    case VM_SWAP:   inst_swap();    break;
-    case VM_PUSH:   inst_push();    break;
-    case VM_POP:    inst_pop();     break;
-    case VM_JUMP:   inst_jump();    break;
-    case VM_CALL:   inst_call();    break;
-    case VM_IF:     inst_if();      break;
-    case VM_RETURN: inst_return();  break;
-    case VM_GT:     inst_gt();      break;
-    case VM_LT:     inst_lt();      break;
-    case VM_NEQ:    inst_neq();     break;
-    case VM_EQ:     inst_eq();      break;
-    case VM_FETCH:  inst_fetch();   break;
-    case VM_STORE:  inst_store();   break;
-    case VM_ADD:    inst_add();     break;
-    case VM_SUB:    inst_sub();     break;
-    case VM_MUL:    inst_mul();     break;
-    case VM_DIVMOD: inst_divmod();  break;
-    case VM_AND:    inst_and();     break;
-    case VM_OR:     inst_or();      break;
-    case VM_XOR:    inst_xor();     break;
-    case VM_SHIFT:  inst_shift();   break;
-    case VM_ZRET:   inst_zret();    break;
-    case VM_END:    inst_end();     break;
-    default:
-       printf("Error: %d opcode encountered\n", opcode);
-       exit(1);
-       break;
-  }
+  instructions[opcode]();
 }
 ````
 
