@@ -548,16 +548,13 @@ void inst_xor() {
 ````
 void inst_shift() {
   int a, b;
-  /* Left -- TODO */
   a = TOS;
   b = NOS;
   DROP
-  TOS = b << a;
-
-  /* Right -- TODO */
-  a = TOS;
-  DROP
-  TOS >>= a;
+  if (a < 0)
+      TOS = b << (a * -1);
+  else
+      TOS >>= a;
 }
 ````
 
