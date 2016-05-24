@@ -270,3 +270,25 @@ void ngaProcessOpcode() {
   stats[memory[ip]]++;
   instructions[memory[ip]]();
 }
+#ifdef STANDALONE
+int main(int argc, char **argv) {
+  ngaPrepare();
+  ngaLoadImage("ngaImage");
+
+  CELL opcode;
+
+  ip = 0;
+  while (ip < IMAGE_SIZE) {
+    opcode = memory[ip];
+    if (opcode >= 0 && opcode < 27) {
+      ngaProcessOpcode();
+    } else {
+      printf("Invalid instruction!\n");
+      printf("At %d, opcode %d\n", ip, opcode);
+      exit(1);
+    }
+    ip++;
+  }
+  exit(0);
+}
+#endif
