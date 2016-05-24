@@ -12,7 +12,7 @@
 
 2016.05 [x] Tool to extract sources from Markdown
 2016.05 [x] Build tool
-        [ ] Naje should allow for input via stdin and a default file name
+2016.05 [x] Naje should allow for input via stdin and a default file name
         [ ] Nabk could import Naje and directly assemble the results
         [ ] PL/0 compiler backend (based on PL/0-Language-Tools)
         [ ] minimal Forth dialect

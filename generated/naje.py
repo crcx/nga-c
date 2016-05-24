@@ -61,20 +61,21 @@ def preamble():
     comma(7)
 def patch_entry():
     memory[1] = lookup('main')
-def load_source(filename):
-    with open(filename, 'r') as f:
-        raw = f.readlines()
-
+def clean_source(raw):
     cleaned = []
     for line in raw:
         cleaned.append(line.strip())
-
     final = []
     for line in cleaned:
         if line != '':
             final.append(line)
-
     return final
+
+
+def load_source(filename):
+    with open(filename, 'r') as f:
+        raw = f.readlines()
+    return clean_source(raw)
 def is_label(token):
     if token[0:1] == ':':
         return True
@@ -115,16 +116,22 @@ def assemble(line):
         exit()
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print('Naje requires two arguments:')
-        print('naje.py input output')
-        exit()
+        raw = []
+        for line in sys.stdin:
+            raw.append(line)
+        src = clean_source(raw)
+    else:
+        src = load_source(sys.argv[1])
 
     preamble()
-    src = load_source(sys.argv[1])
     for line in src:
         assemble(line)
     patch_entry()
-    save(sys.argv[2])
+
+    if len(sys.argv) < 3:
+        save('output.nga')
+    else:
+        save(sys.argv[2])
 
     print(src)
     print(labels)
