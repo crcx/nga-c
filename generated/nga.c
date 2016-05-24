@@ -270,30 +270,3 @@ void ngaProcessOpcode() {
   stats[memory[ip]]++;
   instructions[memory[ip]]();
 }
-int main(int argc, char **argv) {
-  int wantsStats, i;
-  wantsStats = 1;
-
-  ngaPrepare();
-
-  ngaLoadImage("ngaImage");
-
-  CELL opcode;
-
-  for (ip = 0; ip < IMAGE_SIZE; ip++) {
-    opcode = memory[ip];
-    printf("@ %d\top %d\n", ip, memory[ip]);
-    if (opcode >= 0 && opcode < NUM_OPS)
-      ngaProcessOpcode();
-  }
-
-  if (wantsStats == 1)
-    ngaDisplayStats();
-
-  for (i = 1; i <= sp; i++)
-      printf("%d, ", data[i]);
-
-  printf("\n");
-
-  exit(0);
-}
