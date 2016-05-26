@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
+import sys
 import naje
 
 src = []
-with open('test.nabk') as f:
+with open(sys.argv[1]) as f:
     src = f.readlines()
 
 for line in src:
@@ -26,3 +27,10 @@ for line in src:
                         ignore = True
                     elif ignore != True:
                         print('lit', i)
+            if tokens[0] == 'raw:':
+                ignore = False
+                for i in tokens[1:]:
+                    if i == '#':
+                        ignore = True
+                    elif ignore != True:
+                        print(i)

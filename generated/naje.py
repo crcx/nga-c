@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 
+output = ''
 labels = []
 resolve = []
 memory = []
@@ -56,9 +57,9 @@ def save(filename):
             file.write(struct.pack('i', memory[j]))
             j = j + 1
 def preamble():
-    comma(1)
-    comma(0)
-    comma(7)
+    comma(1)  # LIT
+    comma(0)  # value will be patched by main:
+    comma(7)  # JUMP
 def patch_entry():
     memory[1] = lookup('main')
 def clean_source(raw):
@@ -82,6 +83,12 @@ def is_label(token):
     else:
         return False
 
+def is_directive(token):
+    if token[0:1] == '.':
+        return True
+    else:
+        return False
+
 def is_inst(token):
     if map_to_inst(token) == -1:
         return False
@@ -100,11 +107,19 @@ def handle_lit(line):
             print('LIT encountered with a value that is not an integer or label')
             print(line)
             exit()
+def handle_directive(line):
+    global output
+    parts = line.split()
+    token = line[0:2]
+    if token == '.o': output = parts[1]
+    if token == '.d': comma(int(parts[1]))
 def assemble(line):
     token = line[0:2]
     if is_label(token):
         labels.append((line[1:], i))
         print('label = ', line, '@', i)
+    elif is_directive(token):
+        handle_directive(line)
     elif is_inst(token):
         op = map_to_inst(token)
         comma(op)
@@ -129,7 +144,10 @@ if __name__ == '__main__':
     patch_entry()
 
     if len(sys.argv) < 3:
-        save('output.nga')
+        if output == '':
+            save('output.nga')
+        else:
+            save(output)
     else:
         save(sys.argv[2])
 

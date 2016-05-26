@@ -273,9 +273,12 @@ void ngaProcessOpcode() {
 #ifdef STANDALONE
 int main(int argc, char **argv) {
   ngaPrepare();
-  ngaLoadImage("ngaImage");
+  if (argc == 2)
+      ngaLoadImage(argv[1]);
+  else
+      ngaLoadImage("ngaImage");
 
-  CELL opcode;
+  CELL opcode, i;
 
   ip = 0;
   while (ip < IMAGE_SIZE) {
@@ -289,6 +292,10 @@ int main(int argc, char **argv) {
     }
     ip++;
   }
+
+  for (i = 1; i <= sp; i++)
+    printf("%d ", data[i]);
+  printf("\n");
   exit(0);
 }
 #endif
