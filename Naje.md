@@ -3,9 +3,12 @@
 This is a minimal assembler for the Nga virtual machine instruction set. It
 provides:
 
+* single pass implementation
 * labels
 * literals (integers, pointers to labels)
 * symbolic names for all instructions
+* capacity to set output filename
+* capacity to inline data
 
 Naje is intended to be a stepping stone for supporting larger applications.
 It's not designed to be easy or fun to use, just to provide the absolute core
@@ -31,6 +34,7 @@ for the instruction and one for the value to push to the stack.
 
 Naje provides a simple syntax. A short example:
 
+    .output test.nga
     :add
       add
       return
@@ -51,24 +55,60 @@ Naje provides a simple syntax. A short example:
       call
       end
 
-Blank lines are ok, one instruction per line, labels start with a colon. A
-**lit** can be followed by a number or a label name. Labels must be defined
-before they can be used.
+Delving a bit deeper:
+
+* Blank lines are ok and will be stripped out
+* One instruction (or assembler directive) per line
+* Labels start with a colon
+* A **lit** can be followed by a number or a label name
+* Labels must be defined before they can be used
+
+### Assembler Directives
+
+Naje provides two directives which can be useful:
+
+**.o**utput is used to set the name of the file that will be created with
+the Nga bytecode. If none is set, the filename will be defaulted to
+*output.nga*
+
+Example:
+
+    .output sample.nga
+
+**.d**ata is used to inline raw data into the generated image.
+
+Example:
+
+    .data 98
+    .data 99
+    .data 100
+
+### Technical Notes
+
+Naje has a trivial parser. In deciding how to deal with a line, it will first
+strip it to its core elements, then proceed. So given a line like:
+
+    lit 100 ... push 100 to the stack! ...
+
+Naje will take the first two characters of the first token (*li*) to identify
+the instruction and the second token for the value. The rest is ignored.
 
 ## The Code
 
 First up, the preamble, and some variables.
 
-| name   | usage                                  |
-| ------ | -------------------------------------- |
-| labels | stores a list of labels and pointers   |
-| memory | stores all values                      |
-| i      | pointer to the current memory location |
+| name   | usage                                               |
+| ------ | --------------------------------------------------- |
+| output | stores the name of the file for the assembled image |
+| labels | stores a list of labels and pointers                |
+| memory | stores all values                                   |
+| i      | pointer to the current memory location              |
 
 ````
 #!/usr/bin/env python3
 import sys
 
+output = ''
 labels = []
 resolve = []
 memory = []
@@ -155,9 +195,9 @@ offset 0, which will be patched by a later routine.
 
 ````
 def preamble():
-    comma(1)
-    comma(0)
-    comma(7)
+    comma(1)  # LIT
+    comma(0)  # value will be patched by main:
+    comma(7)  # JUMP
 ````
 
 **patch_entry()** replaces the target of the jump compiled by **preamble()**
@@ -202,6 +242,12 @@ def is_label(token):
     else:
         return False
 
+def is_directive(token):
+    if token[0:1] == '.':
+        return True
+    else:
+        return False
+
 def is_inst(token):
     if map_to_inst(token) == -1:
         return False
@@ -236,6 +282,18 @@ def handle_lit(line):
             exit()
 ````
 
+For assembler directives we have a single handler. There are currently two
+directives; one for setting the **output** filename and one for inlining data.
+
+````
+def handle_directive(line):
+    global output
+    parts = line.split()
+    token = line[0:2]
+    if token == '.o': output = parts[1]
+    if token == '.d': comma(int(parts[1]))
+````
+
 Now for the meat of the assembler. This takes a single line of input, checks
 to see if it's a label or instruction, and lays down the appropriate code,
 calling whatever helper functions are needed (**handle_lit()** being notable).
@@ -246,6 +304,8 @@ def assemble(line):
     if is_label(token):
         labels.append((line[1:], i))
         print('label = ', line, '@', i)
+    elif is_directive(token):
+        handle_directive(line)
     elif is_inst(token):
         op = map_to_inst(token)
         comma(op)
@@ -275,7 +335,10 @@ if __name__ == '__main__':
     patch_entry()
 
     if len(sys.argv) < 3:
-        save('output.nga')
+        if output == '':
+            save('output.nga')
+        else:
+            save(output)
     else:
         save(sys.argv[2])
 
