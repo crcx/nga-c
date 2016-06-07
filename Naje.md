@@ -21,7 +21,7 @@ short table:
 
     0  nop        7  jump      14  gt        21  and
     1  lit <v>    8  call      15  fetch     22  or
-    2  dup        9  if        16  store     23  xor
+    2  dup        9  cjump     16  store     23  xor
     3  drop      10  return    17  add       24  shift
     4  swap      11  eq        18  sub       25  zret
     5  push      12  neq       19  mul       26  end
@@ -156,7 +156,7 @@ def map_to_inst(s):
     if s == 'po': inst = 6
     if s == 'ju': inst = 7
     if s == 'ca': inst = 8
-    if s == 'if': inst = 9
+    if s == 'cj': inst = 9
     if s == 're': inst = 10
     if s == 'eq': inst = 11
     if s == 'ne': inst = 12

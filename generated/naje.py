@@ -30,7 +30,7 @@ def map_to_inst(s):
     if s == 'po': inst = 6
     if s == 'ju': inst = 7
     if s == 'ca': inst = 8
-    if s == 'if': inst = 9
+    if s == 'cj': inst = 9
     if s == 're': inst = 10
     if s == 'eq': inst = 11
     if s == 'ne': inst = 12

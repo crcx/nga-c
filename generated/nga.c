@@ -16,7 +16,7 @@
 #define CELLSIZE     32
 enum vm_opcode {
   VM_NOP,  VM_LIT,    VM_DUP,   VM_DROP,    VM_SWAP,   VM_PUSH,  VM_POP,
-  VM_JUMP, VM_CALL,   VM_IF,    VM_RETURN,  VM_EQ,     VM_NEQ,   VM_LT,
+  VM_JUMP, VM_CALL,   VM_CJUMP, VM_RETURN,  VM_EQ,     VM_NEQ,   VM_LT,
   VM_GT,   VM_FETCH,  VM_STORE, VM_ADD,     VM_SUB,    VM_MUL,   VM_DIVMOD,
   VM_AND,  VM_OR,     VM_XOR,   VM_SHIFT,   VM_ZRET,   VM_END
 };
@@ -86,7 +86,7 @@ void ngaDisplayStats()
   printf("POP:     %d\n", stats[VM_POP]);
   printf("JUMP:    %d\n", stats[VM_JUMP]);
   printf("CALL:    %d\n", stats[VM_CALL]);
-  printf("IF:      %d\n", stats[VM_IF]);
+  printf("CJUMP:   %d\n", stats[VM_CJUMP]);
   printf("RETURN:  %d\n", stats[VM_RETURN]);
   printf("EQ:      %d\n", stats[VM_EQ]);
   printf("NEQ:     %d\n", stats[VM_NEQ]);
@@ -157,18 +157,14 @@ void inst_call() {
   inst_drop();
   ngaStatsCheckMax();
 }
-void inst_if() {
-  int a, b, c;
+void inst_cjump() {
+  int a, b;
   rp++;
   TORS = ip;
   a = TOS; inst_drop();  /* False */
-  b = TOS; inst_drop();  /* True  */
-  c = TOS; inst_drop();  /* Flag  */
-  if (c != 0)
-    ip = b - 1;
-  else
+  b = TOS; inst_drop();  /* Flag  */
+  if (b != 0)
     ip = a - 1;
-  ngaStatsCheckMax();
 }
 void inst_return() {
   ip = TORS;
@@ -262,7 +258,7 @@ typedef void (*Handler)(void);
 
 Handler instructions[NUM_OPS] = {
   inst_nop, inst_lit, inst_dup, inst_drop, inst_swap, inst_push, inst_pop,
-  inst_jump, inst_call, inst_if, inst_return, inst_eq, inst_neq, inst_lt,
+  inst_jump, inst_call, inst_cjump, inst_return, inst_eq, inst_neq, inst_lt,
   inst_gt, inst_fetch, inst_store, inst_add, inst_sub, inst_mul, inst_divmod,
   inst_and, inst_or, inst_xor, inst_shift, inst_zret, inst_end
 };

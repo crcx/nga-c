@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import sys
-import naje
 
 src = []
 with open(sys.argv[1]) as f:
@@ -10,27 +9,23 @@ for line in src:
     tokens = line.strip().split()
     if len(tokens) > 0:
         if len(tokens) == 1:
-            print(tokens[0])
+            if tokens[0][0:1] == ':':
+                print(tokens[0])
+            else:
+                print(tokens[0][0:2])
         else:
             if tokens[0] == 'lit' or tokens[0] == 'li':
-                print('lit', tokens[1])
+                print('li', tokens[1])
             if tokens[0] == 'call':
-                print('lit', tokens[1])
-                print('call')
+                print('li', tokens[1])
+                print('ca')
             if tokens[0] == 'jump':
-                print('lit', tokens[1])
-                print('jump')
+                print('li', tokens[1])
+                print('ju')
             if tokens[0] == 'data:':
                 ignore = False
                 for i in tokens[1:]:
                     if i == '#':
                         ignore = True
                     elif ignore != True:
-                        print('lit', i)
-            if tokens[0] == 'raw:':
-                ignore = False
-                for i in tokens[1:]:
-                    if i == '#':
-                        ignore = True
-                    elif ignore != True:
-                        print(i)
+                        print('.d', i)
