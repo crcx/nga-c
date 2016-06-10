@@ -32,3 +32,4 @@ if __name__ == '__main__':
     convert('Nga_Python.md', 'generated/nga.py')
     convert('Naje.md', 'generated/naje.py')
     convert('Nabk.md', 'generated/nabk.py')
+    convert('Ngita.md', 'ngita.c')
