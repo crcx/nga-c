@@ -18,18 +18,10 @@ First up, a few standard headers.
 #include <termios.h>
 ````
 
-And then declare headers for the stuff from Nga that we use.
+And then include Nga.
 
 ````
-#define CELL         int32_t
-CELL ngaLoadImage(char *imageFile);
-void ngaPrepare();
-void ngaStatsCheckMax();
-void ngaProcessOpcode();
-void ngaDisplayStats();
-#define IMAGE_SIZE   262144
-#define TOS  data[sp]
-extern CELL ip, sp, rsp, memory[], data[];
+#include "nga.c"
 ````
 
 ### Opcode Processor
@@ -45,6 +37,7 @@ void processOpcodes() {
     else
       switch(opcode) {
         case 90: printf("%c", (char)data[sp]);
+                 sp--;
                  break;
         case 91: sp++;
                  TOS = getc(stdin);
