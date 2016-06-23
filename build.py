@@ -27,8 +27,7 @@ def convert(s, d):
             file.write('\n')
 
 if __name__ == '__main__':
-    convert('Nga.md', 'generated/nga.c')
-    convert('Nga_C_Interface.md', 'generated/interface.c')
-    convert('Naje.md', 'generated/naje.py')
-    convert('Nabk.md', 'generated/nabk.py')
+    convert('Nga.md', 'nga.c')
     convert('Ngita.md', 'ngita.c')
+    convert('sdk/Naje.md', 'sdk/naje.py')
+    convert('sdk/Nabk.md', 'sdk/nabk.py')
