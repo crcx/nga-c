@@ -5,15 +5,33 @@
 Nga is a minimalistic virtual machine emulating a dual stack computer with
 a simple instruction set.
 
-This is an implementation of Nga in C. It is intended to serve as the standard
-reference implemenation.
+This is the specification and reference implementation of Nga. All code
+provided is in the C language.
 
-## The Code
+## Quick Overview of the VM Model
 
-#### Preamble
+**Memory** is a single, linear addressing space of signed integer values. Each
+location is called a **cell**. Addressing starts at zero and counts up.
 
-The code begins with the copyright block. Several people contributed to Ngaro
-(the direct predecessor of Nga).
+The VM does not expose any registers via the instruction set. This
+implementation makes use of an *instruction pointer* or **IP**, *data stack
+pointer* or **SP**, and *address stack pointer* or **RP**.
+
+Nga provides two LIFO stacks. The primary one is for data and the secondary
+one is used to hold return addresses for subroutine calls. Stack depths may
+vary depending on the underlying hardware and application needs.
+
+Instructions each take one cell. The **LIT** instruction requires a value in
+the following cell; it will push this value to the stack when executed.
+
+Instruction processing: the **IP** is incremented and the opcode at the
+current address is invoked. This process then repeats. Execution ends if
+the **END** instruction is run or end of memory is reached.
+
+## Legal
+
+Nga derives from my earlier work on Ngaro. The following block lists the
+people who helped work on the C implementation.
 
 ````
 /* Nga ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -25,7 +43,9 @@ The code begins with the copyright block. Several people contributed to Ngaro
    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 ````
 
-Next up, include the needed headers.
+## Boilerplate
+
+Since the code is in C, we have to include some headers.
 
 ````
 #include <stdio.h>
@@ -34,7 +54,7 @@ Next up, include the needed headers.
 #include <string.h>
 ````
 
-#### Configuration
+## Configuration
 
 To make it easier to adapt Nga to a specific target, we keep some important
 constants grouped together at the start of the file.
@@ -43,7 +63,8 @@ These defaults are targeted towards a 32-bit model, with several megabytes of
 RAM.
 
 For smaller targets, drop the IMAGE_SIZE considerably as that's the biggest
-pool of memory needed.
+pool of memory needed. You can also modify the CELL value to target smaller
+memory sizes (16, 32, and 64 bit models have been used in the past).
 
 ````
 #define CELL         int32_t
@@ -53,7 +74,7 @@ pool of memory needed.
 #define CELLSIZE     32
 ````
 
-#### Naming The Instructions
+## Numbering The Instructions
 
 For this implementation an enum is used to name each of the instructions. For
 reference, here are the instructions and their corresponding values (in
@@ -77,9 +98,11 @@ enum vm_opcode {
 #define NUM_OPS VM_END + 1
 ````
 
+## VM State
+
 The VM state is held in a few global variables. (It'd be better to use a
 struct here, as Ngaro does, but this makes everything else a bit less
-readable.
+readable.)
 
 Some things to note:
 
@@ -96,6 +119,9 @@ There are three additional items that aren't strictly necessary:
 * **max_sp** holds the highest value **sp** has been assigned to
 * **max_rp** holds the highest value **rp** has been assigned to
 
+The statistics tracking functionality may be removed from the reference
+implementation in the near future.
+
 ````
 CELL sp, rp, ip;
 CELL data[STACK_DEPTH];
@@ -105,9 +131,10 @@ int stats[NUM_OPS];
 int max_sp, max_rp;
 ````
 
-The final thing before we enter the actual code is a couple of snippits that
-we let the preprocessor inline for us. These are intended to make the code a
-bit more readable later.
+## A Little More Boilerplate
+
+Here we have a few bits of shorthand that'll be handled by the C preprocessor.
+These are used for readability purposes.
 
 ````
 #define TOS  data[sp]
@@ -115,9 +142,10 @@ bit more readable later.
 #define TORS address[rp]
 ````
 
-#### Loading an Image File
+## Loading an Image File
 
-A standard image file is a raw memory dump of 32-bit, signed integer values.
+A standard image file is a raw memory dump of signed integer values. (The size
+of these is determined by the value of CELL; Nga defaults to 32-bit)
 
 What we do here is:
 
@@ -151,7 +179,7 @@ CELL ngaLoadImage(char *imageFile) {
 }
 ````
 
-#### Preparations
+## Preparations
 
 This function initializes all of the variables and fills the arrays with
 known values. Memory is filled with **VM_NOP** instructions; the others are
@@ -175,7 +203,7 @@ void ngaPrepare() {
 }
 ````
 
-#### Statistics
+## Statistics
 
 This implementation of Nga tracks the number of times each instruction is
 reached during an application's run. It also tracks the maximum stack depth
@@ -245,7 +273,7 @@ void ngaDisplayStats()
 ````
 
 
-#### The Instructions
+## The Instructions
 
 I've chosen to implement each instruction as a separate function. This keeps
 them shorter, and lets me simplify the instruction processor later on.
@@ -283,7 +311,7 @@ void inst_dup() {
 }
 ````
 
-**inst_drop();** removes the top item from the stack.
+**DROP** removes the top item from the stack.
 
 ````
 void inst_drop() {
@@ -457,7 +485,7 @@ void inst_store() {
 }
 ````
 
-**ADD* adds two numbers together.
+**ADD** adds two numbers together.
 
 ````
 void inst_add() {

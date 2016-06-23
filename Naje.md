@@ -1,9 +1,9 @@
 # Naje
 
-This is a minimal assembler for the Nga virtual machine instruction set. It
+This is a two pass assembler for the Nga virtual machine instruction set. It
 provides:
 
-* single pass implementation
+* two pass implementation
 * labels
 * literals (integers, pointers to labels)
 * symbolic names for all instructions
@@ -43,15 +43,15 @@ Naje provides a simple syntax. A short example:
       return
     :increment
       lit 1
-      lit add
+      lit &add
       call
       return
     :main
       lit 100
       lit 95
-      lit subtract
+      lit &subtract
       call
-      lit increment
+      lit &increment
       call
       end
 
@@ -61,7 +61,6 @@ Delving a bit deeper:
 * One instruction (or assembler directive) per line
 * Labels start with a colon
 * A **lit** can be followed by a number or a label name
-* Labels must be defined before they can be used
 
 ### Assembler Directives
 
@@ -135,7 +134,10 @@ def lookup(id):
 ````
 def comma(v):
     global memory, i
-    memory.append(int(v))
+    try:
+        memory.append(int(v))
+    except ValueError:
+        memory.append(v)
     i = i + 1
 ````
 
@@ -260,7 +262,7 @@ first is the actual opcode (1), the second (stored in the following cell) is
 the value to push to the stack. A source line is setup like:
 
     lit 100
-    lit increment
+    lit &increment
 
 In the first case, we want to compile the number 100 in the following cell.
 But in the second, we need to lookup the *:increment* label and compile a
@@ -273,13 +275,8 @@ def handle_lit(line):
         a = int(parts[1])
         comma(a)
     except:
-        xt = lookup(parts[1])
-        if xt != -1:
-            comma(xt)
-        else:
-            print('LIT encountered with a value that is not an integer or label')
-            print(line)
-            exit()
+        xt = str(parts[1])
+        comma(xt)
 ````
 
 For assembler directives we have a single handler. There are currently two
@@ -317,6 +314,25 @@ def assemble(line):
         exit()
 ````
 
+**resolve_labels()** is the second pass; it converts any labels into addresses.
+
+````
+def resolve_labels():
+    global memory
+    results = []
+    for cell in memory:
+        value = 0
+        try:
+            value = int(cell)
+        except ValueError:
+            value = lookup(cell[1:])
+            if value == -1:
+                print('Label not found!')
+                exit()
+        results.append(value)
+    memory = results
+````
+
 And finally we can tie everything together into a coherent package.
 
 ````
@@ -333,6 +349,7 @@ if __name__ == '__main__':
     for line in src:
         assemble(line)
     patch_entry()
+    resolve_labels()
 
     if len(sys.argv) < 3:
         if output == '':
