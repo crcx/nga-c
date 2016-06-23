@@ -41,7 +41,6 @@ void processOpcodes() {
                  break;
         case 91: sp++;
                  TOS = getc(stdin);
-                 ngaStatsCheckMax();
                  break;
       }
     ip++;
