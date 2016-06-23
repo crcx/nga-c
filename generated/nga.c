@@ -25,8 +25,6 @@ CELL sp, rp, ip;
 CELL data[STACK_DEPTH];
 CELL address[ADDRESSES];
 CELL memory[IMAGE_SIZE];
-int stats[NUM_OPS];
-int max_sp, max_rp;
 #define TOS  data[sp]
 #define NOS  data[sp-1]
 #define TORS address[rp]
@@ -52,7 +50,7 @@ CELL ngaLoadImage(char *imageFile) {
   return imageSize;
 }
 void ngaPrepare() {
-  ip = sp = rp = max_sp = max_rp = 0;
+  ip = sp = rp = 0;
 
   for (ip = 0; ip < IMAGE_SIZE; ip++)
     memory[ip] = VM_NOP;
@@ -62,54 +60,6 @@ void ngaPrepare() {
 
   for (ip = 0; ip < ADDRESSES; ip++)
     address[ip] = 0;
-
-  for (ip = 0; ip < NUM_OPS; ip++)
-    stats[ip] = 0;
-}
-void ngaStatsCheckMax() {
-  if (max_sp < sp)
-    max_sp = sp;
-  if (max_rp < rp)
-    max_rp = rp;
-}
-void ngaDisplayStats()
-{
-  int s, i;
-
-  printf("Runtime Statistics\n");
-  printf("NOP:     %d\n", stats[VM_NOP]);
-  printf("LIT:     %d\n", stats[VM_LIT]);
-  printf("DUP:     %d\n", stats[VM_DUP]);
-  printf("DROP:    %d\n", stats[VM_DROP]);
-  printf("SWAP:    %d\n", stats[VM_SWAP]);
-  printf("PUSH:    %d\n", stats[VM_PUSH]);
-  printf("POP:     %d\n", stats[VM_POP]);
-  printf("JUMP:    %d\n", stats[VM_JUMP]);
-  printf("CALL:    %d\n", stats[VM_CALL]);
-  printf("CJUMP:   %d\n", stats[VM_CJUMP]);
-  printf("RETURN:  %d\n", stats[VM_RETURN]);
-  printf("EQ:      %d\n", stats[VM_EQ]);
-  printf("NEQ:     %d\n", stats[VM_NEQ]);
-  printf("LT:      %d\n", stats[VM_LT]);
-  printf("GT:      %d\n", stats[VM_GT]);
-  printf("FETCH:   %d\n", stats[VM_FETCH]);
-  printf("STORE:   %d\n", stats[VM_STORE]);
-  printf("ADD:     %d\n", stats[VM_ADD]);
-  printf("SUB:     %d\n", stats[VM_SUB]);
-  printf("MUL:     %d\n", stats[VM_MUL]);
-  printf("DIVMOD:  %d\n", stats[VM_DIVMOD]);
-  printf("AND:     %d\n", stats[VM_AND]);
-  printf("OR:      %d\n", stats[VM_OR]);
-  printf("XOR:     %d\n", stats[VM_XOR]);
-  printf("SHIFT:   %d\n", stats[VM_SHIFT]);
-  printf("ZRET:    %d\n", stats[VM_ZRET]);
-  printf("END:     %d\n", stats[VM_END]);
-  printf("Max sp:  %d\n", max_sp);
-  printf("Max rp:  %d\n", max_rp);
-
-  for (s = i = 0; s < NUM_OPS; s++)
-    i += stats[s];
-  printf("Total opcodes processed: %d\n", i);
 }
 void inst_nop() {
 }
@@ -117,12 +67,10 @@ void inst_lit() {
   sp++;
   ip++;
   TOS = memory[ip];
-  ngaStatsCheckMax();
 }
 void inst_dup() {
   sp++;
   data[sp] = NOS;
-  ngaStatsCheckMax();
 }
 void inst_drop() {
   data[sp] = 0;
@@ -139,7 +87,6 @@ void inst_push() {
   rp++;
   TORS = TOS;
   inst_drop();
-  ngaStatsCheckMax();
 }
 void inst_pop() {
   sp++;
@@ -155,7 +102,6 @@ void inst_call() {
   TORS = ip;
   ip = TOS - 1;
   inst_drop();
-  ngaStatsCheckMax();
 }
 void inst_cjump() {
   int a, b;
@@ -263,7 +209,6 @@ Handler instructions[NUM_OPS] = {
   inst_and, inst_or, inst_xor, inst_shift, inst_zret, inst_end
 };
 void ngaProcessOpcode() {
-  stats[memory[ip]]++;
   instructions[memory[ip]]();
 }
 #ifdef STANDALONE

@@ -113,22 +113,11 @@ There are stack pointers (**sp** for **data** and **rp** for **address**),
 and an instruction pointer (**ip**). These are *not* exposed via the
 instruction set.
 
-There are three additional items that aren't strictly necessary:
-
-* **stats** is used to hold the number of times an instruction is executed
-* **max_sp** holds the highest value **sp** has been assigned to
-* **max_rp** holds the highest value **rp** has been assigned to
-
-The statistics tracking functionality may be removed from the reference
-implementation in the near future.
-
 ````
 CELL sp, rp, ip;
 CELL data[STACK_DEPTH];
 CELL address[ADDRESSES];
 CELL memory[IMAGE_SIZE];
-int stats[NUM_OPS];
-int max_sp, max_rp;
 ````
 
 ## A Little More Boilerplate
@@ -187,7 +176,7 @@ populated with zeros.
 
 ````
 void ngaPrepare() {
-  ip = sp = rp = max_sp = max_rp = 0;
+  ip = sp = rp = 0;
 
   for (ip = 0; ip < IMAGE_SIZE; ip++)
     memory[ip] = VM_NOP;
@@ -197,81 +186,8 @@ void ngaPrepare() {
 
   for (ip = 0; ip < ADDRESSES; ip++)
     address[ip] = 0;
-
-  for (ip = 0; ip < NUM_OPS; ip++)
-    stats[ip] = 0;
 }
 ````
-
-## Statistics
-
-This implementation of Nga tracks the number of times each instruction is
-reached during an application's run. It also tracks the maximum stack depth
-for both stacks.
-
-This information can be useful when debugging and profiling code. If your
-host system is resource contrained it may be worth dropping this to save a
-little space and processing time.
-
-**ngaStatsCheckMax()** is used by a few of the instructions to check the
-current stack depths against the previous maximum and updates it if
-necessary. Only instructions that push more than they consume need to call
-this. These are **LIT**, **DUP**, **PUSH**, **CALL**, and **IF**.
-
-````
-void ngaStatsCheckMax() {
-  if (max_sp < sp)
-    max_sp = sp;
-  if (max_rp < rp)
-    max_rp = rp;
-}
-````
-
-The other function of interest is **ngaDisplayStats()**. It provides the basic
-output on the usage of each instruction and the maximum stack depths.
-
-````
-void ngaDisplayStats()
-{
-  int s, i;
-
-  printf("Runtime Statistics\n");
-  printf("NOP:     %d\n", stats[VM_NOP]);
-  printf("LIT:     %d\n", stats[VM_LIT]);
-  printf("DUP:     %d\n", stats[VM_DUP]);
-  printf("DROP:    %d\n", stats[VM_DROP]);
-  printf("SWAP:    %d\n", stats[VM_SWAP]);
-  printf("PUSH:    %d\n", stats[VM_PUSH]);
-  printf("POP:     %d\n", stats[VM_POP]);
-  printf("JUMP:    %d\n", stats[VM_JUMP]);
-  printf("CALL:    %d\n", stats[VM_CALL]);
-  printf("CJUMP:   %d\n", stats[VM_CJUMP]);
-  printf("RETURN:  %d\n", stats[VM_RETURN]);
-  printf("EQ:      %d\n", stats[VM_EQ]);
-  printf("NEQ:     %d\n", stats[VM_NEQ]);
-  printf("LT:      %d\n", stats[VM_LT]);
-  printf("GT:      %d\n", stats[VM_GT]);
-  printf("FETCH:   %d\n", stats[VM_FETCH]);
-  printf("STORE:   %d\n", stats[VM_STORE]);
-  printf("ADD:     %d\n", stats[VM_ADD]);
-  printf("SUB:     %d\n", stats[VM_SUB]);
-  printf("MUL:     %d\n", stats[VM_MUL]);
-  printf("DIVMOD:  %d\n", stats[VM_DIVMOD]);
-  printf("AND:     %d\n", stats[VM_AND]);
-  printf("OR:      %d\n", stats[VM_OR]);
-  printf("XOR:     %d\n", stats[VM_XOR]);
-  printf("SHIFT:   %d\n", stats[VM_SHIFT]);
-  printf("ZRET:    %d\n", stats[VM_ZRET]);
-  printf("END:     %d\n", stats[VM_END]);
-  printf("Max sp:  %d\n", max_sp);
-  printf("Max rp:  %d\n", max_rp);
-
-  for (s = i = 0; s < NUM_OPS; s++)
-    i += stats[s];
-  printf("Total opcodes processed: %d\n", i);
-}
-````
-
 
 ## The Instructions
 
@@ -297,7 +213,6 @@ void inst_lit() {
   sp++;
   ip++;
   TOS = memory[ip];
-  ngaStatsCheckMax();
 }
 ````
 
@@ -307,7 +222,6 @@ void inst_lit() {
 void inst_dup() {
   sp++;
   data[sp] = NOS;
-  ngaStatsCheckMax();
 }
 ````
 
@@ -339,7 +253,6 @@ void inst_push() {
   rp++;
   TORS = TOS;
   inst_drop();
-  ngaStatsCheckMax();
 }
 ````
 
@@ -370,7 +283,6 @@ void inst_call() {
   TORS = ip;
   ip = TOS - 1;
   inst_drop();
-  ngaStatsCheckMax();
 }
 ````
 
@@ -605,11 +517,9 @@ Handler instructions[NUM_OPS] = {
 ````
 
 And now **ngaProcessOpcode()** which calls the functions in the jump table.
-This also updates the statistics for each.
 
 ````
 void ngaProcessOpcode() {
-  stats[memory[ip]]++;
   instructions[memory[ip]]();
 }
 ````
