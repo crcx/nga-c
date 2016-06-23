@@ -17,7 +17,10 @@ def lookup(id):
     return -1
 def comma(v):
     global memory, i
-    memory.append(int(v))
+    try:
+        memory.append(int(v))
+    except ValueError:
+        memory.append(v)
     i = i + 1
 def map_to_inst(s):
     inst = -1
@@ -58,7 +61,7 @@ def save(filename):
             j = j + 1
 def preamble():
     comma(1)  # LIT
-    comma(0)  # value will be patched by main:
+    comma(0)  # value will be patched to point to :main
     comma(7)  # JUMP
 def patch_entry():
     memory[1] = lookup('main')
@@ -100,13 +103,8 @@ def handle_lit(line):
         a = int(parts[1])
         comma(a)
     except:
-        xt = lookup(parts[1])
-        if xt != -1:
-            comma(xt)
-        else:
-            print('LIT encountered with a value that is not an integer or label')
-            print(line)
-            exit()
+        xt = str(parts[1])
+        comma(xt)
 def handle_directive(line):
     global output
     parts = line.split()
@@ -129,6 +127,20 @@ def assemble(line):
         print('Line was not a label or instruction.')
         print(line)
         exit()
+def resolve_labels():
+    global memory
+    results = []
+    for cell in memory:
+        value = 0
+        try:
+            value = int(cell)
+        except ValueError:
+            value = lookup(cell[1:])
+            if value == -1:
+                print('Label not found!')
+                exit()
+        results.append(value)
+    memory = results
 if __name__ == '__main__':
     if len(sys.argv) < 3:
         raw = []
@@ -141,6 +153,7 @@ if __name__ == '__main__':
     preamble()
     for line in src:
         assemble(line)
+    resolve_labels()
     patch_entry()
 
     if len(sys.argv) < 3:

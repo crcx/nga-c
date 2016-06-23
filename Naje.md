@@ -1,17 +1,16 @@
 # Naje
 
-This is a two pass assembler for the Nga virtual machine instruction set. It
-provides:
+Naje is a minimalistic assembler for the Nga instruction set. It provides:
 
-* two pass implementation
-* labels
-* literals (integers, pointers to labels)
-* symbolic names for all instructions
-* capacity to set output filename
-* capacity to inline data
+* Two passes: assemble, then resolve lables
+* Lables
+* Basic literals
+* Symbolic names for all instructions
+* Facilities for inlining simple data
+* Directives for setting output filename
 
 Naje is intended to be a stepping stone for supporting larger applications.
-It's not designed to be easy or fun to use, just to provide the absolute core
+It wasn't designed to be easy or fun to use, just to provide the essentials
 needed to build useful things.
 
 ## Instruction Set
@@ -61,6 +60,7 @@ Delving a bit deeper:
 * One instruction (or assembler directive) per line
 * Labels start with a colon
 * A **lit** can be followed by a number or a label name
+* References to labels must start with an &
 
 ### Assembler Directives
 
@@ -198,7 +198,7 @@ offset 0, which will be patched by a later routine.
 ````
 def preamble():
     comma(1)  # LIT
-    comma(0)  # value will be patched by main:
+    comma(0)  # value will be patched to point to :main
     comma(7)  # JUMP
 ````
 
@@ -348,8 +348,8 @@ if __name__ == '__main__':
     preamble()
     for line in src:
         assemble(line)
-    patch_entry()
     resolve_labels()
+    patch_entry()
 
     if len(sys.argv) < 3:
         if output == '':
