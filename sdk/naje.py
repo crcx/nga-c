@@ -138,6 +138,7 @@ def resolve_labels():
             value = lookup(cell[1:])
             if value == -1:
                 print('Label not found!')
+                print('Label: ' + cell[1:])
                 exit()
         results.append(value)
     memory = results
