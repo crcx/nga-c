@@ -50,7 +50,7 @@ documentation:
 Naje allows for pushing values to the stack with **lit**:
 
     lit 100
-    lit pointername
+    lit &pointername
 
 Nabk adds this to allow multiple values:
 
@@ -61,10 +61,10 @@ Nabk adds this to allow multiple values:
 Nga's **CALL** and **JUMP** instructions take the address from the stack. The
 canonical way to do a jump or call is:
 
-    lit pointername
+    lit &pointername
     call
 
-    lit pointername
+    lit &pointername
     jump
 
 Nabk allows calls or jumps with a single line, making intent clearer:
@@ -89,15 +89,16 @@ for line in src:
             if tokens[0][0:1] == ':':
                 print(tokens[0])
             else:
-                print(tokens[0][0:2])
+                if tokens[0][0:1] != '#':
+                    print(tokens[0][0:2])
         else:
             if tokens[0] == 'lit' or tokens[0] == 'li':
                 print('li', tokens[1])
             if tokens[0] == 'call':
-                print('li', tokens[1])
+                print('li &' + tokens[1])
                 print('ca')
             if tokens[0] == 'jump':
-                print('li', tokens[1])
+                print('li &' + tokens[1])
                 print('ju')
             if tokens[0] == 'data:':
                 ignore = False
