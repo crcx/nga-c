@@ -9,9 +9,11 @@ void processOpcodes() {
   ip = 0;
   while (ip < IMAGE_SIZE) {
     opcode = memory[ip];
-    if (opcode >= 0 && opcode < 27)
-      ngaProcessOpcode();
-    else
+    if (ngaValidatePackedOpcodes(opcode) != 0) {
+      ngaProcessPackedOpcodes(opcode);
+    } else if (opcode >= 0 && opcode < 27) {
+      ngaProcessOpcode(opcode);
+    } else {
       switch(opcode) {
         case 90: printf("%c", (char)data[sp]);
                  sp--;
@@ -20,6 +22,7 @@ void processOpcodes() {
                  TOS = getc(stdin);
                  break;
       }
+    }
     ip++;
   }
 }

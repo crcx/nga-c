@@ -519,8 +519,52 @@ Handler instructions[NUM_OPS] = {
 And now **ngaProcessOpcode()** which calls the functions in the jump table.
 
 ````
-void ngaProcessOpcode() {
-  instructions[memory[ip]]();
+void ngaProcessOpcode(CELL opcode) {
+  instructions[opcode]();
+}
+````
+
+Nga also allows (optionally) support for packing multiple instructions per
+cell. This has benefits on memory constained targets as four instructions
+can be packed into each cell, reducing memory usage significantly.
+
+Consider:
+
+    lit 100
+    lit 200
+    add
+
+In a standard image this will be five cells. One for each instruction and
+one for each data item. With packed instructions it would be three cells:
+one for each four instructions (we only have three here, so the unused one
+is a simple NOP) and one for each data item.
+
+This implementation provides two functions for handling these. The first
+takes a packed instruction and validates each instruction as being valid.
+The second will process each of the stored opcodes.
+
+````
+int ngaValidatePackedOpcodes(CELL opcode) {
+  CELL raw = opcode;
+  CELL current;
+  int valid = -1;
+  int i;
+  for (i = 0; i < 4; i++) {
+    current = raw & 0xFF;
+    if (!(current >= 0 && current < 27))
+      valid = 0;
+    raw = raw >> 8;
+  }
+  return valid;
+}
+
+void ngaProcessPackedOpcodes(int opcode) {
+  CELL raw = opcode;
+  int i;
+  for (i = 0; i < 4; i++) {
+    ngaProcessOpcode(raw & 0xFF);
+    raw = raw >> 8;
+  }
 }
 ````
 
@@ -539,8 +583,10 @@ int main(int argc, char **argv) {
   ip = 0;
   while (ip < IMAGE_SIZE) {
     opcode = memory[ip];
-    if (opcode >= 0 && opcode < 27) {
-      ngaProcessOpcode();
+    if (ngaValidatePackedOpcodes(opcode) != 0) {
+      ngaProcessPackedOpcodes(opcode);
+    } else if (opcode >= 0 && opcode < 27) {
+      ngaProcessOpcode(opcode);
     } else {
       printf("Invalid instruction!\n");
       printf("At %d, opcode %d\n", ip, opcode);

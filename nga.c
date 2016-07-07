@@ -208,8 +208,30 @@ Handler instructions[NUM_OPS] = {
   inst_gt, inst_fetch, inst_store, inst_add, inst_sub, inst_mul, inst_divmod,
   inst_and, inst_or, inst_xor, inst_shift, inst_zret, inst_end
 };
-void ngaProcessOpcode() {
-  instructions[memory[ip]]();
+void ngaProcessOpcode(CELL opcode) {
+  instructions[opcode]();
+}
+int ngaValidatePackedOpcodes(CELL opcode) {
+  CELL raw = opcode;
+  CELL current;
+  int valid = -1;
+  int i;
+  for (i = 0; i < 4; i++) {
+    current = raw & 0xFF;
+    if (!(current >= 0 && current < 27))
+      valid = 0;
+    raw = raw >> 8;
+  }
+  return valid;
+}
+
+void ngaProcessPackedOpcodes(int opcode) {
+  CELL raw = opcode;
+  int i;
+  for (i = 0; i < 4; i++) {
+    ngaProcessOpcode(raw & 0xFF);
+    raw = raw >> 8;
+  }
 }
 #ifdef STANDALONE
 int main(int argc, char **argv) {
@@ -224,8 +246,10 @@ int main(int argc, char **argv) {
   ip = 0;
   while (ip < IMAGE_SIZE) {
     opcode = memory[ip];
-    if (opcode >= 0 && opcode < 27) {
-      ngaProcessOpcode();
+    if (ngaValidatePackedOpcodes(opcode) != 0) {
+      ngaProcessPackedOpcodes(opcode);
+    } else if (opcode >= 0 && opcode < 27) {
+      ngaProcessOpcode(opcode);
     } else {
       printf("Invalid instruction!\n");
       printf("At %d, opcode %d\n", ip, opcode);
