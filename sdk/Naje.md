@@ -96,12 +96,14 @@ the instruction and the second token for the value. The rest is ignored.
 
 First up, the preamble, and some variables.
 
-| name   | usage                                               |
-| ------ | --------------------------------------------------- |
-| output | stores the name of the file for the assembled image |
-| labels | stores a list of labels and pointers                |
-| memory | stores all values                                   |
-| i      | pointer to the current memory location              |
+| name    | usage                                               |
+| ------- | --------------------------------------------------- |
+| output  | stores the name of the file for the assembled image |
+| labels  | stores a list of labels and pointers                |
+| resolve |                                                     |
+| memory  | stores all values                                   |
+| packed  |                                                     |
+| i       | pointer to the current memory location              |
 
 ````
 #!/usr/bin/env python3
@@ -111,6 +113,7 @@ output = ''
 labels = []
 resolve = []
 memory = []
+packed = False
 i = 0
 ````
 
@@ -279,16 +282,18 @@ def handle_lit(line):
         comma(xt)
 ````
 
-For assembler directives we have a single handler. There are currently two
-directives; one for setting the **output** filename and one for inlining data.
+For assembler directives we have a single handler. There are currently three
+directives; one for setting the **output** filename, one for inlining data,
+and one for enabling packing multiple instructions per cell.
 
 ````
 def handle_directive(line):
-    global output
+    global output, packed
     parts = line.split()
     token = line[0:2]
     if token == '.o': output = parts[1]
     if token == '.d': comma(int(parts[1]))
+    if token == '.p': packed = True
 ````
 
 Now for the meat of the assembler. This takes a single line of input, checks

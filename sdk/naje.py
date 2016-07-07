@@ -5,6 +5,7 @@ output = ''
 labels = []
 resolve = []
 memory = []
+packed = False
 i = 0
 def define(id):
     global labels
@@ -106,11 +107,12 @@ def handle_lit(line):
         xt = str(parts[1])
         comma(xt)
 def handle_directive(line):
-    global output
+    global output, packed
     parts = line.split()
     token = line[0:2]
     if token == '.o': output = parts[1]
     if token == '.d': comma(int(parts[1]))
+    if token == '.p': packed = True
 def assemble(line):
     token = line[0:2]
     if is_label(token):
