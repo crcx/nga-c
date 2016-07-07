@@ -20,14 +20,18 @@ def extract_from_markdown(name):
 
 
 def convert(s, d):
+    print('  {0} --> {1}'.format(s, d))
     with open(d, 'w') as file:
         lines = extract_from_markdown(s)
         for line in lines:
             file.write(line)
             file.write('\n')
 
+
 if __name__ == '__main__':
+    print('Source generation begins...')
     convert('Nga.md', 'nga.c')
     convert('Ngita.md', 'ngita.c')
     convert('sdk/Naje.md', 'sdk/naje.py')
     convert('sdk/Nabk.md', 'sdk/nabk.py')
+    print('Complete.')
