@@ -543,6 +543,18 @@ This implementation provides two functions for handling these. The first
 takes a packed instruction and validates each instruction as being valid.
 The second will process each of the stored opcodes.
 
+Note for those using this: packing should stop when instructions that
+modify the IP for flow control are used. These are:
+
+* JUMP
+* CJUMP
+* CALL
+* RET
+* ZRET
+
+Nga will not stop processing code, but execution flow errors may arise
+if the packing tool does not take these into account.
+
 ````
 int ngaValidatePackedOpcodes(CELL opcode) {
   CELL raw = opcode;
