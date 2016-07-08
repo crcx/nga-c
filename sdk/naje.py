@@ -7,6 +7,7 @@ memory = []
 i = 0
 insts = []
 datas = []
+packed = True
 def comma(v):
     global memory, i
     try:
@@ -16,30 +17,37 @@ def comma(v):
     i = i + 1
 def sync():
     global insts, datas
-    if len(insts) == 0 and len(datas) == 0:
-        return
-    if len(insts) < 4:
-        n = len(insts)
-        while n < 4:
-            inst(0)
-            n = n + 1
-    opcode = int.from_bytes(insts, byteorder='little', signed=True)
-    comma(opcode)
-    if len(datas) != 0:
-        for value in datas:
-           comma(value)
+    if packed:
+        if len(insts) == 0 and len(datas) == 0:
+            return
+        if len(insts) < 4:
+            n = len(insts)
+            while n < 4:
+                inst(0)
+                n = n + 1
+        opcode = int.from_bytes(insts, byteorder='little', signed=True)
+        comma(opcode)
+        if len(datas) != 0:
+            for value in datas:
+               comma(value)
     insts = []
     datas = []
 def inst(v):
     global insts
-    if len(insts) == 4:
-        sync()
-    insts.append(v)
-    if v == 7 or v == 8 or v == 9 or v == 10:
-        sync()
+    if packed:
+        if len(insts) == 4:
+            sync()
+        insts.append(v)
+        if v == 7 or v == 8 or v == 9 or v == 10:
+            sync()
+    else:
+        comma(v)
 def data(v):
     global datas
-    datas.append(v)
+    if packed:
+        datas.append(v)
+    else:
+        comma(v)
 def define(id):
     print('define ' + id)
     global labels
@@ -129,7 +137,7 @@ def handle_lit(line):
         xt = str(parts[1])
         data(xt)
 def handle_directive(line):
-    global output
+    global output, packed
     parts = line.split()
     token = line[0:2]
     if token == '.o':
@@ -138,6 +146,12 @@ def handle_directive(line):
         sync()
         data(int(parts[1]))
         sync()
+    if token == '.p':
+        sync()
+        packed = True
+    if token == '.u':
+        sync()
+        packed = False
 def assemble(line):
     token = line[0:2]
     if is_label(token):

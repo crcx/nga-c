@@ -8,6 +8,7 @@ Naje is a minimalistic assembler for the Nga instruction set. It provides:
 * Symbolic names for all instructions
 * Facilities for inlining simple data
 * Directives for setting output filename
+* Directives for controlling instruction packing
 
 Naje is intended to be a stepping stone for supporting larger applications.
 It wasn't designed to be easy or fun to use, just to provide the essentials
@@ -64,7 +65,7 @@ Delving a bit deeper:
 
 ### Assembler Directives
 
-Naje provides two directives which can be useful:
+Naje provides four directives which can be useful:
 
 **.o**utput is used to set the name of the file that will be created with
 the Nga bytecode. If none is set, the filename will be defaulted to
@@ -81,6 +82,10 @@ Example:
     .data 98
     .data 99
     .data 100
+
+**.p**acked enables instruction packing.
+
+**.u**unpacked disables instruction packing.
 
 ### Technical Notes
 
@@ -118,7 +123,8 @@ Some notes on this:
   * a label is being declared
   * when a **.data** directive is issued
 
-In the future it'll be possible to turn packing on and off via a directive.
+Instruction packing is enabled by default. It can be controlled via the
+**.p** and **.u** directives.
 
 ## The Code
 
@@ -132,14 +138,15 @@ import sys
 
 ### Global Variables
 
-| name    | usage                                               |
-| ------- | --------------------------------------------------- |
-| output  | stores the name of the file for the assembled image |
-| labels  | stores a list of labels and pointers                |
-| memory  | stores all values                                   |
-| i       | pointer to the current memory location              |
-| insts   | a list of instructions waiting to be packed         |
-| datas   | a list of data waiting to be written                |
+| name    | usage                                                 |
+| ------- | ----------------------------------------------------- |
+| output  | stores the name of the file for the assembled image   |
+| labels  | stores a list of labels and pointers                  |
+| memory  | stores all values                                     |
+| i       | pointer to the current memory location                |
+| insts   | a list of instructions waiting to be packed           |
+| datas   | a list of data waiting to be written                  |
+| packed  | a flag indicating whether or not to pack instructions |
 
 ````
 output = ''
@@ -148,6 +155,7 @@ memory = []
 i = 0
 insts = []
 datas = []
+packed = True
 ````
 
 ### Assembler Core
@@ -188,18 +196,19 @@ It'll be called automatically by Naje where needed.
 ````
 def sync():
     global insts, datas
-    if len(insts) == 0 and len(datas) == 0:
-        return
-    if len(insts) < 4:
-        n = len(insts)
-        while n < 4:
-            inst(0)
-            n = n + 1
-    opcode = int.from_bytes(insts, byteorder='little', signed=True)
-    comma(opcode)
-    if len(datas) != 0:
-        for value in datas:
-           comma(value)
+    if packed:
+        if len(insts) == 0 and len(datas) == 0:
+            return
+        if len(insts) < 4:
+            n = len(insts)
+            while n < 4:
+                inst(0)
+                n = n + 1
+        opcode = int.from_bytes(insts, byteorder='little', signed=True)
+        comma(opcode)
+        if len(datas) != 0:
+            for value in datas:
+               comma(value)
     insts = []
     datas = []
 ````
@@ -208,23 +217,33 @@ def sync():
 it'll call **sync()**. It also invokes **sync()** if a flow control
 instruction is detected.
 
+If packing is disabled, this just passes the data to **comma()**.
+
 ````
 def inst(v):
     global insts
-    if len(insts) == 4:
-        sync()
-    insts.append(v)
-    if v == 7 or v == 8 or v == 9 or v == 10:
-        sync()
+    if packed:
+        if len(insts) == 4:
+            sync()
+        insts.append(v)
+        if v == 7 or v == 8 or v == 9 or v == 10:
+            sync()
+    else:
+        comma(v)
 ````
 
 **data()** adds a value to the data queue. This data will be written at the
 next **sync()**.
 
+If packing is disabled, this just passes the data to **comma()**.
+
 ````
 def data(v):
     global datas
-    datas.append(v)
+    if packed:
+        datas.append(v)
+    else:
+        comma(v)
 ````
 
 ### Dictionary
@@ -387,13 +406,13 @@ def handle_lit(line):
         data(xt)
 ````
 
-For assembler directives we have a single handler. There are currently three
+For assembler directives we have a single handler. There are currently four
 directives; one for setting the **output** filename, one for inlining data,
-and one for enabling packing multiple instructions per cell.
+and two for enabling or disabling packing multiple instructions per cell.
 
 ````
 def handle_directive(line):
-    global output
+    global output, packed
     parts = line.split()
     token = line[0:2]
     if token == '.o':
@@ -402,6 +421,12 @@ def handle_directive(line):
         sync()
         data(int(parts[1]))
         sync()
+    if token == '.p':
+        sync()
+        packed = True
+    if token == '.u':
+        sync()
+        packed = False
 ````
 
 Now for the meat of the assembler. This takes a single line of input, checks
