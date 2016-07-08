@@ -199,13 +199,18 @@ def sync():
     if packed:
         if len(insts) == 0 and len(datas) == 0:
             return
-        if len(insts) < 4:
+        if len(insts) < 4 and len(insts) != 0:
             n = len(insts)
             while n < 4:
                 inst(0)
                 n = n + 1
-        opcode = int.from_bytes(insts, byteorder='little', signed=True)
-        comma(opcode)
+        if len(insts) != 0:
+            insts[0] = insts[0] & 0xFF
+            insts[1] = insts[1] & 0xFF
+            insts[2] = insts[2] & 0xFF
+            insts[3] = insts[3] & 0xFF
+            opcode = int.from_bytes(insts, byteorder='little', signed=False)
+            comma(opcode)
         if len(datas) != 0:
             for value in datas:
                comma(value)
@@ -226,7 +231,7 @@ def inst(v):
         if len(insts) == 4:
             sync()
         insts.append(v)
-        if v == 7 or v == 8 or v == 9 or v == 10:
+        if v == 7 or v == 8 or v == 9 or v == 10 or v == 25:
             sync()
     else:
         comma(v)
