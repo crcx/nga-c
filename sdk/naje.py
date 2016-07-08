@@ -1,21 +1,12 @@
 #!/usr/bin/env python3
+import struct
 import sys
-
 output = ''
 labels = []
-resolve = []
 memory = []
-packed = False
 i = 0
-def define(id):
-    global labels
-    labels.append((id, i))
-
-def lookup(id):
-    for label in labels:
-        if label[0] == id:
-            return label[1]
-    return -1
+insts = []
+datas = []
 def comma(v):
     global memory, i
     try:
@@ -23,6 +14,43 @@ def comma(v):
     except ValueError:
         memory.append(v)
     i = i + 1
+def sync():
+    global insts, datas
+    if len(insts) == 0 and len(datas) == 0:
+        return
+    if len(insts) < 4:
+        n = len(insts)
+        while n < 4:
+            inst(0)
+            n = n + 1
+    opcode = int.from_bytes(insts, byteorder='little', signed=True)
+    comma(opcode)
+    if len(datas) != 0:
+        for value in datas:
+           comma(value)
+    insts = []
+    datas = []
+def inst(v):
+    global insts
+    if len(insts) == 4:
+        sync()
+    insts.append(v)
+    if v == 7 or v == 8 or v == 9 or v == 10:
+        sync()
+def data(v):
+    global datas
+    datas.append(v)
+def define(id):
+    print('define ' + id)
+    global labels
+    sync()
+    labels.append((id, i))
+
+def lookup(id):
+    for label in labels:
+        if label[0] == id:
+            return label[1]
+    return -1
 def map_to_inst(s):
     inst = -1
     if s == 'no': inst = 0
@@ -53,17 +81,12 @@ def map_to_inst(s):
     if s == 'zr': inst = 25
     if s == 'en': inst = 26
     return inst
-def save(filename):
-    import struct
-    with open(filename, 'wb') as file:
-        j = 0
-        while j < i:
-            file.write(struct.pack('i', memory[j]))
-            j = j + 1
 def preamble():
-    comma(1)  # LIT
-    comma(0)  # value will be patched to point to :main
-    comma(7)  # JUMP
+    inst(1)  # LIT
+    data(0)  # value will be patched to point to :main
+    inst(7)  # JUMP
+    sync()
+
 def patch_entry():
     memory[1] = lookup('main')
 def clean_source(raw):
@@ -75,7 +98,6 @@ def clean_source(raw):
         if line != '':
             final.append(line)
     return final
-
 
 def load_source(filename):
     with open(filename, 'r') as f:
@@ -102,27 +124,30 @@ def handle_lit(line):
     parts = line.split()
     try:
         a = int(parts[1])
-        comma(a)
+        data(a)
     except:
         xt = str(parts[1])
-        comma(xt)
+        data(xt)
 def handle_directive(line):
-    global output, packed
+    global output
     parts = line.split()
     token = line[0:2]
-    if token == '.o': output = parts[1]
-    if token == '.d': comma(int(parts[1]))
-    if token == '.p': packed = True
+    if token == '.o':
+        output = parts[1]
+    if token == '.d':
+        sync()
+        data(int(parts[1]))
+        sync()
 def assemble(line):
     token = line[0:2]
     if is_label(token):
-        labels.append((line[1:], i))
+        define(line[1:])
         print('label = ', line, '@', i)
     elif is_directive(token):
         handle_directive(line)
     elif is_inst(token):
         op = map_to_inst(token)
-        comma(op)
+        inst(op)
         if op == 1:
             handle_lit(line)
     else:
@@ -144,6 +169,12 @@ def resolve_labels():
                 exit()
         results.append(value)
     memory = results
+def save(filename):
+    with open(filename, 'wb') as file:
+        j = 0
+        while j < i:
+            file.write(struct.pack('i', memory[j]))
+            j = j + 1
 if __name__ == '__main__':
     if len(sys.argv) < 3:
         raw = []
@@ -156,6 +187,7 @@ if __name__ == '__main__':
     preamble()
     for line in src:
         assemble(line)
+    sync()
     resolve_labels()
     patch_entry()
 

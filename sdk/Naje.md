@@ -92,47 +92,78 @@ strip it to its core elements, then proceed. So given a line like:
 Naje will take the first two characters of the first token (*li*) to identify
 the instruction and the second token for the value. The rest is ignored.
 
+## Instruction Packing
+
+Nga allows for packing multiple instructions per memory location. The Nga code
+does this automatically.
+
+What this does is effectively reduce the memory a program takes significantly.
+In a standard configuration, cells are 32-bits in length.  With one
+instruction per cell, much potential space is wasted. Packing allows up to
+four to be stored in each cell.
+
+Some notes on this:
+
+- unused slots are stored as NOP instructions
+- packing ends when:
+
+  * four instructions have been queued
+  * a flow control instruction has been queued
+
+    - JUMP
+    - CJUMP
+    - CALL
+    - RET
+
+  * a label is being declared
+  * when a **.data** directive is issued
+
+In the future it'll be possible to turn packing on and off via a directive.
+
 ## The Code
 
-First up, the preamble, and some variables.
+### Imports
+
+````
+#!/usr/bin/env python3
+import struct
+import sys
+````
+
+### Global Variables
 
 | name    | usage                                               |
 | ------- | --------------------------------------------------- |
 | output  | stores the name of the file for the assembled image |
 | labels  | stores a list of labels and pointers                |
-| resolve |                                                     |
 | memory  | stores all values                                   |
-| packed  |                                                     |
 | i       | pointer to the current memory location              |
+| insts   | a list of instructions waiting to be packed         |
+| datas   | a list of data waiting to be written                |
 
 ````
-#!/usr/bin/env python3
-import sys
-
 output = ''
 labels = []
-resolve = []
 memory = []
-packed = False
 i = 0
+insts = []
+datas = []
 ````
 
-The next two functions are for adding labels to the dictionary and searching
-for them.
+### Assembler Core
 
-````
-def define(id):
-    global labels
-    labels.append((id, i))
+This is the heart of the assembler: it takes the instructions and data and
+writes them to the **memory** array.
 
-def lookup(id):
-    for label in labels:
-        if label[0] == id:
-            return label[1]
-    return -1
-````
+| name  | args | intended use
+| ----- | ---- | ------------------------------------------------------- |
+| comma | v    | write a value to memory                                 |
+| inst  | v    | add an instruction to the list for packing              |
+| data  | v    | add a data element to the list for writing              |
+| sync  |      | pack instructions and write them and the data to memory |
 
-**comma** is used to compile a value into memory.
+Normally **comma()** should not be called directly: use **inst()** and
+**data()** instead to queue items up.
 
 ````
 def comma(v):
@@ -143,6 +174,88 @@ def comma(v):
         memory.append(v)
     i = i + 1
 ````
+
+**sync()** handles several tasks:
+
+- checks to see if there is anything waiting to be written
+- packs instructions, padding with **NOP** if needed
+- writes instructions (via **comma()**)
+- writes data (via **comma()**)
+- resets the queues
+
+It'll be called automatically by Naje where needed.
+
+````
+def sync():
+    global insts, datas
+    if len(insts) == 0 and len(datas) == 0:
+        return
+    if len(insts) < 4:
+        n = len(insts)
+        while n < 4:
+            inst(0)
+            n = n + 1
+    opcode = int.from_bytes(insts, byteorder='little', signed=True)
+    comma(opcode)
+    if len(datas) != 0:
+        for value in datas:
+           comma(value)
+    insts = []
+    datas = []
+````
+
+**inst()** adds an instruction to the queue. If there are enough for packing
+it'll call **sync()**. It also invokes **sync()** if a flow control
+instruction is detected.
+
+````
+def inst(v):
+    global insts
+    if len(insts) == 4:
+        sync()
+    insts.append(v)
+    if v == 7 or v == 8 or v == 9 or v == 10:
+        sync()
+````
+
+**data()** adds a value to the data queue. This data will be written at the
+next **sync()**.
+
+````
+def data(v):
+    global datas
+    datas.append(v)
+````
+
+### Dictionary
+
+Nga uses a simple dictionary to map label names to addresses. There are two
+functions.
+
+| name   | args | intended use                                                       |
+| ------ | ---- | ------------------------------------------------------------------ |
+| define | id   | sync, then create a label pointing to the current location         |
+| lookup | id   | return a the location corresponding to a label, or -1 if not found |
+
+````
+def define(id):
+    print('define ' + id)
+    global labels
+    sync()
+    labels.append((id, i))
+
+def lookup(id):
+    for label in labels:
+        if label[0] == id:
+            return label[1]
+    return -1
+````
+
+### Instruction Mapping
+
+| name        | args | intended use                                             |
+| ----------- | ---- | -------------------------------------------------------- |
+| map_to_inst | s    | Given an instruction name, return the instruction number |
 
 This next one maps a symbolic name to its opcode. It requires a two character
 string (this is sufficent to identify any of the instructions).
@@ -182,33 +295,24 @@ def map_to_inst(s):
     return inst
 ````
 
-This next function saves the memory image to a file.
+### Uncategorized
 
-````
-def save(filename):
-    import struct
-    with open(filename, 'wb') as file:
-        j = 0
-        while j < i:
-            file.write(struct.pack('i', memory[j]))
-            j = j + 1
-````
+| name        | args | intended use                              |
+| ----------- | ---- | ----------------------------------------- |
+| preamble    |      | initial code at the start of each image   |
+| patch_entry |      | patch the jump compiled by **preamble()** |
 
-An image starts with a jump to the main entry point (the *:main* label).
-Since the offset of *:main* isn't known initially, this compiles a jump to
-offset 0, which will be patched by a later routine.
+**preamble()** compiles a jump to the label :main. Since this isn't known
+at the start, **patch_entry()** will replace the stub jump with the correct
+address at the end of assembly.
 
 ````
 def preamble():
-    comma(1)  # LIT
-    comma(0)  # value will be patched to point to :main
-    comma(7)  # JUMP
-````
+    inst(1)  # LIT
+    data(0)  # value will be patched to point to :main
+    inst(7)  # JUMP
+    sync()
 
-**patch_entry()** replaces the target of the jump compiled by **preamble()**
-with the offset of the *:main* label.
-
-````
 def patch_entry():
     memory[1] = lookup('main')
 ````
@@ -228,7 +332,6 @@ def clean_source(raw):
         if line != '':
             final.append(line)
     return final
-
 
 def load_source(filename):
     with open(filename, 'r') as f:
@@ -269,17 +372,19 @@ the value to push to the stack. A source line is setup like:
 
 In the first case, we want to compile the number 100 in the following cell.
 But in the second, we need to lookup the *:increment* label and compile a
-pointer to it.
+pointer to it. For now though this just stores the *string* for the label in
+memory. The actual address will be resolved later, once all other assembly is
+finished.
 
 ````
 def handle_lit(line):
     parts = line.split()
     try:
         a = int(parts[1])
-        comma(a)
+        data(a)
     except:
         xt = str(parts[1])
-        comma(xt)
+        data(xt)
 ````
 
 For assembler directives we have a single handler. There are currently three
@@ -288,12 +393,15 @@ and one for enabling packing multiple instructions per cell.
 
 ````
 def handle_directive(line):
-    global output, packed
+    global output
     parts = line.split()
     token = line[0:2]
-    if token == '.o': output = parts[1]
-    if token == '.d': comma(int(parts[1]))
-    if token == '.p': packed = True
+    if token == '.o':
+        output = parts[1]
+    if token == '.d':
+        sync()
+        data(int(parts[1]))
+        sync()
 ````
 
 Now for the meat of the assembler. This takes a single line of input, checks
@@ -304,13 +412,13 @@ calling whatever helper functions are needed (**handle_lit()** being notable).
 def assemble(line):
     token = line[0:2]
     if is_label(token):
-        labels.append((line[1:], i))
+        define(line[1:])
         print('label = ', line, '@', i)
     elif is_directive(token):
         handle_directive(line)
     elif is_inst(token):
         op = map_to_inst(token)
-        comma(op)
+        inst(op)
         if op == 1:
             handle_lit(line)
     else:
@@ -339,6 +447,17 @@ def resolve_labels():
     memory = results
 ````
 
+This next function saves the memory image to a file.
+
+````
+def save(filename):
+    with open(filename, 'wb') as file:
+        j = 0
+        while j < i:
+            file.write(struct.pack('i', memory[j]))
+            j = j + 1
+````
+
 And finally we can tie everything together into a coherent package.
 
 ````
@@ -354,6 +473,7 @@ if __name__ == '__main__':
     preamble()
     for line in src:
         assemble(line)
+    sync()
     resolve_labels()
     patch_entry()
 
