@@ -3,6 +3,8 @@
 import os, sys, math, time, struct
 from struct import pack, unpack
 
+labels = []
+
 def name(s):
     if s == 0: return 'no'
     if s == 1: return 'li'
@@ -70,6 +72,9 @@ def ngaLoadImageFile(named):
 
 
 def ngaDisplayCellContents(i, cell):
+  for line in labels:
+    if int(line[1]) == i:
+      print('\n:{0}'.format(line[0]))
   if ngaIsValidPacked(cell):
     print('{0}\t{1}\n\t{2}'.format(i, ngaStringFromPacked(cell), ngaOpcodeStringFromPacked(cell)))
   else:
@@ -77,11 +82,16 @@ def ngaDisplayCellContents(i, cell):
 
 
 if __name__ == "__main__":
-  imgpath = 'hello'
+  imgpath = sys.argv[1]
   cells = int(os.path.getsize(imgpath) / 4)
   print('Nga Image Dump for: {0}'.format(imgpath))
   print('Dumping {0} cells\n'.format(cells))
   i = 0
+  if os.path.exists('{0}.map'.format(imgpath)):
+      with open('{0}.map'.format(imgpath), 'r') as f:
+          raw = f.readlines()
+          for line in raw:
+              labels.append(line.split('\t'))
   for v in ngaLoadImageFile(imgpath):
     ngaDisplayCellContents(i, v)
     i = i + 1
