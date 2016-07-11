@@ -92,6 +92,8 @@ for line in src:
                 if tokens[0][0:1] != '#':
                     print(tokens[0][0:2])
         else:
+            if tokens[0][0] == '.':
+                print(tokens[0][0:2], tokens[1])
             if tokens[0] == 'lit' or tokens[0] == 'li':
                 print('li', tokens[1])
             if tokens[0] == 'call':
