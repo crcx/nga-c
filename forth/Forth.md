@@ -45,6 +45,8 @@ Currently this does not do any optimizations. Some things to try later:
 
 * inline primitives
 * pack multiple instructions per cell
+* allow for code fall-through for related words
+* tail call elimination
 
 ## Code
 
@@ -164,11 +166,43 @@ Since the stack is one of the defining elements of Forth, I first define a few
 functions for controlling it.
 
 ````
+:nip
+  swap
+  drop
+  ret
+
 :over
   push
   dup
   pop
   swap
+  ret
+
+:tuck
+  swap
+  lit &over
+  call
+  ret
+
+:rot
+  push
+  swap
+  pop
+  swap
+  ret
+````
+
+### Math
+
+````
+:inc
+  lit 1
+  add
+  ret
+
+:dec
+  lit 1
+  sub
   ret
 ````
 
@@ -177,7 +211,7 @@ functions for controlling it.
 ````
 :@+
   dup
-  lit &1+
+  lit &inc
   call
   swap
   fetch
@@ -185,23 +219,14 @@ functions for controlling it.
 
 :!+
   dup
-  lit &1+
+  lit &inc
   call
   push
   store
   pop
   ret
-````
 
-### Unsorted
-
-````
-:not
-  lit -1
-  xor
-  ret
-
-:/
+:div
   lit &divmod
   call
   swap
@@ -217,10 +242,19 @@ functions for controlling it.
 :negate
   lit -1
   mul
-  rer
+  ret
+````
+
+### Unsorted
+
+````
+:not
+  lit -1
+  xor
+  ret
 
 :do
-  lit &1-
+  lit &dec
   call
   push
   ret
@@ -228,35 +262,6 @@ functions for controlling it.
 :here
   lit &heap
   fetch
-  ret
-
-:(return)
-  ret
-
-:;;
-  lit &(return)
-  fetch
-  lit &comma
-  call
-  ret
-
-:;
-  lit &;
-  call
-  lit 0
-  lit &compiler
-  store
-  call
-  ret
-
-:1+
-  lit 1
-  add
-  ret
-
-:1-
-  lit 1
-  sub
   ret
 ````
 
@@ -276,6 +281,11 @@ a function.
   ret
 ````
 
+With the **compiler** state ready, we need two words to lay down code.
+
+**heap** is a variable storing a pointer to the next available address.
+
+**comma** stores a value at the address **heap** points to.
 
 ````
 :heap
@@ -293,7 +303,10 @@ a function.
   lit &heap
   store
   ret
+````
 
+
+````
 :withClass
   lit 1
   sub
@@ -334,4 +347,36 @@ a function.
 
 :main
   end
+````
+
+Compiling a return is a special case involving a couple of steps:
+
+* store the opcode for return
+* turn off compiler
+
+In this forth I have **;;** to do the first step and **;** to do the
+latter. **;** will call **;;** as part of its normal run.
+
+I currently have a dummy **(return)** function to avoid hard coding the
+opcode for RET. I may switch to hard coding at a later time to reduce overhead
+a little.
+
+````
+:(return)
+  ret
+
+:;;
+  lit &(return)
+  fetch
+  lit &comma
+  call
+  ret
+
+:;
+  lit &;;
+  call
+  lit 0
+  lit &compiler
+  store
+  ret
 ````
