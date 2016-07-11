@@ -161,7 +161,6 @@ def assemble(line):
     token = line[0:2]
     if is_label(token):
         define(line[1:])
-        print('label = ', line, '@', i)
     elif is_directive(token):
         handle_directive(line)
     elif is_inst(token):
@@ -212,12 +211,13 @@ if __name__ == '__main__':
 
     if len(sys.argv) < 3:
         if output == '':
-            save('output.nga')
-        else:
-            save(output)
+            output = 'output.nga'
+        save(output)
     else:
         save(sys.argv[2])
 
-    print(src)
-    print(labels)
+    with open('{0}.map'.format(output), 'w') as f:
+        for label in labels:
+            f.write('{0}\t{1}\n'.format(label[0], label[1]))
     print(memory)
+    print('{0} cells written'.format(len(memory)))
