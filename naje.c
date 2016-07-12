@@ -14,9 +14,13 @@ char names[MAX_NAMES][STRING_LEN];
 int pointers[MAX_NAMES];
 int np;
 
+int memory[32768];
+int ip;
+
 void prepare()
 {
   np = 0;
+  ip = 0;
 }
 
 
@@ -52,6 +56,8 @@ void add_definition(char *name, int slice)
 
 void comma(int value)
 {
+  memory[ip] = value;
+  ip = ip + 1;
 }
 
 
@@ -61,20 +67,14 @@ int compile(char *source)
   char *rest;
   char *ptr = source;
   char prefix[3];
-  char reform[STRING_LEN];
-  double scratch;
-  int o = 0;
-  int i;
   prefix[0] = 0;
   prefix[1] = 0;
   prefix[2] = 0;
 
   token = strtok_r(ptr, " ,", &rest);
-  printf("%s\n", token); // print the token returned.
   ptr = rest;
   prefix[0] = (char)token[0];
   prefix[1] = (char)token[1];
-  printf("%s\n", prefix);
   if (strcmp(prefix, "no") == 0)
   {
     printf("nop");
@@ -86,7 +86,7 @@ int compile(char *source)
     token = strtok_r(ptr, " ,", &rest);
     printf(" <%s>\n", token);
     comma(1);
-    comma(0);
+    comma(atoi(token));
   }
   if (strcmp(prefix, "du") == 0)
   {
@@ -197,5 +197,16 @@ int main()
   prepare();
   char test[] = " lit  100";
   compile(test);
+
+  char test2[] = "lit 22";
+  compile(test2);
+
+  char test3[] = "add";
+  compile(test3);
+
+  printf("\n");
+  for (int i = 0; i < ip; i++)
+    printf("%ld ", memory[i]);
+  printf("\n");
   return 0;
 }
