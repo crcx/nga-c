@@ -147,6 +147,7 @@ import sys
 | insts   | a list of instructions waiting to be packed           |
 | datas   | a list of data waiting to be written                  |
 | packed  | a flag indicating whether or not to pack instructions |
+| map     | a list of tuples that will be saved as a .map file    |
 
 ````
 output = ''
@@ -156,6 +157,34 @@ i = 0
 insts = []
 datas = []
 packed = True
+map = []
+````
+
+### Map
+
+A *map* is a file which, along with the image file, can be used to identify
+specific stored elements.
+
+Mapfiles are stored as tab separated values with a format like:
+
+    type <tab> identifier/value <tab> offset
+
+| type    | usage                 |
+| ------- | --------------------- |
+| label   | a named offset        |
+| literal | a numeric value       |
+| pointer | pointer to an address |
+| raw     | raw data              |
+
+````
+def addToMap(type, id, offset):
+    global map
+    map.append((type, id, offset))
+
+def saveMap(basename):
+    with open('{0}.map'.format(basename), 'w') as mapFile:
+        for row in map:
+            mapFile.write('{0}\t{1}\t{2}\n'.format(row[0], row[1], row[2]))
 ````
 
 ### Assembler Core
@@ -213,6 +242,7 @@ def sync():
             comma(opcode)
         if len(datas) != 0:
             for value in datas:
+               addToMap('literal', value, i)
                comma(value)
     insts = []
     datas = []
@@ -267,6 +297,8 @@ def define(id):
     global labels
     sync()
     labels.append((id, i))
+    addToMap('label', id, i)
+
 
 def lookup(id):
     for label in labels:
@@ -459,21 +491,42 @@ def assemble(line):
 **resolve_labels()** is the second pass; it converts any labels into addresses.
 
 ````
+def resolve_label(name):
+    value = 0
+    try:
+        value = int(name)
+    except ValueError:
+        value = lookup(name[1:])
+        if value == -1:
+            print('Label not found!')
+            print('Label: ' + name[1:])
+            exit()
+    return value
+
 def resolve_labels():
     global memory
     results = []
     for cell in memory:
-        value = 0
-        try:
-            value = int(cell)
-        except ValueError:
-            value = lookup(cell[1:])
-            if value == -1:
-                print('Label not found!')
-                print('Label: ' + cell[1:])
-                exit()
+        value = resolve_label(cell)
         results.append(value)
     memory = results
+
+def resolve_labels_in_map():
+    global map
+    results = []
+    for row in map:
+        current = row
+        if row[0] == 'literal':
+            try:
+                if row[1][0:1] == '&':
+                    current = [0, 0, 0]
+                    current[0] = 'pointer'
+                    current[1] = resolve_label(row[1])
+                    current[2] = row[2]
+            except:
+                pass
+        results.append(current)
+    map = results
 ````
 
 This next function saves the memory image to a file.
@@ -513,9 +566,9 @@ if __name__ == '__main__':
     else:
         save(sys.argv[2])
 
-    with open('{0}.map'.format(output), 'w') as f:
-        for label in labels:
-            f.write('{0}\t{1}\n'.format(label[0], label[1]))
+    resolve_labels_in_map()
+    saveMap(output)
+
     print(memory)
     print('{0} cells written'.format(len(memory)))
 ````
