@@ -3,7 +3,7 @@
 import os, sys, math, time, struct
 from struct import pack, unpack
 
-labels = []
+map = []
 
 def name(s):
     if s == 0: return 'no'
@@ -72,13 +72,23 @@ def ngaLoadImageFile(named):
 
 
 def ngaDisplayCellContents(i, cell):
-  for line in labels:
-    if int(line[1]) == i:
-      print('\n:{0}'.format(line[0]))
-  if ngaIsValidPacked(cell):
-    print('{0}\t{1}\n\t{2}'.format(i, ngaStringFromPacked(cell), ngaOpcodeStringFromPacked(cell)))
-  else:
-    print('{0}\t{1}'.format(i, cell))
+  done = False
+  for line in map:
+    t, v, o = line
+    if int(o) == i:
+      if t == 'label':
+        print('\n:{0}'.format(v))
+      if t == 'literal':
+        print('{0}\t{1}'.format(i, v))
+        done = True
+      if t == 'pointer':
+        print('{0}\t{1}'.format(i, v))
+        done = True
+  if done == False:
+    if ngaIsValidPacked(cell):
+      print('{0}\t{1}\n\t{2}'.format(i, ngaStringFromPacked(cell), ngaOpcodeStringFromPacked(cell)))
+    else:
+      print('{0}\t{1}'.format(i, cell))
 
 
 if __name__ == "__main__":
@@ -91,7 +101,7 @@ if __name__ == "__main__":
       with open('{0}.map'.format(imgpath), 'r') as f:
           raw = f.readlines()
           for line in raw:
-              labels.append(line.split('\t'))
+              map.append(line.split('\t'))
   for v in ngaLoadImageFile(imgpath):
     ngaDisplayCellContents(i, v)
     i = i + 1
