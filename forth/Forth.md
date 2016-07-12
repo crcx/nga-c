@@ -258,11 +258,6 @@ functions for controlling it.
   call
   push
   ret
-
-:here
-  lit &heap
-  fetch
-  ret
 ````
 
 ## The Compiler
@@ -277,6 +272,11 @@ a function.
 
 :compiling?
   lit &compiler
+  fetch
+  ret
+
+:here
+  lit &heap
   fetch
   ret
 ````
@@ -304,6 +304,7 @@ With the **compiler** state ready, we need two words to lay down code.
   store
   ret
 ````
+
 
 
 ````
@@ -377,6 +378,28 @@ a little.
   call
   lit 0
   lit &compiler
+  store
+  ret
+````
+
+Conditionals
+
+````
+:if
+  lit 7
+  lit &comma
+  call
+  lit &here
+  call
+  lit 0
+  lit &comma
+  call
+  ret
+
+:then
+  lit &here
+  call
+  swap
   store
   ret
 ````
