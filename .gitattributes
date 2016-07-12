@@ -1,0 +1,5 @@
+*.nabk linguist-language=Assembly
+*.naje linguist-language=Assembly
+*.a linguist-language=Assembly
+*.pl0 linguist-language=PL/0
+*.rx linguist-language=Forth
