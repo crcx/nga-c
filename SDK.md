@@ -20,3 +20,9 @@ A port of the PL0-Language-Tools for generating Naje assembly.
 
 Requirements: Python 3
 
+## Tiro
+
+Tiro is a dissassembler for Nga images.
+
+Requirements: Python 3
+
