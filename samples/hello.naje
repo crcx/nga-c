@@ -1,0 +1,42 @@
+.output hello
+.packed
+
+:getc
+  .data 91
+  ret
+
+:putc
+  .data 90
+  ret
+
+:hello
+  .data 104
+  .data 101
+  .data 108
+  .data 108
+  .data 111
+  .data 32
+  .data 119
+  .data 111
+  .data 114
+  .data 108
+  .data 100
+  .data 0
+
+:puts
+  dup
+  fetch
+  zret
+  lit &putc
+  call
+  lit 1
+  add
+  lit &puts
+  jump
+
+:main
+  lit &hello
+  lit &puts
+  call
+  drop
+  end
