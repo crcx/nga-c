@@ -1,0 +1,44 @@
+.output fibonacci.nga
+
+:over
+  push
+  dup
+  pop
+  swap
+  ret
+
+:rot
+  push
+  swap
+  pop
+  swap
+  ret
+
+:fib
+  lit 0
+  lit 1
+
+  lit &rot
+  call
+
+:fib<1>
+  zret
+  push
+
+  lit &over
+  call
+  add
+  swap
+
+  pop
+  lit 1
+  sub
+  lit &fib<1>
+  jump
+
+:main
+  lit 30
+  lit &fib
+  call
+  drop
+  end
