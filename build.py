@@ -32,6 +32,7 @@ if __name__ == '__main__':
     print('Source generation begins...')
     convert('Nga.md', 'nga.c')
     convert('Ngita.md', 'ngita.c')
+    convert('sdk/Tiro.md', 'sdk/tiro.py')
     convert('sdk/Naje.md', 'sdk/naje.py')
     convert('sdk/Nabk.md', 'sdk/nabk.py')
     print('Complete.')
