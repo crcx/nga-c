@@ -108,7 +108,7 @@ def map_to_inst(s):
     return inst
 def preamble():
     inst(1)  # LIT
-    data(0)  # value will be patched to point to :main
+    data('&main')  # value will be patched to point to :main
     inst(7)  # JUMP
     sync()
 
