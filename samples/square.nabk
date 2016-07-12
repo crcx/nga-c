@@ -1,0 +1,11 @@
+# calculate the square of a number
+
+:square
+  dup
+  mul
+  ret
+
+:main
+  lit 121
+  call square
+  end

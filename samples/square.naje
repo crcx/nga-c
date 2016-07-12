@@ -1,0 +1,12 @@
+.output square.nga
+
+:square
+  dup
+  mul
+  ret
+
+:main
+  lit 291
+  lit &square
+  call
+  end
