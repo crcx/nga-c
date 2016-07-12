@@ -1,8 +1,16 @@
-# Nga Virtual Machine
+# Nga: a Stack Oriented Virtual Machine
 
 ## Overview
 
 Nga is a lightweight, stack based virtual machine.
+
+It features:
+
+* Small core (under 300 lines of C code)
+* Configurable (16, 32, 64 bit models)
+* 27 instructions
+* No defined I/O model
+* Extensible design
 
 All code, documentation, and any binaries included are provided
 under the ISC License unless otherwise noted in the source. Please
