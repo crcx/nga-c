@@ -50,6 +50,10 @@ void add_definition(char *name, int slice)
 }
 
 
+void comma(int value)
+{
+}
+
 
 int compile(char *source)
 {
@@ -74,87 +78,115 @@ int compile(char *source)
   if (strcmp(prefix, "no") == 0)
   {
     printf("nop");
+    comma(0);
   }
   if (strcmp(prefix, "li") == 0)
   {
     printf("\nopcode 1");
     token = strtok_r(ptr, " ,", &rest);
     printf(" <%s>\n", token);
+    comma(1);
+    comma(0);
   }
   if (strcmp(prefix, "du") == 0)
   {
+    comma(2);
   }
   if (strcmp(prefix, "dr") == 0)
   {
+    comma(3);
   }
   if (strcmp(prefix, "sw") == 0)
   {
+    comma(4);
   }
   if (strcmp(prefix, "pu") == 0)
   {
+    comma(5);
   }
   if (strcmp(prefix, "po") == 0)
   {
+    comma(6);
   }
   if (strcmp(prefix, "ju") == 0)
   {
+    comma(7);
   }
   if (strcmp(prefix, "ca") == 0)
   {
+    comma(8);
   }
   if (strcmp(prefix, "cj") == 0)
   {
+    comma(9);
   }
   if (strcmp(prefix, "re") == 0)
   {
+    comma(10);
   }
   if (strcmp(prefix, "eq") == 0)
   {
+    comma(11);
   }
   if (strcmp(prefix, "ne") == 0)
   {
+    comma(12);
   }
   if (strcmp(prefix, "lt") == 0)
   {
+    comma(13);
   }
   if (strcmp(prefix, "gt") == 0)
   {
+    comma(14);
   }
   if (strcmp(prefix, "fe") == 0)
   {
+    comma(15);
   }
   if (strcmp(prefix, "st") == 0)
   {
+    comma(16);
   }
   if (strcmp(prefix, "ad") == 0)
   {
+    comma(17);
   }
   if (strcmp(prefix, "su") == 0)
   {
+    comma(18);
   }
   if (strcmp(prefix, "mu") == 0)
   {
+    comma(19);
   }
   if (strcmp(prefix, "di") == 0)
   {
+    comma(20);
   }
   if (strcmp(prefix, "an") == 0)
   {
+    comma(21);
   }
   if (strcmp(prefix, "or") == 0)
   {
+    comma(22);
   }
   if (strcmp(prefix, "xo") == 0)
   {
+    comma(23);
   }
   if (strcmp(prefix, "sh") == 0)
   {
+    comma(24);
   }
   if (strcmp(prefix, "zr") == 0)
   {
+    comma(25);
   }
   if (strcmp(prefix, "en") == 0)
   {
+    comma(26);
   }
   return 0;
 }
