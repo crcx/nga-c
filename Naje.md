@@ -1,27 +1,51 @@
-````
-/*
-naje.c - nga assembler
-*/
+# Naje
 
+## Overview
+
+Naje is a minimalistic assembler for the Nga instruction set. It provides:
+
+* Single pass (back references only)
+* Lables
+* Basic literals
+* Symbolic names for all instructions
+
+Naje is intended to be a stepping stone for supporting larger applications.
+It wasn't designed to be easy or fun to use, just to provide the essentials
+needed to build useful things.
+
+## Code
+
+First up, the red tape bits. Include the needed headers and Nga. Naje will use
+the Nga memory array, constants, and constraints.
+
+````
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_NAMES 1024
-#define STRING_LEN 1024
+#include "nga.c"
+````
 
+Next up is the dictionary. This is implemented as two arrays:
+
+| name     | description                                                |
+| -------- | ---------------------------------------------------------- |
+| names    | an array of strings corresponding to label names           |
+| pointers | an array of pointers to the memory location for each label |
+
+````
+#define MAX_NAMES 1024
+#define STRING_LEN 64
 
 char names[MAX_NAMES][STRING_LEN];
-int32_t pointers[MAX_NAMES];
-int32_t np;
+CELL pointers[MAX_NAMES];
+CELL np;
 
-int32_t memory[32768];
-int32_t ip;
 
-int32_t lookup_definition(char *name)
+CELL lookup(char *name)
 {
-  int32_t slice = -1;
-  int32_t n = np;
+  CELL slice = -1;
+  CELL n = np;
   while (n > 0)
   {
     n--;
@@ -32,9 +56,9 @@ int32_t lookup_definition(char *name)
 }
 
 
-void add_definition(char *name, int32_t slice)
+void new_label(char *name, CELL slice)
 {
-  if (lookup_definition(name) == -1)
+  if (lookup(name) == -1)
   {
     strcpy(names[np], name);
     pointers[np] = slice;
@@ -46,16 +70,21 @@ void add_definition(char *name, int32_t slice)
     exit(0);
   }
 }
+````
 
 
-void comma(int32_t value)
+
+````
+CELL latest;
+
+void comma(CELL value)
 {
-  memory[ip] = value;
-  ip = ip + 1;
+  memory[latest] = value;
+  latest = latest + 1;
 }
 
 
-int32_t compile(char *source)
+void compile(char *source)
 {
   char *token;
   char *rest;
@@ -77,7 +106,7 @@ int32_t compile(char *source)
   if (prefix[0] == ':')
   {
     printf("Define: %s\n", (char *)token + 1);
-    add_definition((char *)token + 1, ip);
+    new_label((char *)token + 1, latest);
   }
 
   /* Instructions */
@@ -94,7 +123,7 @@ int32_t compile(char *source)
     comma(1);
     if (token[0] == '&')
     {
-        comma(lookup_definition((char *)token + 1));
+        comma(lookup((char *)token + 1));
     }
     else
     {
@@ -201,14 +230,13 @@ int32_t compile(char *source)
   {
     comma(26);
   }
-  return 0;
 }
 
 
 void prepare()
 {
   np = 0;
-  ip = 0;
+  latest = 0;
 
   /* assemble the standard preamble (a jump to :main) */
   comma(1);  /* LIT */
@@ -219,7 +247,7 @@ void prepare()
 
 void finish()
 {
-  int32_t entry = lookup_definition("main");
+  CELL entry = lookup("main");
   memory[1] = entry;
 }
 
@@ -239,7 +267,7 @@ void read_line(FILE *file, char *line_buffer)
   }
 
   char ch = getc(file);
-  int32_t count = 0;
+  CELL count = 0;
 
   while ((ch != '\n') && (ch != EOF))
   {
@@ -276,7 +304,6 @@ void parse_bootstrap(char *fname)
 void save()
 {
   FILE *fp;
-  int32_t x = 0;
 
   if ((fp = fopen("ngaImage", "wb")) == NULL)
   {
@@ -284,11 +311,11 @@ void save()
     exit(2);
   }
 
-  x = fwrite(&memory, sizeof(int32_t), 32768, fp);
+  fwrite(&memory, sizeof(CELL), latest, fp);
   fclose(fp);
 }
 
-int32_t main()
+CELL main()
 {
   prepare();
   parse_bootstrap("test.a");
@@ -296,10 +323,10 @@ int32_t main()
   save();
 
   printf("Bytecode\n");
-  for (int32_t i = 0; i < ip; i++)
+  for (CELL i = 0; i < latest; i++)
     printf("%d ", memory[i]);
   printf("\nLabels\n");
-  for (int32_t i = 0; i < np; i++)
+  for (CELL i = 0; i < np; i++)
     printf("%s@@%d ", names[i], pointers[i]);
   printf("\n");
   return 0;
