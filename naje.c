@@ -216,6 +216,13 @@ void prepare()
 }
 
 
+void finish()
+{
+  int32_t entry = lookup_definition("main");
+  memory[1] = entry;
+}
+
+
 void read_line(FILE *file, char *line_buffer)
 {
   if (file == NULL)
@@ -269,6 +276,7 @@ int32_t main()
 {
   prepare();
   parse_bootstrap("test.a");
+  finish();
 
   printf("Bytecode\n");
   for (int32_t i = 0; i < ip; i++)
