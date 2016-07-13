@@ -1,39 +1,8 @@
-# Naje
-
-## Overview
-
-Naje is a minimalistic assembler for the Nga instruction set. It provides:
-
-* Single pass (back references only)
-* Lables
-* Basic literals
-* Symbolic names for all instructions
-
-Naje is intended to be a stepping stone for supporting larger applications.
-It wasn't designed to be easy or fun to use, just to provide the essentials
-needed to build useful things.
-
-## Code
-
-First up, the red tape bits. Include the needed headers and Nga. Naje will use
-the Nga memory array, constants, and constraints.
-
-````
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "nga.c"
-````
-
-Next up is the dictionary. This is implemented as two arrays:
-
-| name     | description                                                |
-| -------- | ---------------------------------------------------------- |
-| names    | an array of strings corresponding to label names           |
-| pointers | an array of pointers to the memory location for each label |
-
-````
 #define MAX_NAMES 1024
 #define STRING_LEN 64
 
@@ -64,11 +33,6 @@ void new_label(char *name, CELL slice) {
     exit(0);
   }
 }
-````
-
-
-
-````
 CELL latest;
 
 void comma(CELL value) {
@@ -281,4 +245,3 @@ CELL main() {
   printf("\n");
   return 0;
 }
-````
