@@ -17,13 +17,6 @@ int32_t np;
 int32_t memory[32768];
 int32_t ip;
 
-void prepare()
-{
-  np = 0;
-  ip = 0;
-}
-
-
 int32_t lookup_definition(char *name)
 {
   int32_t slice = -1;
@@ -98,7 +91,14 @@ int32_t compile(char *source)
   token = strtok_r(ptr, " ,", &rest);
   printf(" <%s>\n", token);
     comma(1);
-    comma(atoi(token));
+    if (token[0] == '&')
+    {
+        comma(lookup_definition((char *)token + 1));
+    }
+    else
+    {
+      comma(atoi(token));
+    }
   }
   if (strcmp(prefix, "du") == 0)
   {
@@ -204,6 +204,17 @@ int32_t compile(char *source)
 }
 
 
+void prepare()
+{
+  np = 0;
+  ip = 0;
+
+  /* assemble the standard preamble (a jump to :main) */
+  comma(1);  /* LIT */
+  comma(0);  /* placeholder */
+  comma(7);  /* JUMP */
+}
+
 
 void read_line(FILE *file, char *line_buffer)
 {
@@ -264,7 +275,7 @@ int32_t main()
     printf("%d ", memory[i]);
   printf("\nLabels\n");
   for (int32_t i = 0; i < np; i++)
-    printf("%s ", names[i]);
+    printf("%s@@%d ", names[i], pointers[i]);
   printf("\n");
   return 0;
 }
