@@ -196,9 +196,9 @@ void save() {
   fwrite(&memory, sizeof(CELL), latest, fp);
   fclose(fp);
 }
-CELL main() {
+CELL main(int argc, char **argv) {
   prepare();
-  process_file("test.a");
+  process_file(argv[1]);
   finish();
   save();
 
