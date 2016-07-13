@@ -1,3 +1,4 @@
+````
 /*
 naje.c - nga assembler
 */
@@ -303,3 +304,5 @@ int32_t main()
   printf("\n");
   return 0;
 }
+````
+
