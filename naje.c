@@ -272,11 +272,27 @@ void parse_bootstrap(char *fname)
 }
 
 
+void save()
+{
+  FILE *fp;
+  int32_t x = 0;
+
+  if ((fp = fopen("ngaImage", "wb")) == NULL)
+  {
+    printf("Unable to save the ngaImage!\n");
+    exit(2);
+  }
+
+  x = fwrite(&memory, sizeof(int32_t), 32768, fp);
+  fclose(fp);
+}
+
 int32_t main()
 {
   prepare();
   parse_bootstrap("test.a");
   finish();
+  save();
 
   printf("Bytecode\n");
   for (int32_t i = 0; i < ip; i++)
