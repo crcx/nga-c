@@ -3,6 +3,8 @@
 #include <string.h>
 
 #include "nga.c"
+
+#define ALLOW_FORWARD_REFS
 #define MAX_NAMES 1024
 #define STRING_LEN 64
 
@@ -32,6 +34,18 @@ void new_label(char *name, CELL slice) {
     exit(0);
   }
 }
+#ifdef ALLOW_FORWARD_REFS
+#define MAX_REFS 1024
+char ref_names[MAX_NAMES][STRING_LEN];
+CELL ref_offsets[MAX_NAMES];
+CELL refp;
+
+void add_ref(char *name, CELL slice) {
+  strcpy(ref_names[refp], name);
+  ref_offsets[refp] = slice;
+  refp++;
+}
+#endif
 CELL latest;
 
 void comma(CELL value) {
@@ -68,11 +82,13 @@ void assemble(char *source) {
   if (strcmp(prefix, "no") == 0)
     comma(0);
   if (strcmp(prefix, "li") == 0) {
-    printf("\nopcode 1");
     token = strtok_r(ptr, " ,", &rest);
     printf(" <%s>\n", token);
     comma(1);
     if (token[0] == '&') {
+#ifdef ALLOW_FORWARD_REFS
+      add_ref((char *)token + 1, latest);
+#endif
       comma(lookup((char *)token + 1));
     } else {
       comma(atoi(token));
@@ -208,6 +224,9 @@ CELL main(int argc, char **argv) {
   printf("\nLabels\n");
   for (CELL i = 0; i < np; i++)
     printf("%s@@%d ", names[i], pointers[i]);
+  printf("\nRefs\n");
+  for (CELL i = 0; i < refp; i++)
+    printf("%s@@%d ", ref_names[i], ref_offsets[i]);
   printf("\n");
   return 0;
 }
