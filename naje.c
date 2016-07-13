@@ -11,11 +11,11 @@ naje.c - nga assembler
 
 
 char names[MAX_NAMES][STRING_LEN];
-int pointers[MAX_NAMES];
-int np;
+int32_t pointers[MAX_NAMES];
+int32_t np;
 
-int memory[32768];
-int ip;
+int32_t memory[32768];
+int32_t ip;
 
 void prepare()
 {
@@ -24,44 +24,44 @@ void prepare()
 }
 
 
-int lookup_definition(char *name)
+int32_t lookup_definition(char *name)
 {
-  int slice = -1;
-  int n = np;
+  int32_t slice = -1;
+  int32_t n = np;
   while (n > 0)
   {
-  n--;
-  if (strcmp(names[n], name) == 0)
-    slice = pointers[n];
+    n--;
+    if (strcmp(names[n], name) == 0)
+      slice = pointers[n];
   }
   return slice;
 }
 
 
-void add_definition(char *name, int slice)
+void add_definition(char *name, int32_t slice)
 {
   if (lookup_definition(name) == -1)
   {
-  strcpy(names[np], name);
-  pointers[np] = slice;
-  np++;
+    strcpy(names[np], name);
+    pointers[np] = slice;
+    np++;
   }
   else
   {
-  printf("Fatal error: %s already defined\n", name);
-  exit(0);
+    printf("Fatal error: %s already defined\n", name);
+    exit(0);
   }
 }
 
 
-void comma(int value)
+void comma(int32_t value)
 {
   memory[ip] = value;
   ip = ip + 1;
 }
 
 
-int compile(char *source)
+int32_t compile(char *source)
 {
   char *token;
   char *rest;
@@ -71,20 +71,32 @@ int compile(char *source)
   prefix[1] = 0;
   prefix[2] = 0;
 
+  if (strlen(source) == 0)
+    return;
+
   token = strtok_r(ptr, " ,", &rest);
   ptr = rest;
   prefix[0] = (char)token[0];
   prefix[1] = (char)token[1];
+
+  /* Labels start with : */
+  if (prefix[0] == ':')
+  {
+    printf("Define: %s\n", (char *)token + 1);
+    add_definition((char *)token + 1, ip);
+  }
+
+  /* Instructions */
   if (strcmp(prefix, "no") == 0)
   {
-    printf("nop");
+  printf("nop");
     comma(0);
   }
   if (strcmp(prefix, "li") == 0)
   {
-    printf("\nopcode 1");
-    token = strtok_r(ptr, " ,", &rest);
-    printf(" <%s>\n", token);
+  printf("\nopcode 1");
+  token = strtok_r(ptr, " ,", &rest);
+  printf(" <%s>\n", token);
     comma(1);
     comma(atoi(token));
   }
@@ -192,21 +204,67 @@ int compile(char *source)
 }
 
 
-int main()
+
+void read_line(FILE *file, char *line_buffer)
+{
+  if (file == NULL)
+  {
+    printf("Error: file pointer is null.");
+    exit(1);
+  }
+
+  if (line_buffer == NULL)
+  {
+    printf("Error allocating memory for line buffer.");
+    exit(1);
+  }
+
+  char ch = getc(file);
+  int32_t count = 0;
+
+  while ((ch != '\n') && (ch != EOF))
+  {
+    line_buffer[count] = ch;
+    count++;
+    ch = getc(file);
+  }
+
+  line_buffer[count] = '\0';
+}
+
+
+void parse_bootstrap(char *fname)
+{
+  char source[64000];
+
+  FILE *fp;
+
+  fp = fopen(fname, "r");
+  if (fp == NULL)
+    return;
+
+  while (!feof(fp))
+  {
+    read_line(fp, source);
+    printf("::: '%s'\n", source);
+    compile(source);
+  }
+
+  fclose(fp);
+}
+
+
+int32_t main()
 {
   prepare();
-  char test[] = " lit  100";
-  compile(test);
+  parse_bootstrap("test.a");
 
-  char test2[] = "lit 22";
-  compile(test2);
-
-  char test3[] = "add";
-  compile(test3);
-
-  printf("\n");
-  for (int i = 0; i < ip; i++)
-    printf("%ld ", memory[i]);
+  printf("Bytecode\n");
+  for (int32_t i = 0; i < ip; i++)
+    printf("%d ", memory[i]);
+  printf("\nLabels\n");
+  for (int32_t i = 0; i < np; i++)
+    printf("%s ", names[i]);
   printf("\n");
   return 0;
 }
