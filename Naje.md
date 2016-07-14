@@ -24,8 +24,6 @@ the Nga memory array, constants, and constraints.
 #include <string.h>
 
 #include "nga.c"
-
-#define ALLOW_FORWARD_REFS
 ````
 
 Next up is the dictionary. This is implemented as two arrays:
@@ -39,26 +37,26 @@ Next up is the dictionary. This is implemented as two arrays:
 #define MAX_NAMES 1024
 #define STRING_LEN 64
 
-char names[MAX_NAMES][STRING_LEN];
-CELL pointers[MAX_NAMES];
+char najeLabels[MAX_NAMES][STRING_LEN];
+CELL najePointers[MAX_NAMES];
 CELL np;
 
-CELL lookup(char *name) {
+CELL najeLookup(char *name) {
   CELL slice = -1;
   CELL n = np;
   while (n > 0) {
     n--;
-    if (strcmp(names[n], name) == 0)
-      slice = pointers[n];
+    if (strcmp(najeLabels[n], name) == 0)
+      slice = najePointers[n];
   }
   return slice;
 }
 
 
-void new_label(char *name, CELL slice) {
-  if (lookup(name) == -1) {
-    strcpy(names[np], name);
-    pointers[np] = slice;
+void najeAddLabel(char *name, CELL slice) {
+  if (najeLookup(name) == -1) {
+    strcpy(najeLabels[np], name);
+    najePointers[np] = slice;
     np++;
   } else {
     printf("Fatal error: %s already defined\n", name);
@@ -74,10 +72,17 @@ char ref_names[MAX_NAMES][STRING_LEN];
 CELL ref_offsets[MAX_NAMES];
 CELL refp;
 
-void add_ref(char *name, CELL slice) {
+void najeAddReference(char *name, CELL slice) {
   strcpy(ref_names[refp], name);
   ref_offsets[refp] = slice;
   refp++;
+}
+#endif
+````
+
+````
+#ifdef ENABLE_MAP
+void write_map() {
 }
 #endif
 ````
@@ -86,13 +91,13 @@ Next is the core of the assembler.
 
 | name     | args   | usage                                      |
 | -------- | ------ | ------------------------------------------ |
-| comma    | value  | store a value into memory                  |
+| najeStore    | value  | store a value into memory                  |
 | assemble | source | parse and assemble a line of code          |
 
 ````
 CELL latest;
 
-void comma(CELL value) {
+void najeStore(CELL value) {
   memory[latest] = value;
   latest = latest + 1;
 }
@@ -103,91 +108,91 @@ void assemble(char *source) {
   char *rest;
   char *ptr = source;
 
-  char prefix[3];
-  prefix[0] = 0;
-  prefix[1] = 0;
-  prefix[2] = 0;
+  char relevant[3];
+  relevant[0] = 0;
+  relevant[1] = 0;
+  relevant[2] = 0;
 
   if (strlen(source) == 0)
     return;
 
   token = strtok_r(ptr, " ,", &rest);
   ptr = rest;
-  prefix[0] = (char)token[0];
-  prefix[1] = (char)token[1];
+  relevant[0] = (char)token[0];
+  relevant[1] = (char)token[1];
 
   /* Labels start with : */
-  if (prefix[0] == ':') {
+  if (relevant[0] == ':') {
     printf("Define: %s\n", (char *)token + 1);
-    new_label((char *)token + 1, latest);
+    najeAddLabel((char *)token + 1, latest);
   }
 
   /* Instructions */
-  if (strcmp(prefix, "no") == 0)
-    comma(0);
-  if (strcmp(prefix, "li") == 0) {
+  if (strcmp(relevant, "no") == 0)
+    najeStore(0);
+  if (strcmp(relevant, "li") == 0) {
     token = strtok_r(ptr, " ,", &rest);
     printf(" <%s>\n", token);
-    comma(1);
+    najeStore(1);
     if (token[0] == '&') {
 #ifdef ALLOW_FORWARD_REFS
-      add_ref((char *)token + 1, latest);
+      najeAddReference((char *)token + 1, latest);
 #endif
-      comma(lookup((char *)token + 1));
+      najeStore(najeLookup((char *)token + 1));
     } else {
-      comma(atoi(token));
+      najeStore(atoi(token));
     }
   }
-  if (strcmp(prefix, "du") == 0)
-    comma(2);
-  if (strcmp(prefix, "dr") == 0)
-    comma(3);
-  if (strcmp(prefix, "sw") == 0)
-    comma(4);
-  if (strcmp(prefix, "pu") == 0)
-    comma(5);
-  if (strcmp(prefix, "po") == 0)
-    comma(6);
-  if (strcmp(prefix, "ju") == 0)
-    comma(7);
-  if (strcmp(prefix, "ca") == 0)
-    comma(8);
-  if (strcmp(prefix, "cj") == 0)
-    comma(9);
-  if (strcmp(prefix, "re") == 0)
-    comma(10);
-  if (strcmp(prefix, "eq") == 0)
-    comma(11);
-  if (strcmp(prefix, "ne") == 0)
-    comma(12);
-  if (strcmp(prefix, "lt") == 0)
-    comma(13);
-  if (strcmp(prefix, "gt") == 0)
-    comma(14);
-  if (strcmp(prefix, "fe") == 0)
-    comma(15);
-  if (strcmp(prefix, "st") == 0)
-    comma(16);
-  if (strcmp(prefix, "ad") == 0)
-    comma(17);
-  if (strcmp(prefix, "su") == 0)
-    comma(18);
-  if (strcmp(prefix, "mu") == 0)
-    comma(19);
-  if (strcmp(prefix, "di") == 0)
-    comma(20);
-  if (strcmp(prefix, "an") == 0)
-    comma(21);
-  if (strcmp(prefix, "or") == 0)
-    comma(22);
-  if (strcmp(prefix, "xo") == 0)
-    comma(23);
-  if (strcmp(prefix, "sh") == 0)
-    comma(24);
-  if (strcmp(prefix, "zr") == 0)
-    comma(25);
-  if (strcmp(prefix, "en") == 0)
-    comma(26);
+  if (strcmp(relevant, "du") == 0)
+    najeStore(2);
+  if (strcmp(relevant, "dr") == 0)
+    najeStore(3);
+  if (strcmp(relevant, "sw") == 0)
+    najeStore(4);
+  if (strcmp(relevant, "pu") == 0)
+    najeStore(5);
+  if (strcmp(relevant, "po") == 0)
+    najeStore(6);
+  if (strcmp(relevant, "ju") == 0)
+    najeStore(7);
+  if (strcmp(relevant, "ca") == 0)
+    najeStore(8);
+  if (strcmp(relevant, "cj") == 0)
+    najeStore(9);
+  if (strcmp(relevant, "re") == 0)
+    najeStore(10);
+  if (strcmp(relevant, "eq") == 0)
+    najeStore(11);
+  if (strcmp(relevant, "ne") == 0)
+    najeStore(12);
+  if (strcmp(relevant, "lt") == 0)
+    najeStore(13);
+  if (strcmp(relevant, "gt") == 0)
+    najeStore(14);
+  if (strcmp(relevant, "fe") == 0)
+    najeStore(15);
+  if (strcmp(relevant, "st") == 0)
+    najeStore(16);
+  if (strcmp(relevant, "ad") == 0)
+    najeStore(17);
+  if (strcmp(relevant, "su") == 0)
+    najeStore(18);
+  if (strcmp(relevant, "mu") == 0)
+    najeStore(19);
+  if (strcmp(relevant, "di") == 0)
+    najeStore(20);
+  if (strcmp(relevant, "an") == 0)
+    najeStore(21);
+  if (strcmp(relevant, "or") == 0)
+    najeStore(22);
+  if (strcmp(relevant, "xo") == 0)
+    najeStore(23);
+  if (strcmp(relevant, "sh") == 0)
+    najeStore(24);
+  if (strcmp(relevant, "zr") == 0)
+    najeStore(25);
+  if (strcmp(relevant, "en") == 0)
+    najeStore(26);
 }
 ````
 
@@ -200,14 +205,14 @@ void prepare() {
   latest = 0;
 
   /* assemble the standard preamble (a jump to :main) */
-  comma(1);  /* LIT */
-  comma(0);  /* placeholder */
-  comma(7);  /* JUMP */
+  najeStore(1);  /* LIT */
+  najeStore(0);  /* placeholder */
+  najeStore(7);  /* JUMP */
 }
 
 
 void finish() {
-  CELL entry = lookup("main");
+  CELL entry = najeLookup("main");
   memory[1] = entry;
 }
 ````
@@ -286,10 +291,12 @@ CELL main(int argc, char **argv) {
     printf("%d ", memory[i]);
   printf("\nLabels\n");
   for (CELL i = 0; i < np; i++)
-    printf("%s@@%d ", names[i], pointers[i]);
+    printf("%s@@%d ", najeLabels[i], najePointers[i]);
+#ifdef ALLOW_FORWARD_REFS
   printf("\nRefs\n");
   for (CELL i = 0; i < refp; i++)
     printf("%s@@%d ", ref_names[i], ref_offsets[i]);
+#endif
   printf("\n");
   return 0;
 }
