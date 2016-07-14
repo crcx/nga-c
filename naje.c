@@ -43,6 +43,17 @@ void najeAddReference(char *name, CELL slice) {
   ref_offsets[refp] = slice;
   refp++;
 }
+
+
+void najeResolveReferences() {
+  for (CELL i = 0; i < refp; i++) {
+    if (najeLookup(ref_names[i]) != -1) {
+        printf("-----> %s @ %d resolved to %d\n", ref_names[i], ref_offsets[i], najeLookup(ref_names[i]));
+        memory[ref_offsets[i]] = najeLookup(ref_names[i]);
+    } else {
+    }
+  }
+}
 #endif
 #ifdef ENABLE_MAP
 void write_map() {
@@ -90,8 +101,10 @@ void assemble(char *source) {
     if (token[0] == '&') {
 #ifdef ALLOW_FORWARD_REFS
       najeAddReference((char *)token + 1, latest);
-#endif
+      najeStore(-9999);
+#else
       najeStore(najeLookup((char *)token + 1));
+#endif
     } else {
       najeStore(atoi(token));
     }
@@ -218,19 +231,22 @@ CELL main(int argc, char **argv) {
   prepare();
   process_file(argv[1]);
   finish();
+#ifdef ALLOW_FORWARD_REFS
+  najeResolveReferences();
+#endif
   save();
 
-  printf("Bytecode\n");
-  for (CELL i = 0; i < latest; i++)
-    printf("%d ", memory[i]);
-  printf("\nLabels\n");
-  for (CELL i = 0; i < np; i++)
-    printf("%s@@%d ", najeLabels[i], najePointers[i]);
 #ifdef ALLOW_FORWARD_REFS
   printf("\nRefs\n");
   for (CELL i = 0; i < refp; i++)
     printf("%s@@%d ", ref_names[i], ref_offsets[i]);
 #endif
+  printf("Bytecode\n[");
+  for (CELL i = 0; i < latest; i++)
+    printf("%d, ", memory[i]);
+  printf("]\nLabels\n");
+  for (CELL i = 0; i < np; i++)
+    printf("%s@@%d ", najeLabels[i], najePointers[i]);
   printf("\n");
   return 0;
 }
