@@ -7,8 +7,6 @@ Naje is a minimalistic assembler for the Nga instruction set. It provides:
 * Basic literals
 * Symbolic names for all instructions
 * Facilities for inlining simple data
-* Directives for setting output filename
-* Directives for controlling instruction packing
 
 Naje is intended to be a stepping stone for supporting larger applications.
 It wasn't designed to be easy or fun to use, just to provide the essentials
@@ -106,7 +104,14 @@ void najeWriteMap() {
   }
 
   for (CELL i = 0; i < np; i++)
-    fprintf(fp, "label\t%s\t%d\n", najeLabels[i], najePointers[i]);
+    fprintf(fp, "LABEL\t%s\t%d\n", najeLabels[i], najePointers[i]);
+
+  for (CELL i = 0; i < latest; i++) {
+    if (references[i] == -1)
+      fprintf(fp, "POINTER\t%d\t%d\n", memory[i], i);
+    if (references[i] == 0)
+      fprintf(fp, "LITERAL\t%d\t%d\n", memory[i], i);
+  }
 
   fclose(fp);
 }

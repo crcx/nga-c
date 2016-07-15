@@ -87,7 +87,14 @@ void najeWriteMap() {
   }
 
   for (CELL i = 0; i < np; i++)
-    fprintf(fp, "label\t%s\t%d\n", najeLabels[i], najePointers[i]);
+    fprintf(fp, "LABEL\t%s\t%d\n", najeLabels[i], najePointers[i]);
+
+  for (CELL i = 0; i < latest; i++) {
+    if (references[i] == -1)
+      fprintf(fp, "POINTER\t%d\t%d\n", memory[i], i);
+    if (references[i] == 0)
+      fprintf(fp, "LITERAL\t%d\t%d\n", memory[i], i);
+  }
 
   fclose(fp);
 }
