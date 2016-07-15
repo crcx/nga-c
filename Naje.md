@@ -12,6 +12,90 @@ Naje is intended to be a stepping stone for supporting larger applications.
 It wasn't designed to be easy or fun to use, just to provide the essentials
 needed to build useful things.
 
+## Instruction Set
+
+Nga has a very small set of instructions. These can be briefly listed in a
+short table:
+
+    0  nop        7  jump      14  gt        21  and
+    1  lit <v>    8  call      15  fetch     22  or
+    2  dup        9  cjump     16  store     23  xor
+    3  drop      10  return    17  add       24  shift
+    4  swap      11  eq        18  sub       25  zret
+    5  push      12  neq       19  mul       26  end
+    6  pop       13  lt        20  divmod
+
+All instructions except for **lit** are one cell long. **lit** takes two: one
+for the instruction and one for the value to push to the stack.
+
+Naje provides a simple syntax. A short example:
+
+    .output test.nga
+    :add
+      add
+      return
+    :subtract
+      sub
+      return
+    :increment
+      lit 1
+      lit &add
+      call
+      return
+    :main
+      lit 100
+      lit 95
+      lit &subtract
+      call
+      lit &increment
+      call
+      end
+
+Delving a bit deeper:
+
+* Blank lines are ok and will be stripped out
+* One instruction (or assembler directive) per line
+* Labels start with a colon
+* A **lit** can be followed by a number or a label name
+* References to labels must start with an &
+
+### Technical Notes
+
+Naje has a trivial parser. In deciding how to deal with a line, it will first
+strip it to its core elements, then proceed. So given a line like:
+
+    lit 100 ... push 100 to the stack! ...
+
+Naje will take the first two characters of the first token (*li*) to identify
+the instruction and the second token for the value. The rest is ignored.
+
+## Instruction Packing
+
+Nga allows for packing multiple instructions per memory location. The Nga code
+does this automatically.
+
+What this does is effectively reduce the memory a program takes significantly.
+In a standard configuration, cells are 32-bits in length.  With one
+instruction per cell, much potential space is wasted. Packing allows up to
+four to be stored in each cell.
+
+Some notes on this:
+
+- unused slots are stored as NOP instructions
+- packing ends when:
+
+  * four instructions have been queued
+  * a flow control instruction has been queued
+
+    - JUMP
+    - CJUMP
+    - CALL
+    - RET
+    - ZRET
+
+  * a label is being declared
+  * when a **.data** directive is issued
+
 ## Code
 
 ````
