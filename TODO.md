@@ -8,16 +8,16 @@ YYYY.MM [ ] not started
 
         [-] rewrite Naje in C
             [x] core implementation
-            [-] use nga.c for constants, memory array
-            [ ] packed instructions
-            [ ] directives
-                [ ] .data
-                [ ] .packed
-                [ ] .unpacked
-                [ ] .output
-            [ ] forward references
-            [ ] generate map
-        [-] Examples
+            [x] use nga.c for constants, memory array
+            [x] packed instructions
+            [-] directives
+                [x] .data
+                [-] .packed
+                [-] .unpacked
+                [-] .output
+            [x] forward references
+            [x] generate map
+        [x] Examples
             [x] fibonacci sequence
             [x] squares
         [ ] minimal Forth dialect
