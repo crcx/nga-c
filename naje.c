@@ -3,6 +3,14 @@
 #include <string.h>
 
 #include "nga.c"
+
+CELL latest;
+CELL packed[4];
+CELL pindex;
+
+CELL dataList[1024];
+CELL dataType[1024];
+CELL dindex;
 #define MAX_NAMES 1024
 #define STRING_LEN 64
 
@@ -35,22 +43,33 @@ void najeAddLabel(char *name, CELL slice) {
 #ifdef ALLOW_FORWARD_REFS
 #define MAX_REFS 1024
 char ref_names[MAX_NAMES][STRING_LEN];
-CELL ref_offsets[MAX_NAMES];
+CELL references[IMAGE_SIZE];
 CELL refp;
 
-void najeAddReference(char *name, CELL slice) {
+void najeAddReference(char *name) {
   strcpy(ref_names[refp], name);
-  ref_offsets[refp] = slice;
   refp++;
 }
 
-
 void najeResolveReferences() {
+  CELL offset, matched;
+
   for (CELL i = 0; i < refp; i++) {
-    if (najeLookup(ref_names[i]) != -1) {
-        printf("-----> %s @ %d resolved to %d\n", ref_names[i], ref_offsets[i], najeLookup(ref_names[i]));
-        memory[ref_offsets[i]] = najeLookup(ref_names[i]);
+    offset = najeLookup(ref_names[i]);
+    matched = 0;
+    printf("RESOLVE: %s ", ref_names[i]);
+    if (offset != -1) {
+        printf(" / defined");
+        for (CELL j = 0; j < latest; j++) {
+          if (references[j] == 1 && matched == 0) {
+            printf(" / success\n");
+            memory[j] = offset;
+            references[j] = -1;
+            matched = -1;
+          }
+        }
     } else {
+      printf(" / failed\n");
     }
   }
 }
@@ -70,31 +89,33 @@ void najeWriteMap() {
   fclose(fp);
 }
 #endif
-CELL latest;
-
-void najeStore(CELL value) {
+void najeStore(CELL type, CELL value) {
   memory[latest] = value;
+  references[latest] = type;
   latest = latest + 1;
 }
 
-CELL packed[4];
-CELL pindex;
-
-CELL dataList[1024];
-CELL dindex;
 
 void najeSync() {
-  CELL opcode = 0;
-  opcode = packed[0];
-  opcode >>= 8;
-  opcode = packed[1];
-  opcode >>= 8;
-  opcode = packed[2];
-  opcode >>= 8;
-  opcode = packed[3];
-  najeStore(opcode);
-  for (CELL i = 0; i < dindex; i++)
-    najeStore(dataList[i]);
+  if (pindex == 0 && dindex == 0)
+    return;
+
+  if (pindex != 0) {
+    unsigned int opcode = 0;
+    opcode = packed[3];
+    opcode = opcode << 8;
+    opcode += packed[2];
+    opcode = opcode << 8;
+    opcode += packed[1];
+    opcode = opcode << 8;
+    opcode += packed[0];
+    printf("Packed Opcode: %d\n", opcode);
+    najeStore(2, opcode);
+  }
+  if (dindex != 0) {
+    for (CELL i = 0; i < dindex; i++)
+      najeStore(dataType[i], dataList[i]);
+  }
   pindex = 0;
   dindex = 0;
   packed[0] = 0;
@@ -104,20 +125,28 @@ void najeSync() {
 }
 
 void najeInst(CELL opcode) {
-  najeStore(opcode);
-  return;
-  packed[pindex] = opcode;
-  pindex++;
-
   if (pindex == 4) {
     najeSync();
   }
+
+  packed[pindex] = opcode;
+  pindex++;
+
+  switch (opcode) {
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 25: printf("___\n");
+             najeSync();
+             break;
+    default: break;
+  }
 }
 
-void najeData(CELL data) {
-  najeStore(data);
-  return;
+void najeData(CELL type, CELL data) {
   dataList[dindex] = data;
+  dataType[dindex] = type;
   dindex++;
 }
 
@@ -141,6 +170,7 @@ void najeAssemble(char *source) {
 
   /* Labels start with : */
   if (relevant[0] == ':') {
+    najeSync();
     printf("Define: %s\n", (char *)token + 1);
     najeAddLabel((char *)token + 1, latest);
   }
@@ -154,13 +184,13 @@ void najeAssemble(char *source) {
     najeInst(1);
     if (token[0] == '&') {
 #ifdef ALLOW_FORWARD_REFS
-      najeAddReference((char *)token + 1, latest);
-      najeData(-9999);
+      najeAddReference((char *)token + 1);
+      najeData(1, -9999);
 #else
-      najeData(najeLookup((char *)token + 1));
+      najeData(0, najeLookup((char *)token + 1));
 #endif
     } else {
-      najeInst(atoi(token));
+      najeData(0, atoi(token));
     }
   }
   if (strcmp(relevant, "du") == 0)
@@ -220,7 +250,7 @@ void prepare() {
 
   /* assemble the standard preamble (a jump to :main) */
   najeInst(1);  /* LIT */
-  najeData(0);  /* placeholder */
+  najeData(0, 0);  /* placeholder */
   najeInst(7);  /* JUMP */
 }
 
@@ -288,16 +318,20 @@ CELL main(int argc, char **argv) {
 #ifdef ALLOW_FORWARD_REFS
   najeResolveReferences();
 #endif
+  najeSync();
   save();
 
 #ifdef ALLOW_FORWARD_REFS
   printf("\nRefs\n");
   for (CELL i = 0; i < refp; i++)
-    printf("%s@@%d ", ref_names[i], ref_offsets[i]);
+    printf("%s ", ref_names[i]);
 #endif
-  printf("Bytecode\n[");
+  printf("\nBytecode\n[");
   for (CELL i = 0; i < latest; i++)
     printf("%d, ", memory[i]);
+  printf("\nBytecode\n[");
+  for (CELL i = 0; i < latest; i++)
+    printf("%d, ", references[i]);
   printf("]\nLabels\n");
   for (CELL i = 0; i < np; i++)
     printf("%s@@%d ", najeLabels[i], najePointers[i]);
