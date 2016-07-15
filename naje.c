@@ -194,6 +194,25 @@ void najeAssemble(char *source) {
     najeAddLabel((char *)token + 1, latest);
   }
 
+  /* Directives start with . */
+  if (relevant[0] == '.') {
+    switch (relevant[1]) {
+      case 'd': /* .data */
+                token = strtok_r(ptr, " ,", &rest);
+                najeSync();
+                najeData(0, atoi(token));
+                najeSync();
+                break;
+      case 'o': /* TODO: set output filename */
+                break;
+      case 'p': /* TODO: set packed mode */
+                break;
+      case 'u': /* TODO: set unpacked mode */
+                break;
+    }
+  }
+
+
   /* Instructions */
   if (strcmp(relevant, "no") == 0)
     najeInst(0);
