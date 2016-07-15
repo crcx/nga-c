@@ -4,7 +4,7 @@
 
 Naje is a minimalistic assembler for the Nga instruction set. It provides:
 
-* Single pass (back references only)
+* Dual stage (supports forward references)
 * Lables
 * Basic literals
 * Symbolic names for all instructions
@@ -93,7 +93,7 @@ void najeResolveReferences() {
 
 ````
 #ifdef ENABLE_MAP
-void write_map() {
+void najeWriteMap() {
 }
 #endif
 ````
@@ -113,8 +113,34 @@ void najeStore(CELL value) {
   latest = latest + 1;
 }
 
+#ifdef ENABLE_PACKER
+CELL packed[4];
+CELL pindex;
 
-void assemble(char *source) {
+CELL dataList[1024];
+cell dindex;
+
+void najeSync() {
+  pindex = 0;
+  dindex = 0;
+}
+
+void najeInst(CELL opcode) {
+  packed[pindex] = opcode
+  pindex++;
+
+  if (pindex == 4) {
+    najeSync();
+  }
+}
+
+void najeData(CELL data) {
+  dataList[dindex] = data;
+  dindex++;
+}
+#endif
+
+void najeAssemble(char *source) {
   char *token;
   char *rest;
   char *ptr = source;
@@ -269,7 +295,7 @@ void process_file(char *fname) {
   while (!feof(fp)) {
     read_line(fp, source);
     printf("::: '%s'\n", source);
-    assemble(source);
+    najeAssemble(source);
   }
 
   fclose(fp);
