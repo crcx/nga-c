@@ -98,13 +98,33 @@ Some notes on this:
 
 ## Code
 
+Include the standard headers and Nga. (This uses various constants and some
+dat structures from Nga)
+
 ````
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "nga.c"
+````
 
+Global variables.
+
+| name         | description                                                |
+| ------------ | ---------------------------------------------------------- |
+| latest       | index into the **memory** buffer (buffer in *nga.c*)       |
+| packed       | array of opcodes for packing                               |
+| pindex       | index into **packed**                                      |
+| dataList     | array of data elements waiting to be stored                |
+| dataType     | array of type codes for data elements                      |
+| dindex       | index into **dataList** and **dataType**                   |
+| najeLabels   | array of label names                                       |
+| najePointers | array of pointers that go with **najeLabels**              |
+| np           | index into **najeLabels** and **najePointers**             |
+| references   | array of types used to identify references needing patched |
+
+````
 CELL latest;
 CELL packed[4];
 CELL pindex;
@@ -119,6 +139,10 @@ CELL dindex;
 char najeLabels[MAX_NAMES][STRING_LEN];
 CELL najePointers[MAX_NAMES];
 CELL np;
+
+CELL references[IMAGE_SIZE];
+
+
 
 CELL najeLookup(char *name) {
   CELL slice = -1;
@@ -142,19 +166,28 @@ void najeAddLabel(char *name, CELL slice) {
     exit(0);
   }
 }
+````
 
+Naje can be configured to allow for forward references. This can use a
+significant amount of RAM, so is disabled by default. To enable, compile with
+-DALLOW_FORWARD_REFERENCES
+
+````
 #ifdef ALLOW_FORWARD_REFS
-#define MAX_REFS 1024
+#define MAX_REFS 32*1024
 char ref_names[MAX_NAMES][STRING_LEN];
-CELL references[IMAGE_SIZE];
 CELL refp;
+#endif
 
 void najeAddReference(char *name) {
+#ifdef ALLOW_FORWARD_REFS
   strcpy(ref_names[refp], name);
   refp++;
+#endif
 }
 
 void najeResolveReferences() {
+#ifdef ALLOW_FORWARD_REFS
   CELL offset, matched;
 
   for (CELL i = 0; i < refp; i++) {
@@ -175,11 +208,28 @@ void najeResolveReferences() {
       printf(" / failed\n");
     }
   }
-}
 #endif
+}
+````
 
-#ifdef ENABLE_MAP
+A *map* is a file which, along with the image file, can be used to identify
+specific stored elements.
+
+Mapfiles are stored as tab separated values with a format like:
+
+    type <tab> identifier/value <tab> offset
+
+| type    | usage                 |
+| ------- | --------------------- |
+| label   | a named offset        |
+| literal | a numeric value       |
+| pointer | pointer to an address |
+
+To enable this, compile with -DENABLE_MAP.
+
+````
 void najeWriteMap() {
+#ifdef ENABLE_MAP
   FILE *fp;
 
   if ((fp = fopen("ngaImage.map", "w")) == NULL) {
@@ -191,16 +241,23 @@ void najeWriteMap() {
     fprintf(fp, "LABEL\t%s\t%d\n", najeLabels[i], najePointers[i]);
 
   for (CELL i = 0; i < latest; i++) {
-    if (references[i] == -1)
-      fprintf(fp, "POINTER\t%d\t%d\n", memory[i], i);
     if (references[i] == 0)
       fprintf(fp, "LITERAL\t%d\t%d\n", memory[i], i);
   }
 
-  fclose(fp);
-}
-#endif
+  for (CELL i = 0; i < latest; i++) {
+    if (references[i] == -1)
+      fprintf(fp, "POINTER\t%d\t%d\n", memory[i], i);
+  }
 
+  fclose(fp);
+#else
+  return;
+#endif
+}
+````
+
+````
 void najeStore(CELL type, CELL value) {
   memory[latest] = value;
   references[latest] = type;
@@ -429,33 +486,21 @@ void save() {
 
 CELL main(int argc, char **argv) {
   prepare();
-  process_file(argv[1]);
+    process_file(argv[1]);
+    najeResolveReferences();
+    najeSync();
   finish();
-#ifdef ALLOW_FORWARD_REFS
-  najeResolveReferences();
-#endif
-  najeSync();
   save();
 
-#ifdef ALLOW_FORWARD_REFS
-  printf("\nRefs\n");
-  for (CELL i = 0; i < refp; i++)
-    printf("%s ", ref_names[i]);
-#endif
   printf("\nBytecode\n[");
   for (CELL i = 0; i < latest; i++)
     printf("%d, ", memory[i]);
-  printf("\nBytecode\n[");
-  for (CELL i = 0; i < latest; i++)
-    printf("%d, ", references[i]);
   printf("]\nLabels\n");
   for (CELL i = 0; i < np; i++)
     printf("%s@@%d ", najeLabels[i], najePointers[i]);
   printf("\n");
 
-#ifdef ENABLE_MAP
   najeWriteMap();
-#endif
 
   return 0;
 }
