@@ -67,6 +67,7 @@ def tiroMappedElement(i, cell):
   done = False
   for line in map:
     t, v, o = line
+    t = t.lower()
     if int(o) == i:
       if t == 'label':
         print('\n:{0}'.format(v))
