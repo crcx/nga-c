@@ -11,6 +11,7 @@ CELL pindex;
 CELL dataList[1024];
 CELL dataType[1024];
 CELL dindex;
+
 #define MAX_NAMES 1024
 #define STRING_LEN 64
 
@@ -40,6 +41,7 @@ void najeAddLabel(char *name, CELL slice) {
     exit(0);
   }
 }
+
 #ifdef ALLOW_FORWARD_REFS
 #define MAX_REFS 1024
 char ref_names[MAX_NAMES][STRING_LEN];
@@ -74,6 +76,7 @@ void najeResolveReferences() {
   }
 }
 #endif
+
 #ifdef ENABLE_MAP
 void najeWriteMap() {
   FILE *fp;
@@ -89,6 +92,7 @@ void najeWriteMap() {
   fclose(fp);
 }
 #endif
+
 void najeStore(CELL type, CELL value) {
   memory[latest] = value;
   references[latest] = type;
@@ -244,6 +248,7 @@ void najeAssemble(char *source) {
   if (strcmp(relevant, "en") == 0)
     najeInst(26);
 }
+
 void prepare() {
   np = 0;
   latest = 0;
@@ -259,6 +264,7 @@ void finish() {
   CELL entry = najeLookup("main");
   memory[1] = entry;
 }
+
 void read_line(FILE *file, char *line_buffer) {
   if (file == NULL) {
     printf("Error: file pointer is null.");
@@ -300,6 +306,7 @@ void process_file(char *fname) {
 
   fclose(fp);
 }
+
 void save() {
   FILE *fp;
 
@@ -311,6 +318,7 @@ void save() {
   fwrite(&memory, sizeof(CELL), latest, fp);
   fclose(fp);
 }
+
 CELL main(int argc, char **argv) {
   prepare();
   process_file(argv[1]);

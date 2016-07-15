@@ -1,22 +1,20 @@
 # Naje
 
-## Overview
-
 Naje is a minimalistic assembler for the Nga instruction set. It provides:
 
-* Dual stage (supports forward references)
+* Two passes: assemble, then resolve lables
 * Lables
 * Basic literals
 * Symbolic names for all instructions
+* Facilities for inlining simple data
+* Directives for setting output filename
+* Directives for controlling instruction packing
 
 Naje is intended to be a stepping stone for supporting larger applications.
 It wasn't designed to be easy or fun to use, just to provide the essentials
 needed to build useful things.
 
 ## Code
-
-First up, the red tape bits. Include the needed headers and Nga. Naje will use
-the Nga memory array, constants, and constraints.
 
 ````
 #include <stdio.h>
@@ -32,16 +30,7 @@ CELL pindex;
 CELL dataList[1024];
 CELL dataType[1024];
 CELL dindex;
-````
 
-Next up is the dictionary. This is implemented as two arrays:
-
-| name     | description                                                |
-| -------- | ---------------------------------------------------------- |
-| names    | an array of strings corresponding to label names           |
-| pointers | an array of pointers to the memory location for each label |
-
-````
 #define MAX_NAMES 1024
 #define STRING_LEN 64
 
@@ -71,9 +60,7 @@ void najeAddLabel(char *name, CELL slice) {
     exit(0);
   }
 }
-````
 
-````
 #ifdef ALLOW_FORWARD_REFS
 #define MAX_REFS 1024
 char ref_names[MAX_NAMES][STRING_LEN];
@@ -108,9 +95,7 @@ void najeResolveReferences() {
   }
 }
 #endif
-````
 
-````
 #ifdef ENABLE_MAP
 void najeWriteMap() {
   FILE *fp;
@@ -126,16 +111,7 @@ void najeWriteMap() {
   fclose(fp);
 }
 #endif
-````
 
-Next is the core of the assembler.
-
-| name      | args   | usage                                      |
-| --------- | ------ | ------------------------------------------ |
-| najeStore | value  | store a value into memory                  |
-| assemble  | source | parse and assemble a line of code          |
-
-````
 void najeStore(CELL type, CELL value) {
   memory[latest] = value;
   references[latest] = type;
@@ -291,12 +267,7 @@ void najeAssemble(char *source) {
   if (strcmp(relevant, "en") == 0)
     najeInst(26);
 }
-````
 
-The next two functions setup the standard preamble (a jump to :main) and
-finalize the image (by patching the jump to the actual offset of :main).
-
-````
 void prepare() {
   np = 0;
   latest = 0;
@@ -312,11 +283,7 @@ void finish() {
   CELL entry = najeLookup("main");
   memory[1] = entry;
 }
-````
 
-Then two functions for loading a source file and reading it line by line.
-
-````
 void read_line(FILE *file, char *line_buffer) {
   if (file == NULL) {
     printf("Error: file pointer is null.");
@@ -358,11 +325,7 @@ void process_file(char *fname) {
 
   fclose(fp);
 }
-````
 
-Support for saving the results to an image file.
-
-````
 void save() {
   FILE *fp;
 
@@ -374,9 +337,7 @@ void save() {
   fwrite(&memory, sizeof(CELL), latest, fp);
   fclose(fp);
 }
-````
 
-````
 CELL main(int argc, char **argv) {
   prepare();
   process_file(argv[1]);
