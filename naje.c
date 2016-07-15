@@ -77,20 +77,36 @@ void najeStore(CELL value) {
   latest = latest + 1;
 }
 
-#ifdef ENABLE_PACKER
 CELL packed[4];
 CELL pindex;
 
 CELL dataList[1024];
-cell dindex;
+CELL dindex;
 
 void najeSync() {
+  CELL opcode = 0;
+  opcode = packed[0];
+  opcode >>= 8;
+  opcode = packed[1];
+  opcode >>= 8;
+  opcode = packed[2];
+  opcode >>= 8;
+  opcode = packed[3];
+  najeStore(opcode);
+  for (CELL i = 0; i < dindex; i++)
+    najeStore(dataList[i]);
   pindex = 0;
   dindex = 0;
+  packed[0] = 0;
+  packed[1] = 0;
+  packed[2] = 0;
+  packed[3] = 0;
 }
 
 void najeInst(CELL opcode) {
-  packed[pindex] = opcode
+  najeStore(opcode);
+  return;
+  packed[pindex] = opcode;
   pindex++;
 
   if (pindex == 4) {
@@ -99,10 +115,11 @@ void najeInst(CELL opcode) {
 }
 
 void najeData(CELL data) {
+  najeStore(data);
+  return;
   dataList[dindex] = data;
   dindex++;
 }
-#endif
 
 void najeAssemble(char *source) {
   char *token;
@@ -130,81 +147,81 @@ void najeAssemble(char *source) {
 
   /* Instructions */
   if (strcmp(relevant, "no") == 0)
-    najeStore(0);
+    najeInst(0);
   if (strcmp(relevant, "li") == 0) {
     token = strtok_r(ptr, " ,", &rest);
     printf(" <%s>\n", token);
-    najeStore(1);
+    najeInst(1);
     if (token[0] == '&') {
 #ifdef ALLOW_FORWARD_REFS
       najeAddReference((char *)token + 1, latest);
-      najeStore(-9999);
+      najeData(-9999);
 #else
-      najeStore(najeLookup((char *)token + 1));
+      najeData(najeLookup((char *)token + 1));
 #endif
     } else {
-      najeStore(atoi(token));
+      najeInst(atoi(token));
     }
   }
   if (strcmp(relevant, "du") == 0)
-    najeStore(2);
+    najeInst(2);
   if (strcmp(relevant, "dr") == 0)
-    najeStore(3);
+    najeInst(3);
   if (strcmp(relevant, "sw") == 0)
-    najeStore(4);
+    najeInst(4);
   if (strcmp(relevant, "pu") == 0)
-    najeStore(5);
+    najeInst(5);
   if (strcmp(relevant, "po") == 0)
-    najeStore(6);
+    najeInst(6);
   if (strcmp(relevant, "ju") == 0)
-    najeStore(7);
+    najeInst(7);
   if (strcmp(relevant, "ca") == 0)
-    najeStore(8);
+    najeInst(8);
   if (strcmp(relevant, "cj") == 0)
-    najeStore(9);
+    najeInst(9);
   if (strcmp(relevant, "re") == 0)
-    najeStore(10);
+    najeInst(10);
   if (strcmp(relevant, "eq") == 0)
-    najeStore(11);
+    najeInst(11);
   if (strcmp(relevant, "ne") == 0)
-    najeStore(12);
+    najeInst(12);
   if (strcmp(relevant, "lt") == 0)
-    najeStore(13);
+    najeInst(13);
   if (strcmp(relevant, "gt") == 0)
-    najeStore(14);
+    najeInst(14);
   if (strcmp(relevant, "fe") == 0)
-    najeStore(15);
+    najeInst(15);
   if (strcmp(relevant, "st") == 0)
-    najeStore(16);
+    najeInst(16);
   if (strcmp(relevant, "ad") == 0)
-    najeStore(17);
+    najeInst(17);
   if (strcmp(relevant, "su") == 0)
-    najeStore(18);
+    najeInst(18);
   if (strcmp(relevant, "mu") == 0)
-    najeStore(19);
+    najeInst(19);
   if (strcmp(relevant, "di") == 0)
-    najeStore(20);
+    najeInst(20);
   if (strcmp(relevant, "an") == 0)
-    najeStore(21);
+    najeInst(21);
   if (strcmp(relevant, "or") == 0)
-    najeStore(22);
+    najeInst(22);
   if (strcmp(relevant, "xo") == 0)
-    najeStore(23);
+    najeInst(23);
   if (strcmp(relevant, "sh") == 0)
-    najeStore(24);
+    najeInst(24);
   if (strcmp(relevant, "zr") == 0)
-    najeStore(25);
+    najeInst(25);
   if (strcmp(relevant, "en") == 0)
-    najeStore(26);
+    najeInst(26);
 }
 void prepare() {
   np = 0;
   latest = 0;
 
   /* assemble the standard preamble (a jump to :main) */
-  najeStore(1);  /* LIT */
-  najeStore(0);  /* placeholder */
-  najeStore(7);  /* JUMP */
+  najeInst(1);  /* LIT */
+  najeData(0);  /* placeholder */
+  najeInst(7);  /* JUMP */
 }
 
 
