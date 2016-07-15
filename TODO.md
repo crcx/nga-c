@@ -14,7 +14,7 @@ YYYY.MM [ ] not started
                 [x] .data
                 [-] .packed
                 [-] .unpacked
-                [-] .output
+                [x] .output
             [x] forward references
             [x] generate map
         [x] Examples

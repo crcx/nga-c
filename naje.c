@@ -20,6 +20,7 @@ CELL np;
 
 CELL references[IMAGE_SIZE];
 
+char outputName[STRING_LEN];
 
 
 CELL najeLookup(char *name) {
@@ -85,7 +86,7 @@ void najeWriteMap() {
 #ifdef ENABLE_MAP
   FILE *fp;
 
-  if ((fp = fopen("ngaImage.map", "w")) == NULL) {
+  if ((fp = fopen(strcat(outputName, ".map"), "w")) == NULL) {
     printf("Unable to save the ngaImage.map!\n");
     exit(2);
   }
@@ -203,7 +204,9 @@ void najeAssemble(char *source) {
                 najeData(0, atoi(token));
                 najeSync();
                 break;
-      case 'o': /* TODO: set output filename */
+      case 'o': /* .output */
+                token = strtok_r(ptr, " ,", &rest);
+                strcpy(outputName, token);
                 break;
       case 'p': /* TODO: set packed mode */
                 break;
@@ -287,6 +290,8 @@ void prepare() {
   np = 0;
   latest = 0;
 
+  strcpy(outputName, "ngaImage");
+
   /* assemble the standard preamble (a jump to :main) */
   najeInst(1);  /* LIT */
   najeData(0, 0);  /* placeholder */
@@ -344,7 +349,7 @@ void process_file(char *fname) {
 void save() {
   FILE *fp;
 
-  if ((fp = fopen("ngaImage", "wb")) == NULL) {
+  if ((fp = fopen(outputName, "wb")) == NULL) {
     printf("Unable to save the ngaImage!\n");
     exit(2);
   }
