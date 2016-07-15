@@ -94,6 +94,17 @@ void najeResolveReferences() {
 ````
 #ifdef ENABLE_MAP
 void najeWriteMap() {
+  FILE *fp;
+
+  if ((fp = fopen("ngaImage.map", "w")) == NULL) {
+    printf("Unable to save the ngaImage.map!\n");
+    exit(2);
+  }
+
+  for (CELL i = 0; i < np; i++)
+    fprintf(fp, "label\t%s\t%d\n", najeLabels[i], najePointers[i]);
+
+  fclose(fp);
 }
 #endif
 ````
@@ -340,6 +351,11 @@ CELL main(int argc, char **argv) {
   for (CELL i = 0; i < np; i++)
     printf("%s@@%d ", najeLabels[i], najePointers[i]);
   printf("\n");
+
+#ifdef ENABLE_MAP
+  najeWriteMap();
+#endif
+
   return 0;
 }
 ````
