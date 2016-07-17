@@ -136,6 +136,8 @@ CELL dindex;
 #define MAX_NAMES 1024
 #define STRING_LEN 64
 
+CELL packMode;
+
 char najeLabels[MAX_NAMES][STRING_LEN];
 CELL najePointers[MAX_NAMES];
 CELL np;
@@ -267,6 +269,9 @@ void najeStore(CELL type, CELL value) {
 
 
 void najeSync() {
+  if (packMode == 0)
+    return;
+
   if (pindex == 0 && dindex == 0)
     return;
 
@@ -295,29 +300,37 @@ void najeSync() {
 }
 
 void najeInst(CELL opcode) {
-  if (pindex == 4) {
-    najeSync();
-  }
+  if (packMode == 0)
+    najeStore(0, opcode);
+  else {
+    if (pindex == 4) {
+      najeSync();
+    }
 
-  packed[pindex] = opcode;
-  pindex++;
+    packed[pindex] = opcode;
+    pindex++;
 
-  switch (opcode) {
-    case 7:
-    case 8:
-    case 9:
-    case 10:
-    case 25: printf("___\n");
-             najeSync();
-             break;
-    default: break;
+    switch (opcode) {
+      case 7:
+      case 8:
+      case 9:
+      case 10:
+      case 25: printf("___\n");
+               najeSync();
+               break;
+      default: break;
+    }
   }
 }
 
 void najeData(CELL type, CELL data) {
-  dataList[dindex] = data;
-  dataType[dindex] = type;
-  dindex++;
+  if (packMode == 0)
+    najeStore(type, data);
+  else {
+    dataList[dindex] = data;
+    dataType[dindex] = type;
+    dindex++;
+  }
 }
 
 void najeAssemble(char *source) {
@@ -358,9 +371,12 @@ void najeAssemble(char *source) {
                 token = strtok_r(ptr, " ,", &rest);
                 strcpy(outputName, token);
                 break;
-      case 'p': /* TODO: set packed mode */
+      case 'p': /* set packed mode */
+                packMode = 1;
                 break;
-      case 'u': /* TODO: set unpacked mode */
+      case 'u': /* set unpacked mode */
+                najeSync();
+                packMode = 0;
                 break;
     }
   }
@@ -439,6 +455,7 @@ void najeAssemble(char *source) {
 void prepare() {
   np = 0;
   latest = 0;
+  packMode = 1;
 
   strcpy(outputName, "ngaImage");
 

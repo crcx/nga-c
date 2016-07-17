@@ -6,14 +6,14 @@ YYYY.MM [ ] not started
 
 ## Log
 
-        [-] rewrite Naje in C
+2016.07 [x] rewrite Naje in C
             [x] core implementation
             [x] use nga.c for constants, memory array
             [x] packed instructions
-            [-] directives
+            [x] directives
                 [x] .data
-                [-] .packed
-                [-] .unpacked
+                [x] .packed
+                [x] .unpacked
                 [x] .output
             [x] forward references
             [x] generate map
