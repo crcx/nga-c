@@ -13,7 +13,6 @@
 #define IMAGE_SIZE   262144
 #define ADDRESSES    128
 #define STACK_DEPTH  32
-#define CELLSIZE     32
 enum vm_opcode {
   VM_NOP,  VM_LIT,    VM_DUP,   VM_DROP,    VM_SWAP,   VM_PUSH,  VM_POP,
   VM_JUMP, VM_CALL,   VM_CJUMP, VM_RETURN,  VM_EQ,     VM_NEQ,   VM_LT,

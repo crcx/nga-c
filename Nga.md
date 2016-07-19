@@ -63,15 +63,13 @@ These defaults are targeted towards a 32-bit model, with several megabytes of
 RAM.
 
 For smaller targets, drop the IMAGE_SIZE considerably as that's the biggest
-pool of memory needed. You can also modify the CELL value to target smaller
-memory sizes (16, 32, and 64 bit models have been used in the past).
+pool of memory needed.
 
 ````
 #define CELL         int32_t
 #define IMAGE_SIZE   262144
 #define ADDRESSES    128
 #define STACK_DEPTH  32
-#define CELLSIZE     32
 ````
 
 ## Numbering The Instructions
