@@ -4,6 +4,7 @@
 #include <string.h>
 #include <termios.h>
 #include "nga.c"
+#include "ngura.c"
 void processOpcodes() {
   CELL opcode;
   ip = 0;
@@ -14,35 +15,19 @@ void processOpcodes() {
     } else if (opcode >= 0 && opcode < 27) {
       ngaProcessOpcode(opcode);
     } else {
-      switch(opcode) {
-        case 90: printf("%c", (char)data[sp]);
-                 sp--;
-                 break;
-        case 91: sp++;
-                 TOS = getc(stdin);
-                 break;
-      }
+      nguraProcessOpcode(opcode);
     }
     ip++;
   }
 }
 int main(int argc, char **argv) {
-  struct termios new_termios, old_termios;
-
   ngaPrepare();
   if (argc == 2)
       ngaLoadImage(argv[1]);
   else
       ngaLoadImage("ngaImage");
 
-  tcgetattr(0, &old_termios);
-  new_termios = old_termios;
-  new_termios.c_iflag &= ~(BRKINT+ISTRIP+IXON+IXOFF);
-  new_termios.c_iflag |= (IGNBRK+IGNPAR);
-  new_termios.c_lflag &= ~(ICANON+ISIG+IEXTEN+ECHO);
-  new_termios.c_cc[VMIN] = 1;
-  new_termios.c_cc[VTIME] = 0;
-  tcsetattr(0, TCSANOW, &new_termios);
+  nguraConsoleInit();
 
   CELL i;
 
@@ -52,7 +37,7 @@ int main(int argc, char **argv) {
     printf("%d ", data[i]);
   printf("\n");
 
-  tcsetattr(0, TCSANOW, &old_termios);
+  nguraConsoleFinish();
   exit(0);
 
 }
