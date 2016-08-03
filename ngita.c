@@ -4,6 +4,12 @@
 #include <string.h>
 #include <termios.h>
 #include "nga.c"
+
+#define NGURA_TTY
+#define NGURA_KBD
+#define NGURA_FS
+#define NGURA_BLK
+
 #include "ngura.c"
 void processOpcodes() {
   CELL opcode;

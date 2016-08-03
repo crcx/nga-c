@@ -1,11 +1,36 @@
+#ifdef NGURA_TTY
+#define NGURA_TTY_PUTC  100
+#define NGURA_TTY_PUTN  101
+#define NGURA_TTY_PUTS  102
+#define NGURA_TTY_PUTSC 103
+#define NGURA_TTY_CLEAR 104
+#endif
+
+#ifdef NGURA_KBD
+#define NGURA_KBD_GETC 110
+#define NGURA_KBD_GETN 111
+#define NGURA_KBD_GETS 112
+#endif
+
+#ifdef NGURA_FS
+#define NGURA_FS_OPEN   118
+#define NGURA_FS_CLOSE  119
+#define NGURA_FS_READ   120
+#define NGURA_FS_WRITE  121
+#define NGURA_FS_TELL   122
+#define NGURA_FS_SEEK   123
+#define NGURA_FS_SIZE   124
+#define NGURA_FS_DELETE 125
+#endif
+
+#ifdef NGURA_FS
+#define NGURA_BLK_LOAD 130
+#define NGURA_BLK_SAVE 131
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <termios.h>
-#define NGURA_FS
-#define NGURA_TTY
-#define NGURA_KBD
 char request[8192];
 
 /* Helper Functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -17,6 +42,7 @@ void nguraGetString(int starting)
   request[i] = 0;
 }
 #if defined(NGURA_TTY) || defined(NGURA_KBD)
+#include <termios.h>
 struct termios new_termios, old_termios;
 
 void nguraConsoleInit() {
@@ -40,8 +66,6 @@ void nguraConsoleFinish() {
   tcsetattr(0, TCSANOW, &old_termios);
 }
 #endif
-
-
 #ifdef NGURA_TTY
 void nguraConsolePutChar(char c) {
   putchar(c);
@@ -51,7 +75,6 @@ void nguraConsolePutNumber(int i) {
   printf("%d", i);
 }
 #endif
-
 #ifdef NGURA_KBD
 int nguraConsoleGetChar() {
   return (int)getc(stdin);
@@ -141,20 +164,58 @@ CELL nguraDeleteFile() {
   return (unlink(request) == 0) ? -1 : 0;
 }
 #endif
+#ifdef NGURA_BLK
+
+void nguraBlockLoad(CELL n, CELL dest) {
+}
+
+void nguraBlockSave(CELL n, CELL source) {
+}
+#endif
 void nguraProcessOpcode(CELL opcode) {
   switch(opcode) {
 #ifdef NGURA_TTY
-    case 100: nguraConsolePutChar((char)data[sp]);
+    case NGURA_TTY_PUTC: nguraConsolePutChar((char)data[sp]);
               sp--;
               break;
-    case 101: nguraConsolePutNumber(data[sp]);
-              sp--;
-              break;
+    case NGURA_TTY_PUTN:
+      nguraConsolePutNumber(data[sp]);
+      sp--;
+      break;
 #endif
 #ifdef NGURA_KBD
-    case 103: sp++;
-              TOS = nguraConsoleGetChar();
-              break;
+    case NGURA_KBD_GETC:
+      sp++;
+      TOS = nguraConsoleGetChar();
+      break;
+#endif
+#ifdef NGURA_FS
+    case NGURA_FS_OPEN:
+      nguraOpenFile();
+      break;
+    case NGURA_FS_CLOSE:
+      nguraCloseFile();
+      break;
+    case NGURA_FS_READ:
+      nguraReadFile();
+      break;
+    case NGURA_FS_WRITE:
+      nguraWriteFile();
+      break;
+    case NGURA_FS_TELL:
+      nguraGetFilePosition();
+      break;
+    case NGURA_FS_SEEK:
+      nguraSetFilePosition();
+      break;
+    case NGURA_FS_SIZE:
+      nguraGetFileSize();
+      break;
+    case NGURA_FS_DELETE:
+      nguraDeleteFile();
+      break;
+#endif
+#ifdef NGURA_BLK
 #endif
   }
 }

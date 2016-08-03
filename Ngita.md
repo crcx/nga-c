@@ -24,6 +24,12 @@ And then include Nga and Ngura.
 
 ````
 #include "nga.c"
+
+#define NGURA_TTY
+#define NGURA_KBD
+#define NGURA_FS
+#define NGURA_BLK
+
 #include "ngura.c"
 ````
 
