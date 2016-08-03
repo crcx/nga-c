@@ -135,21 +135,22 @@ Both of these depend on *termios* to function.
 ````
 #if defined(NGURA_TTY) || defined(NGURA_KBD)
 #include <termios.h>
-struct termios new_termios, old_termios;
+struct termios nguraConsoleOriginalTermios;
+struct termios nguraConsoleTermios;
 
 void nguraConsoleInit() {
-  tcgetattr(0, &old_termios);
-  new_termios = old_termios;
-  new_termios.c_iflag &= ~(BRKINT+ISTRIP+IXON+IXOFF);
-  new_termios.c_iflag |= (IGNBRK+IGNPAR);
-  new_termios.c_lflag &= ~(ICANON+ISIG+IEXTEN+ECHO);
-  new_termios.c_cc[VMIN] = 1;
-  new_termios.c_cc[VTIME] = 0;
-  tcsetattr(0, TCSANOW, &new_termios);
+  tcgetattr(0, &nguraConsoleOriginalTermios);
+  nguraConsoleTermios = nguraConsoleOriginalTermios;
+  nguraConsoleTermios.c_iflag &= ~(BRKINT+ISTRIP+IXON+IXOFF);
+  nguraConsoleTermios.c_iflag |= (IGNBRK+IGNPAR);
+  nguraConsoleTermios.c_lflag &= ~(ICANON+ISIG+IEXTEN+ECHO);
+  nguraConsoleTermios.c_cc[VMIN] = 1;
+  nguraConsoleTermios.c_cc[VTIME] = 0;
+  tcsetattr(0, TCSANOW, &nguraConsoleTermios);
 }
 
 void nguraConsoleCleanup() {
-  tcsetattr(0, TCSANOW, &old_termios);
+  tcsetattr(0, TCSANOW, &nguraConsoleOriginalTermios);
 }
 #endif
 ````
@@ -158,11 +159,11 @@ void nguraConsoleCleanup() {
 
 ````
 #ifdef NGURA_TTY
-void nguraConsolePutChar(char c) {
+void nguraTTYPutChar(char c) {
   putchar(c);
 }
 
-void nguraConsolePutNumber(int i) {
+void nguraTTYPutNumber(int i) {
   printf("%d", i);
 }
 #endif
@@ -172,7 +173,7 @@ void nguraConsolePutNumber(int i) {
 
 ````
 #ifdef NGURA_KBD
-int nguraConsoleGetChar() {
+int nguraKBDGetChar() {
   return (int)getc(stdin);
 }
 #endif
@@ -271,7 +272,7 @@ CELL nguraDeleteFile() {
 
 ### BLK
 
-*BLK* provides some basic support for a Forth-style block datastore.
+*BLK* provides some basic support for a simple block storage device.
 
 Blocks are 1KiB in length each.
 
@@ -308,18 +309,18 @@ void nguraCleanup() {
 void nguraProcessOpcode(CELL opcode) {
   switch(opcode) {
 #ifdef NGURA_TTY
-    case NGURA_TTY_PUTC: nguraConsolePutChar((char)data[sp]);
+    case NGURA_TTY_PUTC: nguraTTYPutChar((char)data[sp]);
               sp--;
               break;
     case NGURA_TTY_PUTN:
-      nguraConsolePutNumber(data[sp]);
+      nguraTTYPutNumber(data[sp]);
       sp--;
       break;
 #endif
 #ifdef NGURA_KBD
     case NGURA_KBD_GETC:
       sp++;
-      TOS = nguraConsoleGetChar();
+      TOS = nguraKBDGetChar();
       break;
 #endif
 #ifdef NGURA_FS
