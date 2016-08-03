@@ -3,6 +3,9 @@
 #include <unistd.h>
 #include <string.h>
 #include <termios.h>
+#define NGURA_FS
+#define NGURA_TTY
+#define NGURA_KBD
 char request[8192];
 
 /* Helper Functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -13,6 +16,7 @@ void nguraGetString(int starting)
     request[i++] = (char)memory[starting++];
   request[i] = 0;
 }
+#if defined(NGURA_TTY) || defined(NGURA_KBD)
 struct termios new_termios, old_termios;
 
 void nguraConsoleInit() {
@@ -35,7 +39,10 @@ void nguraConsoleFinish() {
 #endif
   tcsetattr(0, TCSANOW, &old_termios);
 }
+#endif
 
+
+#ifdef NGURA_TTY
 void nguraConsolePutChar(char c) {
   putchar(c);
 }
@@ -43,11 +50,14 @@ void nguraConsolePutChar(char c) {
 void nguraConsolePutNumber(int i) {
   printf("%d", i);
 }
+#endif
 
+#ifdef NGURA_KBD
 int nguraConsoleGetChar() {
   return (int)getc(stdin);
 }
-#ifdef UNFINISHED
+#endif
+#ifdef NGURA_FS
 /* File I/O Support ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 #define MAX_OPEN_FILES 128
 FILE *nguraFileHandles[MAX_OPEN_FILES];
@@ -133,30 +143,18 @@ CELL nguraDeleteFile() {
 #endif
 void nguraProcessOpcode(CELL opcode) {
   switch(opcode) {
+#ifdef NGURA_TTY
     case 100: nguraConsolePutChar((char)data[sp]);
               sp--;
               break;
     case 101: nguraConsolePutNumber(data[sp]);
               sp--;
               break;
-    case 102: printf("\n+ ERROR: IO OPERATION %d NOT IMPLEMENTED\n", opcode);
-              break;
+#endif
+#ifdef NGURA_KBD
     case 103: sp++;
               TOS = nguraConsoleGetChar();
               break;
-    case 104: printf("\n+ ERROR: IO OPERATION %d NOT IMPLEMENTED\n", opcode);
-              break;
-    case 105: printf("\n+ ERROR: IO OPERATION %d NOT IMPLEMENTED\n", opcode);
-              break;
-    case 106: printf("\n+ ERROR: IO OPERATION %d NOT IMPLEMENTED\n", opcode);
-              break;
-    case 107: printf("\n+ ERROR: IO OPERATION %d NOT IMPLEMENTED\n", opcode);
-              break;
-    case 108: printf("\n+ ERROR: IO OPERATION %d NOT IMPLEMENTED\n", opcode);
-              break;
-    case 109: printf("\n+ ERROR: IO OPERATION %d NOT IMPLEMENTED\n", opcode);
-              break;
-    case 110: printf("\n+ ERROR: IO OPERATION %d NOT IMPLEMENTED\n", opcode);
-              break;
+#endif
   }
 }

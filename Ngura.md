@@ -4,6 +4,47 @@
 
 Ngura is an I/O model for Nga.
 
+Ngura adds instructions for different I/O operations.
+
+The numbering starts at 100 and runs as follows:
+
+| Inst | Intended Use                                                 |
+| ---- | ------------------------------------------------------------ |
+| 100  | TTY: Display Character                                       |
+| 101  | TTY: Display Number (signed, decimal)                        |
+| 102  | TTY: Display String (zero terminated)                        |
+| 103  | TTY: Display String (address, length)                        |
+| 104  | TTY: Clear Display                                           |
+| 105  |                                                              |
+| 106  |                                                              |
+| 107  |                                                              |
+| 108  |                                                              |
+| 109  |                                                              |
+| 110  | KBD: Read Character                                          |
+| 111  | KBD: Read Number (signed, decimal)                           |
+| 112  | KBD: Read String (delimiter, address, length)                |
+| 113  |                                                              |
+| 114  |                                                              |
+| 115  |                                                              |
+| 116  |                                                              |
+| 117  |                                                              |
+| 118  | FS: Open                                                     |
+| 119  | FS: Close                                                    |
+| 120  | FS: Read Character                                           |
+| 121  | FS: Write Character                                          |
+| 122  | FS: Tell                                                     |
+| 123  | FS: Seek                                                     |
+| 124  | FS: Size                                                     |
+| 125  | BLK: Load (number, address)                                  |
+| 126  | BLK: Write (number, address)                                 |
+| 127  |                                                              |
+| 128  |                                                              |
+| 129  |                                                              |
+| 130  |                                                              |
+
+
+(Numbering is subject to change)
+
 ## The Code
 
 ### Headers
@@ -16,6 +57,12 @@ First up, a few standard headers.
 #include <unistd.h>
 #include <string.h>
 #include <termios.h>
+````
+
+````
+#define NGURA_FS
+#define NGURA_TTY
+#define NGURA_KBD
 ````
 
 ````
@@ -34,6 +81,7 @@ void nguraGetString(int starting)
 ### ...
 
 ````
+#if defined(NGURA_TTY) || defined(NGURA_KBD)
 struct termios new_termios, old_termios;
 
 void nguraConsoleInit() {
@@ -56,7 +104,10 @@ void nguraConsoleFinish() {
 #endif
   tcsetattr(0, TCSANOW, &old_termios);
 }
+#endif
 
+
+#ifdef NGURA_TTY
 void nguraConsolePutChar(char c) {
   putchar(c);
 }
@@ -64,14 +115,17 @@ void nguraConsolePutChar(char c) {
 void nguraConsolePutNumber(int i) {
   printf("%d", i);
 }
+#endif
 
+#ifdef NGURA_KBD
 int nguraConsoleGetChar() {
   return (int)getc(stdin);
 }
+#endif
 ````
 
 ````
-#ifdef UNFINISHED
+#ifdef NGURA_FS
 /* File I/O Support ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 #define MAX_OPEN_FILES 128
 FILE *nguraFileHandles[MAX_OPEN_FILES];
@@ -175,31 +229,19 @@ CELL nguraDeleteFile() {
 ````
 void nguraProcessOpcode(CELL opcode) {
   switch(opcode) {
+#ifdef NGURA_TTY
     case 100: nguraConsolePutChar((char)data[sp]);
               sp--;
               break;
     case 101: nguraConsolePutNumber(data[sp]);
               sp--;
               break;
-    case 102: printf("\n+ ERROR: IO OPERATION %d NOT IMPLEMENTED\n", opcode);
-              break;
+#endif
+#ifdef NGURA_KBD
     case 103: sp++;
               TOS = nguraConsoleGetChar();
               break;
-    case 104: printf("\n+ ERROR: IO OPERATION %d NOT IMPLEMENTED\n", opcode);
-              break;
-    case 105: printf("\n+ ERROR: IO OPERATION %d NOT IMPLEMENTED\n", opcode);
-              break;
-    case 106: printf("\n+ ERROR: IO OPERATION %d NOT IMPLEMENTED\n", opcode);
-              break;
-    case 107: printf("\n+ ERROR: IO OPERATION %d NOT IMPLEMENTED\n", opcode);
-              break;
-    case 108: printf("\n+ ERROR: IO OPERATION %d NOT IMPLEMENTED\n", opcode);
-              break;
-    case 109: printf("\n+ ERROR: IO OPERATION %d NOT IMPLEMENTED\n", opcode);
-              break;
-    case 110: printf("\n+ ERROR: IO OPERATION %d NOT IMPLEMENTED\n", opcode);
-              break;
+#endif
   }
 }
 ````
