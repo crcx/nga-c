@@ -63,17 +63,14 @@ int main(int argc, char **argv) {
   else
       ngaLoadImage("ngaImage");
 
-  nguraConsoleInit();
-
-  CELL i;
-
+  nguraInitialize();
   processOpcodes();
+  nguraCleanup();
 
-  for (i = 1; i <= sp; i++)
+  for (CELL i = 1; i <= sp; i++)
     printf("%d ", data[i]);
   printf("\n");
 
-  nguraConsoleFinish();
   exit(0);
 
 }

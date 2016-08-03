@@ -138,9 +138,6 @@ Both of these depend on *termios* to function.
 struct termios new_termios, old_termios;
 
 void nguraConsoleInit() {
-#ifdef VERBOSE
-  printf("- prepare terminal i/o\n");
-#endif
   tcgetattr(0, &old_termios);
   new_termios = old_termios;
   new_termios.c_iflag &= ~(BRKINT+ISTRIP+IXON+IXOFF);
@@ -151,10 +148,7 @@ void nguraConsoleInit() {
   tcsetattr(0, TCSANOW, &new_termios);
 }
 
-void nguraConsoleFinish() {
-#ifdef VERBOSE
-  printf("- restore previous terminal i/o settings\n");
-#endif
+void nguraConsoleCleanup() {
   tcsetattr(0, TCSANOW, &old_termios);
 }
 #endif
@@ -293,6 +287,19 @@ void nguraBlockSave(CELL n, CELL source) {
 ````
 
 
+````
+void nguraInitialize() {
+#if defined(NGURA_TTY) || defined(NGURA_KBD)
+  nguraConsoleInit();
+#endif
+}
+
+void nguraCleanup() {
+#if defined(NGURA_TTY) || defined(NGURA_KBD)
+  nguraConsoleCleanup();
+#endif
+}
+````
 
 
 ### Opcode Processor
