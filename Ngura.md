@@ -161,10 +161,26 @@ void nguraConsoleCleanup() {
 #ifdef NGURA_TTY
 void nguraTTYPutChar(char c) {
   putchar(c);
+  if (c == 8) {
+    putchar(32);
+    putchar(8);
+  }
 }
 
 void nguraTTYPutNumber(int i) {
   printf("%d", i);
+}
+
+void nguraTTYPutString(CELL addr) {
+  nguraGetString(addr);
+  printf("%s", request);
+}
+
+void nguraTTYPutStringCounted(CELL addr, CELL length) {
+}
+
+void nguraTTYClearDisplay() {
+  printf("\033[2J\033[1;1H");
 }
 #endif
 ````
@@ -307,14 +323,30 @@ void nguraCleanup() {
 
 ````
 void nguraProcessOpcode(CELL opcode) {
+  CELL addr, length;
   switch(opcode) {
 #ifdef NGURA_TTY
-    case NGURA_TTY_PUTC: nguraTTYPutChar((char)data[sp]);
-              sp--;
-              break;
+    case NGURA_TTY_PUTC:
+      nguraTTYPutChar((char)data[sp]);
+      sp--;
+      break;
     case NGURA_TTY_PUTN:
       nguraTTYPutNumber(data[sp]);
       sp--;
+      break;
+    case NGURA_TTY_PUTS:
+      nguraTTYPutString(TOS);
+      sp--;
+      break;
+    case NGURA_TTY_PUTSC:
+      addr = TOS;
+      sp--;
+      length = TOS;
+      sp--;
+      nguraTTYPutStringCounted(addr, length);
+      break;
+    case NGURA_TTY_CLEAR:
+      nguraTTYClearDisplay();
       break;
 #endif
 #ifdef NGURA_KBD
