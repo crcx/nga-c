@@ -80,6 +80,11 @@ void nguraTTYPutString(CELL addr) {
 }
 
 void nguraTTYPutStringCounted(CELL addr, CELL length) {
+  CELL i = 0;
+  while(memory[addr] && i < length) {
+    nguraTTYPutChar((char)memory[addr++]);
+    i++;
+  }
 }
 
 void nguraTTYClearDisplay() {
@@ -195,7 +200,7 @@ void nguraCleanup() {
 #endif
 }
 void nguraProcessOpcode(CELL opcode) {
-  CELL addr, length;
+  CELL addr, n, length;
   switch(opcode) {
 #ifdef NGURA_TTY
     case NGURA_TTY_PUTC:
@@ -226,6 +231,10 @@ void nguraProcessOpcode(CELL opcode) {
       sp++;
       TOS = nguraKBDGetChar();
       break;
+    case NGURA_KBD_GETN:
+      break;
+    case NGURA_KBD_GETS:
+      break;
 #endif
 #ifdef NGURA_FS
     case NGURA_FS_OPEN:
@@ -254,6 +263,20 @@ void nguraProcessOpcode(CELL opcode) {
       break;
 #endif
 #ifdef NGURA_BLK
+    case NGURA_BLK_LOAD:
+      n = TOS;
+      sp--;
+      addr = TOS;
+      sp--;
+      nguraBlockLoad(n, addr);
+      break;
+    case NGURA_BLK_SAVE:
+      n = TOS;
+      sp--;
+      addr = TOS;
+      sp--;
+      nguraBlockSave(n, addr);
+      break;
 #endif
   }
 }
