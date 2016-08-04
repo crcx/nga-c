@@ -95,6 +95,24 @@ void nguraTTYClearDisplay() {
 int nguraKBDGetChar() {
   return (int)getc(stdin);
 }
+
+void nguraKBDGetString(CELL delim, CELL limit, CELL starting) {
+  CELL i = starting;
+  CELL k = 0;
+  CELL done = 0;
+  while (done == 0) {
+    k = nguraKBDGetChar();
+    if (k == delim)
+      done = 1;
+    if (i > (limit + starting))
+      done = 1;
+    if (done == 0) {
+      memory[i] = k;
+    }
+    i++;
+  }
+  memory[i] = 0;
+}
 #endif
 #ifdef NGURA_FS
 /* File I/O Support ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -201,6 +219,7 @@ void nguraCleanup() {
 }
 void nguraProcessOpcode(CELL opcode) {
   CELL addr, n, length;
+  CELL delim, limit, starting;
   switch(opcode) {
 #ifdef NGURA_TTY
     case NGURA_TTY_PUTC:
@@ -234,6 +253,10 @@ void nguraProcessOpcode(CELL opcode) {
     case NGURA_KBD_GETN:
       break;
     case NGURA_KBD_GETS:
+      limit = TOS; sp--;
+      starting = TOS; sp--;
+      delim = TOS; sp--;
+      nguraKBDGetString(delim, limit, starting);
       break;
 #endif
 #ifdef NGURA_FS
