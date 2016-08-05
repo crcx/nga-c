@@ -4,7 +4,9 @@
 
 On its own Nga is not very useful as it lacks a means of interfacing with the world. It expects to be embedded into other, larger environments which can extend the instruction set to allow for I/O and additional desired functionality.
 
-Ngura is a framework for building a closely related (but fully optional) set of I/O functionality. What it seeks to do is provide a broad base that groups related functionality into logical units that can be enabled or disabled by the interface layer.
+Ngura is intended as a framework for building a closely related (but fully optional) set of I/O functionality. What it seeks to do is provide a broad base that groups related functionality into logical units that can be enabled or disabled by the interface layer. Additionally it provides an abstraction in that an interface layer doesn't need to know the specifics of how the underlying devices work. So an embedded Ngura might direct keyboard and text display over a serial port, while a Unix hosted implementation could use the C standard library and read/write from stdin and stdout.
+
+This reference implementation of Ngura targets Unix-style hosts.
 
 Before including Ngura, an interface layer should define the devices it wants to use. Currently the options are:
 
@@ -92,8 +94,7 @@ The numbering starts at 100 and runs as follows:
 | 130  | BLK: Load (number, address)                                  |
 | 131  | BLK: Write (number, address)                                 |
 
-(Numbering is subject to change)
-
+(Numbering is subject to change as the requirements get refined through further use)
 
 
 ### Headers
@@ -109,10 +110,15 @@ First up, a few standard headers.
 #include <string.h>
 ````
 
+### Helper Functions
+
+**nguraGetString** extracts a zero terminated string from the image. This is used in a few places where we need to interface between Nga and libc.
+
+**TODO: consider making this compile only if devices using it are included.**
+
 ````
 char request[8192];
 
-/* Helper Functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 void nguraGetString(int starting)
 {
   CELL i = 0;
@@ -128,9 +134,9 @@ The *TTY* provides a terminal output environment, targetting VT100 comaptible te
 
 The *KBD* provides keyboard input for a terminal environment.
 
-Both of these depend on *termios* to function.
-
 #### Initialization and Cleanup
+
+The underlying I/O model is based on that of Ngaro, the predecessor to Nga. Terminal I/O is expected to be immediate and not buffered. The initialization and cleanup here takes care of enabling and restoring the original host settings. You'll need *termios* for this to work. Windows users would need to reimplement this using the appropriate API's.
 
 ````
 #if defined(NGURA_TTY) || defined(NGURA_KBD)
@@ -156,6 +162,10 @@ void nguraConsoleCleanup() {
 ````
 
 #### TTY Functions
+
+These handle displaying things on the terminal output. Where escape sequences are used, they assume something close to a VT100/ANSI capable terminal.
+
+Ngura provides for display of characters, zero terminated strings, counted strings, and decimal numbers. It's not hard to do the display of strings in Nga code, but this saves some runtime overhead improving performance and bypassing a potential bottleneck.
 
 ````
 #ifdef NGURA_TTY
@@ -192,6 +202,8 @@ void nguraTTYClearDisplay() {
 
 #### KBD Functions
 
+These are used for input. The predecessor to Nga had a simple keyboard input function for reading single keys. Ngura adds support for reading strings as well. (This is a concession for performance. Normally I don't obsess over performance, but I/O is a big bottleneck and this small concession is worth implementing.)
+
 ````
 #ifdef NGURA_KBD
 int nguraKBDGetChar() {
@@ -224,7 +236,6 @@ void nguraKBDGetString(CELL delim, CELL limit, CELL starting) {
 
 ````
 #ifdef NGURA_FS
-/* File I/O Support ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 #define MAX_OPEN_FILES 128
 FILE *nguraFileHandles[MAX_OPEN_FILES];
 
