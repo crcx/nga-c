@@ -87,7 +87,10 @@ void nguraTTYClearDisplay() {
 #endif
 #ifdef NGURA_KBD
 int nguraKBDGetChar() {
-  return (int)getc(stdin);
+  int i = 0;
+  i = (int)getc(stdin);
+  nguraTTYPutChar((char)i);
+  return i;
 }
 
 void nguraKBDGetString(CELL delim, CELL limit, CELL starting) {
