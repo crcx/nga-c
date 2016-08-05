@@ -13,7 +13,6 @@ Before including Ngura, an interface layer should define the devices it wants to
 * **NGURA_TTY** for text output
 * **NGURA_KBD** for keyboard input
 * **NGURA_FS** for filesystem
-* **NGURA_BLK** for simple block storage
 
 For an interface that needs the display and filesystem something this will suffice:
 
@@ -47,11 +46,6 @@ The code below defines symbolic names for each I/O instruction for enabled devic
 #define NGURA_FS_SEEK   123
 #define NGURA_FS_SIZE   124
 #define NGURA_FS_DELETE 125
-#endif
-
-#ifdef NGURA_FS
-#define NGURA_BLK_LOAD 130
-#define NGURA_BLK_SAVE 131
 #endif
 ````
 
@@ -91,8 +85,6 @@ The numbering starts at 100 and runs as follows:
 | 127  |                                                              |
 | 128  |                                                              |
 | 129  |                                                              |
-| 130  | BLK: Load (number, address)                                  |
-| 131  | BLK: Write (number, address)                                 |
 
 (Numbering is subject to change as the requirements get refined through further use)
 
@@ -341,23 +333,6 @@ CELL nguraDeleteFile() {
 #endif
 ````
 
-### BLK
-
-*BLK* provides some basic support for a simple block storage device.
-
-Blocks are 1KiB in length each.
-
-````
-#ifdef NGURA_BLK
-
-void nguraBlockLoad(CELL n, CELL dest) {
-}
-
-void nguraBlockSave(CELL n, CELL source) {
-}
-#endif
-````
-
 
 ````
 void nguraInitialize() {
@@ -378,7 +353,7 @@ void nguraCleanup() {
 
 ````
 void nguraProcessOpcode(CELL opcode) {
-  CELL addr, n, length;
+  CELL addr, length;
   CELL delim, limit, starting;
   switch(opcode) {
 #ifdef NGURA_TTY
@@ -445,22 +420,6 @@ void nguraProcessOpcode(CELL opcode) {
       break;
     case NGURA_FS_DELETE:
       nguraDeleteFile();
-      break;
-#endif
-#ifdef NGURA_BLK
-    case NGURA_BLK_LOAD:
-      n = TOS;
-      sp--;
-      addr = TOS;
-      sp--;
-      nguraBlockLoad(n, addr);
-      break;
-    case NGURA_BLK_SAVE:
-      n = TOS;
-      sp--;
-      addr = TOS;
-      sp--;
-      nguraBlockSave(n, addr);
       break;
 #endif
   }

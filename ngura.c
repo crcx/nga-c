@@ -22,11 +22,6 @@
 #define NGURA_FS_SIZE   124
 #define NGURA_FS_DELETE 125
 #endif
-
-#ifdef NGURA_FS
-#define NGURA_BLK_LOAD 130
-#define NGURA_BLK_SAVE 131
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -217,14 +212,6 @@ CELL nguraDeleteFile() {
   return (unlink(request) == 0) ? -1 : 0;
 }
 #endif
-#ifdef NGURA_BLK
-
-void nguraBlockLoad(CELL n, CELL dest) {
-}
-
-void nguraBlockSave(CELL n, CELL source) {
-}
-#endif
 void nguraInitialize() {
 #if defined(NGURA_TTY) || defined(NGURA_KBD)
   nguraConsoleInit();
@@ -237,7 +224,7 @@ void nguraCleanup() {
 #endif
 }
 void nguraProcessOpcode(CELL opcode) {
-  CELL addr, n, length;
+  CELL addr, length;
   CELL delim, limit, starting;
   switch(opcode) {
 #ifdef NGURA_TTY
@@ -304,22 +291,6 @@ void nguraProcessOpcode(CELL opcode) {
       break;
     case NGURA_FS_DELETE:
       nguraDeleteFile();
-      break;
-#endif
-#ifdef NGURA_BLK
-    case NGURA_BLK_LOAD:
-      n = TOS;
-      sp--;
-      addr = TOS;
-      sp--;
-      nguraBlockLoad(n, addr);
-      break;
-    case NGURA_BLK_SAVE:
-      n = TOS;
-      sp--;
-      addr = TOS;
-      sp--;
-      nguraBlockSave(n, addr);
       break;
 #endif
   }
