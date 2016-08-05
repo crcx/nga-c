@@ -33,7 +33,6 @@
 #include <string.h>
 char request[8192];
 
-/* Helper Functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 void nguraGetString(int starting)
 {
   CELL i = 0;
@@ -113,9 +112,29 @@ void nguraKBDGetString(CELL delim, CELL limit, CELL starting) {
   }
   memory[i] = 0;
 }
+
+
+CELL nguraKBDGetNumber(int delim) {
+  CELL i = 0;
+  CELL k = 0;
+  CELL done = 0;
+  while (done == 0) {
+    k = nguraKBDGetChar();
+    if (k == delim)
+      done = 1;
+    if (i > 8192)
+      done = 1;
+    if (done == 0) {
+      request[i] = k;
+    }
+    i++;
+  }
+  request[i] = 0;
+  k = atol(request);
+  return k;
+}
 #endif
 #ifdef NGURA_FS
-/* File I/O Support ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 #define MAX_OPEN_FILES 128
 FILE *nguraFileHandles[MAX_OPEN_FILES];
 
@@ -251,6 +270,8 @@ void nguraProcessOpcode(CELL opcode) {
       TOS = nguraKBDGetChar();
       break;
     case NGURA_KBD_GETN:
+      delim = TOS;
+      TOS = nguraKBDGetNumber(delim);
       break;
     case NGURA_KBD_GETS:
       limit = TOS; sp--;
