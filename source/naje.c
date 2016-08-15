@@ -67,19 +67,27 @@ void najeResolveReferences() {
   for (CELL i = 0; i < refp; i++) {
     offset = najeLookup(ref_names[i]);
     matched = 0;
+#ifdef VERBOSE
     printf("RESOLVE: %s ", ref_names[i]);
+#endif
     if (offset != -1) {
+#ifdef VERBOSE
         printf(" / defined");
+#endif
         for (CELL j = 0; j < latest; j++) {
           if (references[j] == 1 && matched == 0) {
+#ifdef VERBOSE
             printf(" / success\n");
+#endif
             memory[j] = offset;
             references[j] = -1;
             matched = -1;
           }
         }
     } else {
+#ifdef VERBOSE
       printf(" / failed\n");
+#endif
     }
   }
 #endif
@@ -134,7 +142,9 @@ void najeSync() {
     opcode += packed[1];
     opcode = opcode << 8;
     opcode += packed[0];
+#ifdef VERBOSE
     printf("Packed Opcode: %d\n", opcode);
+#endif
     najeStore(2, opcode);
   }
   if (dindex != 0) {
@@ -165,8 +175,7 @@ void najeInst(CELL opcode) {
       case 8:
       case 9:
       case 10:
-      case 25: printf("___\n");
-               najeSync();
+      case 25: najeSync();
                break;
       default: break;
     }
@@ -204,7 +213,9 @@ void najeAssemble(char *source) {
   /* Labels start with : */
   if (relevant[0] == ':') {
     najeSync();
+#ifdef VERBOSE
     printf("Define: %s\n", (char *)token + 1);
+#endif
     najeAddLabel((char *)token + 1, latest);
   }
 
@@ -237,7 +248,6 @@ void najeAssemble(char *source) {
     najeInst(0);
   if (strcmp(relevant, "li") == 0) {
     token = strtok_r(ptr, " ,", &rest);
-    printf(" <%s>\n", token);
     najeInst(1);
     if (token[0] == '&') {
 #ifdef ALLOW_FORWARD_REFS
@@ -356,7 +366,9 @@ void process_file(char *fname) {
 
   while (!feof(fp)) {
     read_line(fp, source);
+#ifdef VERBOSE
     printf("::: '%s'\n", source);
+#endif
     najeAssemble(source);
   }
 
