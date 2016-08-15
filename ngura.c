@@ -111,7 +111,6 @@ void nguraKBDGetString(CELL delim, CELL limit, CELL starting) {
   memory[i] = 0;
 }
 
-
 CELL nguraKBDGetNumber(int delim) {
   CELL i = 0;
   CELL k = 0;

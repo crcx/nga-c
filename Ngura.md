@@ -194,7 +194,7 @@ void nguraTTYClearDisplay() {
 
 #### KBD Functions
 
-These are used for input. The predecessor to Nga had a simple keyboard input function for reading single keys. Ngura adds support for reading strings as well. (This is a concession for performance. Normally I don't obsess over performance, but I/O is a big bottleneck and this small concession is worth implementing.)
+These are used for input. The predecessor to Nga had a simple keyboard input function for reading single keys. Ngura adds support for reading strings and numbers as well. (This is a concession for performance. Normally I don't obsess over performance, but I/O is a big bottleneck and this small concession is worth implementing.)
 
 ````
 #ifdef NGURA_KBD
@@ -222,7 +222,6 @@ void nguraKBDGetString(CELL delim, CELL limit, CELL starting) {
   }
   memory[i] = 0;
 }
-
 
 CELL nguraKBDGetNumber(int delim) {
   CELL i = 0;
