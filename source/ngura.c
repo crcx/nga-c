@@ -263,8 +263,8 @@ void nguraProcessOpcode(CELL opcode) {
       TOS = nguraKBDGetNumber(delim);
       break;
     case NGURA_KBD_GETS:
-      limit = TOS; sp--;
       starting = TOS; sp--;
+      limit = TOS; sp--;
       delim = TOS; sp--;
       nguraKBDGetString(delim, limit, starting);
       break;
