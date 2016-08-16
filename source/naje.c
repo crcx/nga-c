@@ -193,6 +193,7 @@ void najeData(CELL type, CELL data) {
 }
 
 void najeAssemble(char *source) {
+  CELL i;
   char *token;
   char *rest;
   char *ptr = source;
@@ -238,6 +239,16 @@ void najeAssemble(char *source) {
       case 'u': /* set unpacked mode */
                 najeSync();
                 packMode = 0;
+                break;
+      case 'a': /* .allocate */
+                token = strtok_r(ptr, " ,", &rest);
+                i = atoi(token);
+                najeSync();
+                while (i > 0) {
+                  najeData(0, 0);
+                  i--;
+                }
+                najeSync();
                 break;
     }
   }
