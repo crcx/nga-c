@@ -400,6 +400,17 @@ void najeAssemble(char *source) {
                 }
                 najeSync();
                 break;
+      case 's': /* .string */
+                token = strtok_r(ptr, "\n", &rest);
+                i = 0;
+                najeSync();
+                while (i < strlen(token)) {
+                  najeData(0, token[i]);
+                  i++;
+                }
+                najeData(0, 0);
+                najeSync();
+                break;
     }
   }
 
