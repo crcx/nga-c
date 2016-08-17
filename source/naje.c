@@ -67,27 +67,16 @@ void najeResolveReferences() {
   for (CELL i = 0; i < refp; i++) {
     offset = najeLookup(ref_names[i]);
     matched = 0;
-#ifdef VERBOSE
-    printf("RESOLVE: %s ", ref_names[i]);
-#endif
     if (offset != -1) {
-#ifdef VERBOSE
-        printf(" / defined");
-#endif
         for (CELL j = 0; j < latest; j++) {
           if (references[j] == 1 && matched == 0) {
-#ifdef VERBOSE
-            printf(" / success\n");
-#endif
             memory[j] = offset;
             references[j] = -1;
             matched = -1;
           }
         }
     } else {
-#ifdef VERBOSE
-      printf(" / failed\n");
-#endif
+      printf("\nERROR: Failed to resolve a reference");
     }
   }
 #endif
@@ -142,9 +131,6 @@ void najeSync() {
     opcode += packed[1];
     opcode = opcode << 8;
     opcode += packed[0];
-#ifdef VERBOSE
-    printf("Packed Opcode: %d\n", opcode);
-#endif
     najeStore(2, opcode);
   }
   if (dindex != 0) {
@@ -214,9 +200,6 @@ void najeAssemble(char *source) {
   /* Labels start with : */
   if (relevant[0] == ':') {
     najeSync();
-#ifdef VERBOSE
-    printf("Define: %s\n", (char *)token + 1);
-#endif
     najeAddLabel((char *)token + 1, latest);
   }
 
@@ -353,6 +336,7 @@ void finish() {
   memory[1] = entry;
 }
 
+
 void read_line(FILE *file, char *line_buffer) {
   if (file == NULL) {
     printf("Error: file pointer is null.");
@@ -388,9 +372,6 @@ void process_file(char *fname) {
 
   while (!feof(fp)) {
     read_line(fp, source);
-#ifdef VERBOSE
-    printf("::: '%s'\n", source);
-#endif
     najeAssemble(source);
   }
 
