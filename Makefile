@@ -2,6 +2,7 @@ d: s
 	cd source && $(CC) nga.c -DSTANDALONE -Wall -o ../bin/nga
 	cd source && $(CC) -DVERBOSE ngita.c -Wall -o ../bin/ngita
 	cd source && $(CC) naje.c -DALLOW_FORWARD_REFS -DENABLE_MAP -Wall -o ../bin/naje
+	cd source && $(CC) nuance.c -Wall -o ../bin/nuance
 
 s:
 	$(CC) source/unu.c -o bin/unu
@@ -10,6 +11,7 @@ s:
 	./bin/unu Nga.md >source/nga.c
 	./bin/unu Ngita.md >source/ngita.c
 	./bin/unu Ngura.md >source/ngura.c
+	./bin/unu Nuance.md >source/nuance.c
 	./bin/unu Naje.md >source/naje.c
 	./bin/unu sdk/Tiro.md >sdk/tiro.py
 	./bin/unu sdk/Naje.md >sdk/naje.py
@@ -18,4 +20,3 @@ s:
 
 c:
 	rm -f bin/*
-
