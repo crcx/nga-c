@@ -8,40 +8,39 @@
 //#include <math.h>
 #include <ctype.h>
 
-int compile(char *source)
-{
+char reform[999];
+
+void resetReform() {
+  memset(reform, '\0', 999);
+}
+
+
+int compile(char *source) {
   char *token;
   char *state;
   char prefix;
-  char reform[999];
   int scratch;
   int i;
 
-  for (token = strtok_r(source, " ", &state); token != NULL; token = strtok_r(NULL, " ", &state))
-  {
+  for (token = strtok_r(source, " ", &state); token != NULL; token = strtok_r(NULL, " ", &state)) {
     prefix = (char)token[0];
-    switch (prefix)
-    {
+    switch (prefix) {
       case '\'':
-        if (token[strlen(token) - 1] == '\'')
-        {
-          memset(reform, '\0', 999);
+        if (token[strlen(token) - 1] == '\'') {
+          resetReform();
           memcpy(reform, &token[1], strlen(token) - 2);
           reform[strlen(token) - 2] = '\0';
           printf("  .string %s\n", reform);
-        }
-        else
-        {
+        } else {
+          resetReform();
           memset(reform, '\0', 999);
           memcpy(reform, &token[1], strlen(token) - 1);
 
           i = 0;
-          while (i == 0)
-          {
+          while (i == 0) {
             strcat(reform, " ");
             token = strtok_r(NULL, " ", &state);
-            if (token[strlen(token) - 1] == '\'' || token == NULL)
-            {
+            if (token[strlen(token) - 1] == '\'' || token == NULL) {
               i = 1;
               token[strlen(token) - 1] = '\0';
               strcat(reform, token);
@@ -53,24 +52,19 @@ int compile(char *source)
         }
         break;
       case '"':
-        if (token[strlen(token) - 1] == '"')
-        {
-          memset(reform, '\0', 999);
+        if (token[strlen(token) - 1] == '"') {
+          resetReform();
           memcpy(reform, &token[1], strlen(token) - 2);
           reform[strlen(token) - 2] = '\0';
-        }
-        else
-        {
-          memset(reform, '\0', 999);
+        } else {
+          resetReform();
           memcpy(reform, &token[1], strlen(token) - 1);
 
           i = 0;
-          while (i == 0)
-          {
+          while (i == 0) {
             strcat(reform, " ");
             token = strtok_r(NULL, " ", &state);
-            if (token[strlen(token) - 1] == '"' || token == NULL)
-            {
+            if (token[strlen(token) - 1] == '"' || token == NULL) {
               i = 1;
               token[strlen(token) - 1] = '\0';
               strcat(reform, token);
@@ -84,13 +78,13 @@ int compile(char *source)
         printf("%s\n", token);
         break;
       case '#':
-        memset(reform, '\0', 999);
+        resetReform();
         memcpy(reform, &token[1], strlen(token));
         scratch = (double) atof(reform);
         printf("  lit %s\n", reform);
         break;
       case '&':
-        memset(reform, '\0', 999);
+        resetReform();
         memcpy(reform, &token[1], strlen(token));
         printf("  lit &%s\n", reform);
         break;
@@ -99,7 +93,7 @@ int compile(char *source)
         printf("  lit %d\n", scratch);
         break;
       case '`':
-        memset(reform, '\0', 999);
+        resetReform();
         memcpy(reform, &token[1], strlen(token));
         scratch = (double) atof(reform);
         printf("  .data %d\n", scratch);
@@ -116,18 +110,13 @@ int compile(char *source)
 }
 
 
-/*  Load and run bootstrap  */
-
-void read_line(FILE *file, char *line_buffer)
-{
-  if (file == NULL)
-  {
+void read_line(FILE *file, char *line_buffer) {
+  if (file == NULL) {
     printf("Error: file pointer is null.");
     exit(1);
   }
 
-  if (line_buffer == NULL)
-  {
+  if (line_buffer == NULL) {
     printf("Error allocating memory for line buffer.");
     exit(1);
   }
@@ -135,8 +124,7 @@ void read_line(FILE *file, char *line_buffer)
   char ch = getc(file);
   int count = 0;
 
-  while ((ch != '\n') && (ch != EOF))
-  {
+  while ((ch != '\n') && (ch != EOF)) {
     line_buffer[count] = ch;
     count++;
     ch = getc(file);
@@ -146,8 +134,7 @@ void read_line(FILE *file, char *line_buffer)
 }
 
 
-void parse_bootstrap(char *fname)
-{
+void parse_bootstrap(char *fname) {
   char source[64000];
 
   FILE *fp;
@@ -156,8 +143,7 @@ void parse_bootstrap(char *fname)
   if (fp == NULL)
     return;
 
-  while (!feof(fp))
-  {
+  while (!feof(fp)) {
     read_line(fp, source);
     compile(source);
   }
@@ -166,8 +152,7 @@ void parse_bootstrap(char *fname)
 }
 
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   parse_bootstrap("stdlib.p");
   return 0;
 }
