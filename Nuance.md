@@ -44,8 +44,6 @@ Compiles to:
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <math.h>
-#include <ctype.h>
 
 char reform[999];
 
@@ -91,25 +89,12 @@ int compile(char *source) {
         }
         break;
       case '"':
-        if (token[strlen(token) - 1] == '"') {
-          resetReform();
-          memcpy(reform, &token[1], strlen(token) - 2);
-          reform[strlen(token) - 2] = '\0';
-        } else {
-          resetReform();
-          memcpy(reform, &token[1], strlen(token) - 1);
-
+        if (token[strlen(token) - 1] != '"') {
           i = 0;
           while (i == 0) {
-            strcat(reform, " ");
             token = strtok_r(NULL, " ", &state);
-            if (token[strlen(token) - 1] == '"' || token == NULL) {
+            if (token[strlen(token) - 1] == '"' || token == NULL)
               i = 1;
-              token[strlen(token) - 1] = '\0';
-              strcat(reform, token);
-            }
-            else
-              strcat(reform, token);
           }
         }
         break;
