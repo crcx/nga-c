@@ -65,7 +65,6 @@ int compile(char *source) {
       case '#':
         resetReform();
         memcpy(reform, &token[1], strlen(token));
-        scratch = (double) atof(reform);
         printf("  lit %s\n", reform);
         break;
       case '&':
@@ -74,14 +73,13 @@ int compile(char *source) {
         printf("  lit &%s\n", reform);
         break;
       case '$':
-        scratch = (double) token[1];
+        scratch = (int) token[1];
         printf("  lit %d\n", scratch);
         break;
       case '`':
         resetReform();
         memcpy(reform, &token[1], strlen(token));
-        scratch = (double) atof(reform);
-        printf("  .data %d\n", scratch);
+        printf("  .data %s\n", reform);
         break;
       default:
         if (strcmp(token, ";") == 0)
