@@ -41,3 +41,25 @@ The core instruction set is:
 :_zret    `25 ;
 :_end     `26 ;
 ````
+
+
+````
+:+ _add ;
+:- _sub ;
+:* _mul ;
+:/mod _divmod ;
+:eq? _eq ;
+:-eq? _neq ;
+:lt? _lt ;
+:gt? _gt ;
+:and _and ;
+:or _or ;
+:xor _xor ;
+:shift _shift ;
+:bye _end ;
+:@ _fetch ;
+:! _store ;
+:dup _dup ;
+:drop _drop ;
+:swap _swap ;
+````
