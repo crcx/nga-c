@@ -66,3 +66,9 @@ Assign friendlier, more traditional names to several of the primitives. The nami
 :drop  "nx-n"   _drop ;
 :swap  "nx-xn"  _swap ;
 ````
+
+
+````
+:main
+  bye
+````
