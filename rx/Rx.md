@@ -67,6 +67,15 @@ Assign friendlier, more traditional names to several of the primitives. The nami
 :swap  "nx-xn"  _swap ;
 ````
 
+Let's write a compiler.
+
+````
+:DP 5000
+:comma  "n-"  &DP @ ! &DP @ 1 + &DP ! ;
+````
+
+And that's the core of the compiler. **comma** stores values into the memory
+that **DP** points to and increments **DP**.
 
 ````
 :main
