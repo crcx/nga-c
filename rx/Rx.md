@@ -111,7 +111,30 @@ TODO:
 :; &_ret @ comma ;
 ````
 
+
 ````
+:putc `100 ;
+:putn `101 ;
+:puts `102 ;
+:putsc `103 ;
+:cls `104 ;
+:getc `110 ;
+:getn `111 ;
+:gets `112 ;
+:fs.open `118 ;
+:fs.close `119 ;
+:fs.read `120 ;
+:fs.write `121 ;
+:fs.tell `122 ;
+:fs.seek `123 ;
+:fs.size `124 ;
+:fs.delete `125 ;
+````
+
+````
+:start 'rx-2016.08.18'
 :main
+  &start puts
+  #10 putc
   bye
 ````
