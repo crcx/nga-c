@@ -105,12 +105,17 @@ int compile(char *source) {
         break;
       case '#':
         resetReform();
-        memcpy(reform, &token[1], strlen(token));
-        printf("  lit %s\n", reform);
+        memcpy(reform, &token[1], strlen(token) - 1);
+        printf("  lit %s\n", (char *)token+1);
+        break;
+      case '~':
+        resetReform();
+        memcpy(reform, &token[1], strlen(token) - 1);
+        printf("  .allocate %s\n", reform);
         break;
       case '&':
         resetReform();
-        memcpy(reform, &token[1], strlen(token));
+        memcpy(reform, &token[1], strlen(token) - 1);
         printf("  lit &%s\n", reform);
         break;
       case '$':
@@ -119,7 +124,7 @@ int compile(char *source) {
         break;
       case '`':
         resetReform();
-        memcpy(reform, &token[1], strlen(token));
+        memcpy(reform, &token[1], strlen(token) - 1);
         printf("  .data %s\n", reform);
         break;
       default:
@@ -158,7 +163,7 @@ void read_line(FILE *file, char *line_buffer) {
 }
 
 
-void parse_bootstrap(char *fname) {
+void parse(char *fname) {
   char source[64000];
 
   FILE *fp;
@@ -177,7 +182,12 @@ void parse_bootstrap(char *fname) {
 
 
 int main(int argc, char **argv) {
-  parse_bootstrap("stdlib.p");
+  int i = 1;
+  if (argc > 1) {
+    while (i <= argc) {
+      parse(argv[i++]);
+    }
+  }
   return 0;
 }
 ````
