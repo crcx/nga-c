@@ -11,3 +11,33 @@ The core instruction set is:
     4  swap      11  eq        18  sub       25  zret
     5  push      12  neq       19  mul       26  end
     6  pop       13  lt        20  divmod
+
+````
+:_nop     `0 ;
+:_lit     `1 ;
+:_dup     `2 ;
+:_drop    `3 ;
+:_swap    `4 ;
+:_push    `5 ;
+:_pop     `6 ;
+:_jump    `7 ;
+:_call    `8 ;
+:_cjump   `9 ;
+:_ret     `10 ;
+:_eq      `11 ;
+:_neq     `12 ;
+:_lt      `13 ;
+:_gt      `14 ;
+:_fetch   `15 ;
+:_store   `16 ;
+:_add     `17 ;
+:_sub     `18 ;
+:_mul     `19 ;
+:_divmod  `20 ;
+:_and     `21 ;
+:_or      `22 ;
+:_xor     `23 ;
+:_shift   `24 ;
+:_zret    `25 ;
+:_end     `26 ;
+````
