@@ -2,16 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-
 void read_line(FILE *file, char *line_buffer) {
-  if (file == NULL)
+  if (file == NULL || line_buffer == NULL)
   {
-    printf("Error: file pointer is null.");
-    exit(1);
-  }
-
-  if (line_buffer == NULL) {
-    printf("Error allocating memory for line buffer.");
+    printf("Error: file or line buffer pointer is null.");
     exit(1);
   }
 
@@ -26,8 +20,6 @@ void read_line(FILE *file, char *line_buffer) {
 
   line_buffer[count] = '\0';
 }
-
-
 void extract(char *fname) {
   char source[32*1024];
 
@@ -56,8 +48,6 @@ void extract(char *fname) {
 
   fclose(fp);
 }
-
-
 int main(int argc, char **argv) {
   int i = 0;
   if (argc > 1) {
