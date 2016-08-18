@@ -70,12 +70,38 @@ Assign friendlier, more traditional names to several of the primitives. The nami
 Let's write a compiler.
 
 ````
-:DP 5000
-:comma  "n-"  &DP @ ! &DP @ 1 + &DP ! ;
+:DP `5000
+:comma  "n-"  &DP @ ! &DP @ #1 + &DP ! ;
 ````
 
 And that's the core of the compiler. **comma** stores values into the memory
 that **DP** points to and increments **DP**.
+
+Class handlers.
+
+TODO:
+
+* Nuance support for loops and conditionals in a cleaner manner
+
+````
+:compiler `0
+
+:.data  "n-n || n-"
+  &compiler @ #0 eq? &.data_int `9
+  :.data_com comma ;
+  :.data_int ;
+
+:.word  "p-"
+  &compiler @ #0 eq? &.word_int `9
+  :.word_com
+    &_lit @ comma
+    comma
+    &_call @ comma
+    ;
+  :.word_int _call ;
+
+:.macro  "p-"  _call ;
+````
 
 ````
 :main
