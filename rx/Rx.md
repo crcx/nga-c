@@ -12,6 +12,8 @@ The core instruction set is:
     5  push      12  neq       19  mul       26  end
     6  pop       13  lt        20  divmod
 
+Start by naming them. (Not all of these will be exposed as words in the final dictionary)
+
 ````
 :_nop     `0 ;
 :_lit     `1 ;
@@ -42,24 +44,25 @@ The core instruction set is:
 :_end     `26 ;
 ````
 
+Assign friendlier, more traditional names to several of the primitives. The naming is derived from Retro and Parable.
 
 ````
-:+ _add ;
-:- _sub ;
-:* _mul ;
-:/mod _divmod ;
-:eq? _eq ;
-:-eq? _neq ;
-:lt? _lt ;
-:gt? _gt ;
-:and _and ;
-:or _or ;
-:xor _xor ;
-:shift _shift ;
-:bye _end ;
-:@ _fetch ;
-:! _store ;
-:dup _dup ;
-:drop _drop ;
-:swap _swap ;
+:+     "nn-n"   _add ;
+:-     "nn-n"   _sub ;
+:*     "nn-n"   _mul ;
+:/mod  "nn-mq"  _divmod ;
+:eq?   "nn-f"   _eq ;
+:-eq?  "nn-f"   _neq ;
+:lt?   "nn-f"   _lt ;
+:gt?   "nn-f"   _gt ;
+:and   "nn-n"   _and ;
+:or    "nn-n"   _or ;
+:xor   "nn-n"   _xor ;
+:shift "nn-n"   _shift ;
+:bye   "-"      _end ;
+:@     "a-n"    _fetch ;
+:!     "na-"    _store ;
+:dup   "n-nn"   _dup ;
+:drop  "nx-n"   _drop ;
+:swap  "nx-xn"  _swap ;
 ````
