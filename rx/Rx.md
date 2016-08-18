@@ -71,7 +71,8 @@ Let's write a compiler.
 
 ````
 :DP `5000
-:comma  "n-"  &DP @ ! &DP @ #1 + &DP ! ;
+:here &DP @ ;
+:comma  "n-"  here ! here #1 + &DP ! ;
 ````
 
 And that's the core of the compiler. **comma** stores values into the memory
@@ -101,6 +102,13 @@ TODO:
   :.word_int _call ;
 
 :.macro  "p-"  _call ;
+````
+
+````
+:] #-1 &compiler ! ;
+:[ #0 &compiler ! ;
+:noname here ] ;
+:; &_ret @ comma ;
 ````
 
 ````
