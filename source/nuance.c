@@ -77,6 +77,11 @@ int compile(char *source) {
         memcpy(reform, &token[1], strlen(token) - 1);
         printf("  lit &%s\n", reform);
         break;
+      case '^':
+        resetReform();
+        memcpy(reform, &token[1], strlen(token) - 1);
+        printf("  lit &%s\n  jump\n", reform);
+        break;
       case '$':
         scratch = (int) token[1];
         printf("  lit %d\n", scratch);
