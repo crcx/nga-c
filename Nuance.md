@@ -142,12 +142,14 @@ int compile(char *source) {
         break;
       default:
         if (strcmp(token, "[") == 0) {
+          if (nmax > 0 && nest == 0)
+            cycle = cycle + 1;
           nest = nest + 1;
-          printf("  lit &%d<%d_e>\n  jump\n", cycle, nest + nmax);
-          printf(":%d<%d_s>\n", cycle, nest + nmax);
+          printf("  lit &%d<%d_e>\n  jump\n", cycle, nest);
+          printf(":%d<%d_s>\n", cycle, nest);
         } else if (strcmp(token, "]") == 0) {
           printf("  ret\n");
-          printf(":%d<%d_e>\n", cycle, nest + nmax);
+          printf(":%d<%d_e>\n", cycle, nest);
           if (nest > nmax)
             nmax = nest;
           nest = nest - 1;
