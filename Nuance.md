@@ -54,12 +54,20 @@ void resetReform() {
 }
 
 
+int cycle = 0;
+
 int compile(char *source) {
   char *token;
   char *state;
   char prefix;
   int scratch;
   int i;
+
+  int nest;
+  int nmax;
+
+  nmax = 0;
+  nest = 0;
 
   for (token = strtok_r(source, " ", &state); token != NULL; token = strtok_r(NULL, " ", &state)) {
     prefix = (char)token[0];
@@ -133,13 +141,26 @@ int compile(char *source) {
         printf("  .data %s\n", reform);
         break;
       default:
-        if (strcmp(token, ";") == 0)
+        if (strcmp(token, "[") == 0) {
+          nest = nest + 1;
+          printf("  lit &%d<%d_e>\n  jump\n", cycle, nest + nmax);
+          printf(":%d<%d_s>\n", cycle, nest + nmax);
+        } else if (strcmp(token, "]") == 0) {
           printf("  ret\n");
-        else
-          printf("  lit &%s\n  call\n", token);
+          printf(":%d<%d_e>\n", cycle, nest + nmax);
+          if (nest > nmax)
+            nmax = nest;
+          nest = nest - 1;
+        } else {
+          if (strcmp(token, ";") == 0)
+            printf("  ret\n");
+          else
+            printf("  lit &%s\n  call\n", token);
+        }
         break;
     }
   }
+  cycle = cycle + 1;
   return 0;
 }
 
