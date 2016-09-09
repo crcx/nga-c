@@ -205,7 +205,7 @@ void najeResolveReferences() {
           }
         }
     } else {
-      printf("\nERROR: Failed to resolve a reference");
+      printf("\nERROR: Failed to resolve a reference: %s", ref_names[i]);
     }
   }
 #endif
@@ -553,7 +553,7 @@ CELL main(int argc, char **argv) {
     printf("%d, ", memory[i]);
   printf("]\nLabels\n");
   for (CELL i = 0; i < np; i++)
-    printf("%s@@%d ", najeLabels[i], najePointers[i]);
+    printf("%s^%d ", najeLabels[i], najePointers[i]);
   printf("\n");
 
   najeWriteMap();
