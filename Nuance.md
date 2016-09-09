@@ -153,6 +153,8 @@ int compile(char *source) {
           if (nest > nmax)
             nmax = nest;
           nest = nest - 1;
+        } else if (strcmp(token, "0;") == 0) {
+          printf("  zret\n");
         } else {
           if (strcmp(token, ";") == 0)
             printf("  ret\n");
