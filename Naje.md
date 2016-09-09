@@ -19,7 +19,7 @@ short table:
 
     0  nop        7  jump      14  gt        21  and
     1  lit <v>    8  call      15  fetch     22  or
-    2  dup        9  cjump     16  store     23  xor
+    2  dup        9  ccall     16  store     23  xor
     3  drop      10  return    17  add       24  shift
     4  swap      11  eq        18  sub       25  zret
     5  push      12  neq       19  mul       26  end
@@ -88,7 +88,7 @@ Some notes on this:
   * a flow control instruction has been queued
 
     - JUMP
-    - CJUMP
+    - CCALL
     - CALL
     - RET
     - ZRET
@@ -429,7 +429,7 @@ void najeAssemble(char *source) {
     najeInst(7);
   if (strcmp(relevant, "ca") == 0)
     najeInst(8);
-  if (strcmp(relevant, "cj") == 0)
+  if (strcmp(relevant, "cc") == 0)
     najeInst(9);
   if (strcmp(relevant, "re") == 0)
     najeInst(10);

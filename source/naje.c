@@ -279,7 +279,7 @@ void najeAssemble(char *source) {
     najeInst(7);
   if (strcmp(relevant, "ca") == 0)
     najeInst(8);
-  if (strcmp(relevant, "cj") == 0)
+  if (strcmp(relevant, "cc") == 0)
     najeInst(9);
   if (strcmp(relevant, "re") == 0)
     najeInst(10);

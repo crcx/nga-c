@@ -15,7 +15,7 @@
 #define STACK_DEPTH  32
 enum vm_opcode {
   VM_NOP,  VM_LIT,    VM_DUP,   VM_DROP,    VM_SWAP,   VM_PUSH,  VM_POP,
-  VM_JUMP, VM_CALL,   VM_CJUMP, VM_RETURN,  VM_EQ,     VM_NEQ,   VM_LT,
+  VM_JUMP, VM_CALL,   VM_CCALL, VM_RETURN,  VM_EQ,     VM_NEQ,   VM_LT,
   VM_GT,   VM_FETCH,  VM_STORE, VM_ADD,     VM_SUB,    VM_MUL,   VM_DIVMOD,
   VM_AND,  VM_OR,     VM_XOR,   VM_SHIFT,   VM_ZRET,   VM_END
 };
@@ -102,7 +102,7 @@ void inst_call() {
   ip = TOS - 1;
   inst_drop();
 }
-void inst_cjump() {
+void inst_ccall() {
   int a, b;
   rp++;
   TORS = ip;
@@ -203,7 +203,7 @@ typedef void (*Handler)(void);
 
 Handler instructions[NUM_OPS] = {
   inst_nop, inst_lit, inst_dup, inst_drop, inst_swap, inst_push, inst_pop,
-  inst_jump, inst_call, inst_cjump, inst_return, inst_eq, inst_neq, inst_lt,
+  inst_jump, inst_call, inst_ccall, inst_return, inst_eq, inst_neq, inst_lt,
   inst_gt, inst_fetch, inst_store, inst_add, inst_sub, inst_mul, inst_divmod,
   inst_and, inst_or, inst_xor, inst_shift, inst_zret, inst_end
 };

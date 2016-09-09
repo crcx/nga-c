@@ -104,6 +104,7 @@ int compile(char *source) {
           if (nmax > 0 && nest == 0)
             cycle = cycle + 1;
           nest = nest + 1;
+          printf("  lit &%d<%d_s>\n", cycle, nest);
           printf("  lit &%d<%d_e>\n  jump\n", cycle, nest);
           printf(":%d<%d_s>\n", cycle, nest);
         } else if (strcmp(token, "]") == 0) {
@@ -114,6 +115,17 @@ int compile(char *source) {
           nest = nest - 1;
         } else if (strcmp(token, "0;") == 0) {
           printf("  zret\n");
+        } else if (strcmp(token, "push") == 0) {
+          printf("  push\n");
+        } else if (strcmp(token, "pop") == 0) {
+          printf("  pop\n");
+        } else if (strcmp(token, "if") == 0) {
+          if (nmax > 0 && nest == 0)
+            cycle = cycle + 1;
+          nest = nest + 1;
+          printf("  lit &$d<%d>", cycle, nest);
+          printf("  lit #-1\n  xor\n  cjump\n");
+        } else if (strcmp(token, "then") == 0) {
         } else {
           if (strcmp(token, ";") == 0)
             printf("  ret\n");
