@@ -123,8 +123,8 @@ int compile(char *source) {
           if (nmax > 0 && nest == 0)
             cycle = cycle + 1;
           nest = nest + 1;
-          printf("  lit &$d<%d>", cycle, nest);
-          printf("  lit #-1\n  xor\n  cjump\n");
+          printf("  lit &%d<%d>", cycle, nest);
+          printf("  lit #-1\n  xor\n  ccall\n");
         } else if (strcmp(token, "then") == 0) {
         } else {
           if (strcmp(token, ";") == 0)
