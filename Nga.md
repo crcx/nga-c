@@ -2,36 +2,25 @@
 
 ## Overview
 
-Nga is a minimalistic virtual machine emulating a dual stack computer with
-a simple instruction set.
+Nga is a minimalistic virtual machine emulating a dual stack computer with a simple instruction set.
 
-This is the specification and reference implementation of Nga. All code
-provided is in the C language.
+This is the specification and reference implementation of Nga. All code provided is in the C language.
 
 ## Quick Overview of the VM Model
 
-**Memory** is a single, linear addressing space of signed integer values. Each
-location is called a **cell**. Addressing starts at zero and counts up.
+**Memory** is a single, linear addressing space of signed integer values. Each location is called a **cell**. Addressing starts at zero and counts up.
 
-The VM does not expose any registers via the instruction set. This
-implementation makes use of an *instruction pointer* or **IP**, *data stack
-pointer* or **SP**, and *address stack pointer* or **RP**.
+The VM does not expose any registers via the instruction set. This implementation makes use of an *instruction pointer* or **IP**, *data stack pointer* or **SP**, and *address stack pointer* or **RP**.
 
-Nga provides two LIFO stacks. The primary one is for data and the secondary
-one is used to hold return addresses for subroutine calls. Stack depths may
-vary depending on the underlying hardware and application needs.
+Nga provides two LIFO stacks. The primary one is for data and the secondary one is used to hold return addresses for subroutine calls. Stack depths may vary depending on the underlying hardware and application needs.
 
-Instructions each take one cell. The **LIT** instruction requires a value in
-the following cell; it will push this value to the stack when executed.
+Instructions each take one cell. The **LIT** instruction requires a value in the following cell; it will push this value to the stack when executed.
 
-Instruction processing: the **IP** is incremented and the opcode at the
-current address is invoked. This process then repeats. Execution ends if
-the **END** instruction is run or end of memory is reached.
+Instruction processing: the **IP** is incremented and the opcode at the current address is invoked. This process then repeats. Execution ends if the **END** instruction is run or end of memory is reached.
 
 ## Legal
 
-Nga derives from my earlier work on Ngaro. The following block lists the
-people who helped work on the C implementation.
+Nga derives from my earlier work on Ngaro. The following block lists the people who helped work on the C implementation.
 
 ````
 /* Nga ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -56,14 +45,11 @@ Since the code is in C, we have to include some headers.
 
 ## Configuration
 
-To make it easier to adapt Nga to a specific target, we keep some important
-constants grouped together at the start of the file.
+To make it easier to adapt Nga to a specific target, we keep some important constants grouped together at the start of the file.
 
-These defaults are targeted towards a 32-bit model, with several megabytes of
-RAM.
+These defaults are targeted towards a 32-bit model, with several megabytes of RAM.
 
-For smaller targets, drop the IMAGE_SIZE considerably as that's the biggest
-pool of memory needed.
+For smaller targets, drop the IMAGE_SIZE considerably as that's the biggest pool of memory needed.
 
 ````
 #define CELL         int32_t
@@ -74,8 +60,7 @@ pool of memory needed.
 
 ## Numbering The Instructions
 
-For this implementation an enum is used to name each of the instructions. For
-reference, here are the instructions and their corresponding values (in
+For this implementation an enum is used to name each of the instructions. For reference, here are the instructions and their corresponding values (in
 decimal):
 
     0  nop        7  jump      14  gt        21  and
@@ -98,18 +83,13 @@ enum vm_opcode {
 
 ## VM State
 
-The VM state is held in a few global variables. (It'd be better to use a
-struct here, as Ngaro does, but this makes everything else a bit less
-readable.)
+The VM state is held in a few global variables. (It'd be better to use a struct here, as Ngaro does, but this makes everything else a bit less readable.)
 
 Some things to note:
 
-The data stack (**data**), address stack (**address**), and memory (**memory**)
-are simple linear arrays.
+The data stack (**data**), address stack (**address**), and memory (**memory**) are simple linear arrays.
 
-There are stack pointers (**sp** for **data** and **rp** for **address**),
-and an instruction pointer (**ip**). These are *not* exposed via the
-instruction set.
+There are stack pointers (**sp** for **data** and **rp** for **address**), and an instruction pointer (**ip**). These are *not* exposed via the instruction set.
 
 ````
 CELL sp, rp, ip;
@@ -168,9 +148,7 @@ CELL ngaLoadImage(char *imageFile) {
 
 ## Preparations
 
-This function initializes all of the variables and fills the arrays with
-known values. Memory is filled with **VM_NOP** instructions; the others are
-populated with zeros.
+This function initializes all of the variables and fills the arrays with known values. Memory is filled with **VM_NOP** instructions; the others are populated with zeros.
 
 ````
 void ngaPrepare() {
@@ -189,11 +167,7 @@ void ngaPrepare() {
 
 ## The Instructions
 
-I've chosen to implement each instruction as a separate function. This keeps
-them shorter, and lets me simplify the instruction processor later on.
-
-There is a bit of commentary on each one, but see the Nga Specification for
-full details.
+I've chosen to implement each instruction as a separate function. This keeps them shorter, and lets me simplify the instruction processor later on.
 
 The **NOP** instruction does nothing.
 
@@ -202,9 +176,7 @@ void inst_nop() {
 }
 ````
 
-**LIT** is a special case: it's followed by a value to push to the stack. This
-needs to increment the **sp** and **ip** and push the value at the incremented
-**ip** to the stack.
+**LIT** is a special case: it's followed by a value to push to the stack. This needs to increment the **sp** and **ip** and push the value at the incremented **ip** to the stack.
 
 ````
 void inst_lit() {
@@ -284,8 +256,7 @@ void inst_call() {
 }
 ````
 
-**CCALL** is a conditional call. It takes two values: a flag and a pointer for
-an address to jump to if the flag is true.
+**CCALL** is a conditional call. It takes two values: a flag and a pointer for an address to jump to if the flag is true.
 
 A false flag is zero. Any other value is true.
 
@@ -320,8 +291,7 @@ void inst_ccall() {
 }
 ````
 
-**RETURN** ends a subroutine and returns flow to the instruction following
-the last **CALL**.
+**RETURN** ends a subroutine and returns flow to the instruction following the last **CALL** or **CCALL**.
 
 ````
 void inst_return() {
@@ -474,8 +444,7 @@ void inst_shift() {
 }
 ````
 
-**ZRET** returns from a subroutine if the top item on the stack is zero. If
-not, it acts like a **NOP** instead.
+**ZRET** returns from a subroutine if the top item on the stack is zero. If not, it acts like a **NOP** instead.
 
 ````
 void inst_zret() {
@@ -497,12 +466,9 @@ void inst_end() {
 
 ## Instruction Handler
 
-In the past I handled the instructions via a big switch. With Nga, I changed
-this to use a jump table. This is significantly more concise and makes
-maintenance easier overall.
+In the past I handled the instructions via a big switch. With Nga, I changed this to use a jump table. This is significantly more concise and makes maintenance easier overall.
 
-So first up, the jump table itself. Just a list of pointers to the instruction
-implementations, in the proper order.
+So first up, the jump table itself. Just a list of pointers to the instruction implementations, in the proper order.
 
 ````
 typedef void (*Handler)(void);
@@ -523,9 +489,7 @@ void ngaProcessOpcode(CELL opcode) {
 }
 ````
 
-Nga also allows (optionally) support for packing multiple instructions per
-cell. This has benefits on memory constained targets as four instructions
-can be packed into each cell, reducing memory usage significantly.
+Nga also allows (optionally) support for packing multiple instructions per cell. This has benefits on memory constained targets as four instructions can be packed into each cell, reducing memory usage significantly.
 
 Consider:
 
@@ -533,17 +497,11 @@ Consider:
     lit 200
     add
 
-In a standard image this will be five cells. One for each instruction and
-one for each data item. With packed instructions it would be three cells:
-one for each four instructions (we only have three here, so the unused one
-is a simple NOP) and one for each data item.
+In a standard image this will be five cells. One for each instruction and one for each data item. With packed instructions it would be three cells: one for each four instructions (we only have three here, so the unused one is a simple NOP) and one for each data item.
 
-This implementation provides two functions for handling these. The first
-takes a packed instruction and validates each instruction as being valid.
-The second will process each of the stored opcodes.
+This implementation provides two functions for handling these. The first takes a packed instruction and validates each instruction as being valid. The second will process each of the stored opcodes.
 
-Note for those using this: packing should stop when instructions that
-modify the IP for flow control are used. These are:
+Note for those using this: packing should stop when instructions that modify the IP for flow control are used. These are:
 
 * JUMP
 * CCALL
@@ -551,8 +509,7 @@ modify the IP for flow control are used. These are:
 * RET
 * ZRET
 
-Nga will not stop processing code, but execution flow errors may arise
-if the packing tool does not take these into account.
+Nga will not stop processing code, but execution flow errors may arise if the packing tool does not take these into account.
 
 ````
 int ngaValidatePackedOpcodes(CELL opcode) {
