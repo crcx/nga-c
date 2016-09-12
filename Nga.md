@@ -310,12 +310,13 @@ Example:
 ````
 void inst_ccall() {
   int a, b;
-  rp++;
-  TORS = ip;
   a = TOS; inst_drop();  /* False */
   b = TOS; inst_drop();  /* Flag  */
-  if (b != 0)
+  if (b != 0) {
+    rp++;
+    TORS = ip;
     ip = a - 1;
+  }
 }
 ````
 
