@@ -213,11 +213,10 @@ void nguraKBDGetString(CELL delim, CELL limit, CELL starting) {
     k = nguraKBDGetChar();
     if (k == delim)
       done = 1;
+    else
+      memory[i] = k;
     if (i >= (limit + starting))
       done = 1;
-    if (done == 0) {
-      memory[i] = k;
-    }
     i++;
   }
   memory[i] = 0;
