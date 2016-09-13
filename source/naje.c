@@ -206,6 +206,15 @@ void najeAssemble(char *source) {
   /* Directives start with . */
   if (relevant[0] == '.') {
     switch (relevant[1]) {
+      case 'r': /* .reference */
+                token = strtok_r(ptr, " ,", &rest);
+#ifdef ALLOW_FORWARD_REFS
+                najeAddReference((char *)token);
+                najeData(1, -9999);
+#else
+                najeData(0, najeLookup((char *)token));
+#endif
+                break;
       case 'd': /* .data */
                 token = strtok_r(ptr, " ,", &rest);
                 najeSync();
