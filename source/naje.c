@@ -48,7 +48,7 @@ void najeAddLabel(char *name, CELL slice) {
   }
 }
 #ifdef ALLOW_FORWARD_REFS
-#define MAX_REFS 32*1024
+#define MAX_REFS 64*1024
 char ref_names[MAX_NAMES][STRING_LEN];
 CELL refp;
 #endif
@@ -402,6 +402,7 @@ void save() {
 CELL main(int argc, char **argv) {
   prepare();
     process_file(argv[1]);
+    najeSync();
     najeResolveReferences();
     najeSync();
   finish();
