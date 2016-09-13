@@ -140,6 +140,11 @@ int compile(char *source) {
         memcpy(reform, &token[1], strlen(token) - 1);
         printf("  .data %s\n", reform);
         break;
+      case '|':
+        resetReform();
+        memcpy(reform, &token[1], strlen(token) - 1);
+        printf("  .ref %s\n", reform);
+        break;
       default:
         if (strcmp(token, "[") == 0) {
           if (nmax > 0 && nest == 0)
