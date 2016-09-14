@@ -214,10 +214,9 @@ void nguraKBDGetString(CELL delim, CELL limit, CELL starting) {
     if (k == delim)
       done = 1;
     else
-      memory[i] = k;
+      memory[i++] = k;
     if (i >= (limit + starting))
       done = 1;
-    i++;
   }
   memory[i] = 0;
 }
