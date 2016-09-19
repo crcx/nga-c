@@ -22,6 +22,8 @@
 #define NGURA_FS_SIZE   124
 #define NGURA_FS_DELETE 125
 #endif
+
+#define NGURA_SAVE_IMAGE 130
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -212,6 +214,17 @@ CELL nguraDeleteFile() {
   return (unlink(request) == 0) ? -1 : 0;
 }
 #endif
+void nguraSaveImage() {
+  FILE *fp;
+
+  if ((fp = fopen("rx.nga", "wb")) == NULL) {
+    printf("Unable to save the ngaImage!\n");
+    exit(2);
+  }
+
+  fwrite(&memory, sizeof(CELL), IMAGE_SIZE, fp);
+  fclose(fp);
+}
 void nguraInitialize() {
 #if defined(NGURA_TTY) || defined(NGURA_KBD)
   nguraConsoleInit();
@@ -293,5 +306,8 @@ void nguraProcessOpcode(CELL opcode) {
       nguraDeleteFile();
       break;
 #endif
+    case NGURA_SAVE_IMAGE:
+      nguraSaveImage();
+      break;
   }
 }

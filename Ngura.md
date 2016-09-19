@@ -47,6 +47,8 @@ The code below defines symbolic names for each I/O instruction for enabled devic
 #define NGURA_FS_SIZE   124
 #define NGURA_FS_DELETE 125
 #endif
+
+#define NGURA_SAVE_IMAGE 130
 ````
 
 ## Unfinished Below -- Work In Progress
@@ -333,6 +335,19 @@ CELL nguraDeleteFile() {
 #endif
 ````
 
+````
+void nguraSaveImage() {
+  FILE *fp;
+
+  if ((fp = fopen("rx.nga", "wb")) == NULL) {
+    printf("Unable to save the ngaImage!\n");
+    exit(2);
+  }
+
+  fwrite(&memory, sizeof(CELL), IMAGE_SIZE, fp);
+  fclose(fp);
+}
+````
 
 ````
 void nguraInitialize() {
@@ -422,6 +437,9 @@ void nguraProcessOpcode(CELL opcode) {
       nguraDeleteFile();
       break;
 #endif
+    case NGURA_SAVE_IMAGE:
+      nguraSaveImage();
+      break;
   }
 }
 ````
