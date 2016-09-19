@@ -140,6 +140,7 @@ CELL packMode;
 
 char najeLabels[MAX_NAMES][STRING_LEN];
 CELL najePointers[MAX_NAMES];
+CELL najeRefCount[MAX_NAMES];
 CELL np;
 
 CELL references[IMAGE_SIZE];
@@ -159,10 +160,23 @@ CELL najeLookup(char *name) {
 }
 
 
+CELL najeLookupPtr(char *name) {
+  CELL slice = -1;
+  CELL n = np;
+  while (n > 0) {
+    n--;
+    if (strcmp(najeLabels[n], name) == 0)
+      slice = n;
+  }
+  return slice;
+}
+
+
 void najeAddLabel(char *name, CELL slice) {
   if (najeLookup(name) == -1) {
     strcpy(najeLabels[np], name);
     najePointers[np] = slice;
+    najeRefCount[np] = 0;
     np++;
   } else {
     printf("Fatal error: %s already defined\n", name);
@@ -201,6 +215,7 @@ void najeResolveReferences() {
           if (references[j] == 1 && matched == 0) {
             memory[j] = offset;
             references[j] = -1;
+            najeRefCount[najeLookupPtr(ref_names[i])]++;
             matched = -1;
           }
         }
@@ -563,7 +578,7 @@ CELL main(int argc, char **argv) {
     printf("%d, ", memory[i]);
   printf("]\nLabels\n");
   for (CELL i = 0; i < np; i++)
-    printf("%s^%d ", najeLabels[i], najePointers[i]);
+    printf("%s^%d.%d ", najeLabels[i], najePointers[i], najeRefCount[i]);
   printf("\n");
 
   najeWriteMap();
