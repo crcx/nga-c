@@ -203,6 +203,8 @@ These are used for input. The predecessor to Nga had a simple keyboard input fun
 int nguraKBDGetChar() {
   int i = 0;
   i = (int)getc(stdin);
+  if (i == 10 || i == 13)
+    i = 32;
   nguraTTYPutChar((char)i);
   return i;
 }
