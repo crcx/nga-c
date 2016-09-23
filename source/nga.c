@@ -31,13 +31,11 @@ CELL ngaLoadImage(char *imageFile) {
   FILE *fp;
   CELL imageSize;
   long fileLen;
-
   if ((fp = fopen(imageFile, "rb")) != NULL) {
     /* Determine length (in cells) */
     fseek(fp, 0, SEEK_END);
     fileLen = ftell(fp) / sizeof(CELL);
     rewind(fp);
-
     /* Read the file into memory */
     imageSize = fread(&memory, sizeof(CELL), fileLen, fp);
     fclose(fp);
@@ -50,13 +48,10 @@ CELL ngaLoadImage(char *imageFile) {
 }
 void ngaPrepare() {
   ip = sp = rp = 0;
-
   for (ip = 0; ip < IMAGE_SIZE; ip++)
     memory[ip] = VM_NOP;
-
   for (ip = 0; ip < STACK_DEPTH; ip++)
     data[ip] = 0;
-
   for (ip = 0; ip < ADDRESSES; ip++)
     address[ip] = 0;
 }
@@ -201,7 +196,6 @@ void inst_end() {
   ip = IMAGE_SIZE;
 }
 typedef void (*Handler)(void);
-
 Handler instructions[NUM_OPS] = {
   inst_nop, inst_lit, inst_dup, inst_drop, inst_swap, inst_push, inst_pop,
   inst_jump, inst_call, inst_ccall, inst_return, inst_eq, inst_neq, inst_lt,
@@ -223,7 +217,6 @@ int ngaValidatePackedOpcodes(CELL opcode) {
   }
   return valid;
 }
-
 void ngaProcessPackedOpcodes(int opcode) {
   CELL raw = opcode;
   for (int i = 0; i < 4; i++) {
@@ -238,9 +231,7 @@ int main(int argc, char **argv) {
       ngaLoadImage(argv[1]);
   else
       ngaLoadImage("ngaImage");
-
   CELL opcode, i;
-
   ip = 0;
   while (ip < IMAGE_SIZE) {
     opcode = memory[ip];
@@ -255,11 +246,9 @@ int main(int argc, char **argv) {
     }
     ip++;
   }
-
   for (i = 1; i <= sp; i++)
     printf("%d ", data[i]);
   printf("\n");
   exit(0);
 }
 #endif
-

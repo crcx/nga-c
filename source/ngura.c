@@ -5,13 +5,11 @@
 #define NGURA_TTY_PUTSC 103
 #define NGURA_TTY_CLEAR 104
 #endif
-
 #ifdef NGURA_KBD
 #define NGURA_KBD_GETC 110
 #define NGURA_KBD_GETN 111
 #define NGURA_KBD_GETS 112
 #endif
-
 #ifdef NGURA_FS
 #define NGURA_FS_OPEN   118
 #define NGURA_FS_CLOSE  119
@@ -22,14 +20,12 @@
 #define NGURA_FS_SIZE   124
 #define NGURA_FS_DELETE 125
 #endif
-
 #define NGURA_SAVE_IMAGE 130
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 char request[8192];
-
 void nguraGetString(int starting)
 {
   CELL i = 0;
@@ -41,7 +37,6 @@ void nguraGetString(int starting)
 #include <termios.h>
 struct termios nguraConsoleOriginalTermios;
 struct termios nguraConsoleTermios;
-
 void nguraConsoleInit() {
   tcgetattr(0, &nguraConsoleOriginalTermios);
   nguraConsoleTermios = nguraConsoleOriginalTermios;
@@ -52,7 +47,6 @@ void nguraConsoleInit() {
   nguraConsoleTermios.c_cc[VTIME] = 0;
   tcsetattr(0, TCSANOW, &nguraConsoleTermios);
 }
-
 void nguraConsoleCleanup() {
   tcsetattr(0, TCSANOW, &nguraConsoleOriginalTermios);
 }
@@ -65,16 +59,13 @@ void nguraTTYPutChar(char c) {
     putchar(8);
   }
 }
-
 void nguraTTYPutNumber(int i) {
   printf("%d", i);
 }
-
 void nguraTTYPutString(CELL addr) {
   nguraGetString(addr);
   printf("%s", request);
 }
-
 void nguraTTYPutStringCounted(CELL addr, CELL length) {
   CELL i = 0;
   while(memory[addr] && i < length) {
@@ -82,7 +73,6 @@ void nguraTTYPutStringCounted(CELL addr, CELL length) {
     i++;
   }
 }
-
 void nguraTTYClearDisplay() {
   printf("\033[2J\033[1;1H");
 }
@@ -96,7 +86,6 @@ int nguraKBDGetChar() {
   nguraTTYPutChar((char)i);
   return i;
 }
-
 void nguraKBDGetString(CELL delim, CELL limit, CELL starting) {
   CELL i = starting;
   CELL k = 0;
@@ -112,7 +101,6 @@ void nguraKBDGetString(CELL delim, CELL limit, CELL starting) {
   }
   memory[i] = 0;
 }
-
 CELL nguraKBDGetNumber(int delim) {
   CELL i = 0;
   CELL k = 0;
@@ -136,7 +124,6 @@ CELL nguraKBDGetNumber(int delim) {
 #ifdef NGURA_FS
 #define MAX_OPEN_FILES 128
 FILE *nguraFileHandles[MAX_OPEN_FILES];
-
 CELL nguraGetFileHandle()
 {
   CELL i;
@@ -145,7 +132,6 @@ CELL nguraGetFileHandle()
       return i;
   return 0;
 }
-
 CELL nguraOpenFile() {
   CELL slot, mode, name;
   slot = nguraGetFileHandle();
@@ -166,12 +152,10 @@ CELL nguraOpenFile() {
   }
   return slot;
 }
-
 CELL nguraReadFile() {
   CELL c = fgetc(nguraFileHandles[TOS]); sp--;
   return (c == EOF) ? 0 : c;
 }
-
 CELL nguraWriteFile() {
   CELL slot, c, r;
   slot = TOS; sp--;
@@ -179,19 +163,16 @@ CELL nguraWriteFile() {
   r = fputc(c, nguraFileHandles[slot]);
   return (r == EOF) ? 0 : 1;
 }
-
 CELL nguraCloseFile() {
   fclose(nguraFileHandles[TOS]);
   nguraFileHandles[TOS] = 0;
   sp--;
   return 0;
 }
-
 CELL nguraGetFilePosition() {
   CELL slot = TOS; sp--;
   return (CELL) ftell(nguraFileHandles[slot]);
 }
-
 CELL nguraSetFilePosition() {
   CELL slot, pos, r;
   slot = TOS; sp--;
@@ -199,7 +180,6 @@ CELL nguraSetFilePosition() {
   r = fseek(nguraFileHandles[slot], pos, SEEK_SET);
   return r;
 }
-
 CELL nguraGetFileSize() {
   CELL slot, current, r, size;
   slot = TOS; sp--;
@@ -209,7 +189,6 @@ CELL nguraGetFileSize() {
   fseek(nguraFileHandles[slot], current, SEEK_SET);
   return (r == 0) ? size : 0;
 }
-
 CELL nguraDeleteFile() {
   CELL name = TOS; sp--;
   nguraGetString(name);
@@ -218,12 +197,10 @@ CELL nguraDeleteFile() {
 #endif
 void nguraSaveImage() {
   FILE *fp;
-
   if ((fp = fopen("rx.nga", "wb")) == NULL) {
     printf("Unable to save the ngaImage!\n");
     exit(2);
   }
-
   fwrite(&memory, sizeof(CELL), IMAGE_SIZE, fp);
   fclose(fp);
 }
@@ -232,7 +209,6 @@ void nguraInitialize() {
   nguraConsoleInit();
 #endif
 }
-
 void nguraCleanup() {
 #if defined(NGURA_TTY) || defined(NGURA_KBD)
   nguraConsoleCleanup();

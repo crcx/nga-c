@@ -1,31 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "nga.c"
 CELL latest;
 CELL packed[4];
 CELL pindex;
-
 CELL dataList[1024];
 CELL dataType[1024];
 CELL dindex;
-
 #define MAX_NAMES 1024
 #define STRING_LEN 64
-
 CELL packMode;
-
 char najeLabels[MAX_NAMES][STRING_LEN];
 CELL najePointers[MAX_NAMES];
 CELL najeRefCount[MAX_NAMES];
 CELL np;
-
 CELL references[IMAGE_SIZE];
-
 char outputName[STRING_LEN];
-
-
 CELL najeLookup(char *name) {
   CELL slice = -1;
   CELL n = np;
@@ -36,8 +27,6 @@ CELL najeLookup(char *name) {
   }
   return slice;
 }
-
-
 CELL najeLookupPtr(char *name) {
   CELL slice = -1;
   CELL n = np;
@@ -48,8 +37,6 @@ CELL najeLookupPtr(char *name) {
   }
   return slice;
 }
-
-
 void najeAddLabel(char *name, CELL slice) {
   if (najeLookup(name) == -1) {
     strcpy(najeLabels[np], name);
@@ -66,18 +53,15 @@ void najeAddLabel(char *name, CELL slice) {
 char ref_names[MAX_NAMES][STRING_LEN];
 CELL refp;
 #endif
-
 void najeAddReference(char *name) {
 #ifdef ALLOW_FORWARD_REFS
   strcpy(ref_names[refp], name);
   refp++;
 #endif
 }
-
 void najeResolveReferences() {
 #ifdef ALLOW_FORWARD_REFS
   CELL offset, matched;
-
   for (CELL i = 0; i < refp; i++) {
     offset = najeLookup(ref_names[i]);
     matched = 0;
@@ -99,25 +83,20 @@ void najeResolveReferences() {
 void najeWriteMap() {
 #ifdef ENABLE_MAP
   FILE *fp;
-
   if ((fp = fopen(strcat(outputName, ".map"), "w")) == NULL) {
     printf("Unable to save the ngaImage.map!\n");
     exit(2);
   }
-
   for (CELL i = 0; i < np; i++)
     fprintf(fp, "LABEL\t%s\t%d\n", najeLabels[i], najePointers[i]);
-
   for (CELL i = 0; i < latest; i++) {
     if (references[i] == 0)
       fprintf(fp, "LITERAL\t%d\t%d\n", memory[i], i);
   }
-
   for (CELL i = 0; i < latest; i++) {
     if (references[i] == -1)
       fprintf(fp, "POINTER\t%d\t%d\n", memory[i], i);
   }
-
   fclose(fp);
 #else
   return;
@@ -128,15 +107,11 @@ void najeStore(CELL type, CELL value) {
   references[latest] = type;
   latest = latest + 1;
 }
-
-
 void najeSync() {
   if (packMode == 0)
     return;
-
   if (pindex == 0 && dindex == 0)
     return;
-
   if (pindex != 0) {
     unsigned int opcode = 0;
     opcode = packed[3];
@@ -159,7 +134,6 @@ void najeSync() {
   packed[2] = 0;
   packed[3] = 0;
 }
-
 void najeInst(CELL opcode) {
   if (packMode == 0)
     najeStore(0, opcode);
@@ -167,10 +141,8 @@ void najeInst(CELL opcode) {
     if (pindex == 4) {
       najeSync();
     }
-
     packed[pindex] = opcode;
     pindex++;
-
     switch (opcode) {
       case 7:
       case 8:
@@ -182,7 +154,6 @@ void najeInst(CELL opcode) {
     }
   }
 }
-
 void najeData(CELL type, CELL data) {
   if (packMode == 0)
     najeStore(type, data);
@@ -192,32 +163,26 @@ void najeData(CELL type, CELL data) {
     dindex++;
   }
 }
-
 void najeAssemble(char *source) {
   CELL i;
   char *token;
   char *rest;
   char *ptr = source;
-
   char relevant[3];
   relevant[0] = 0;
   relevant[1] = 0;
   relevant[2] = 0;
-
   if (strlen(source) == 0)
     return;
-
   token = strtok_r(ptr, " ,", &rest);
   ptr = rest;
   relevant[0] = (char)token[0];
   relevant[1] = (char)token[1];
-
   /* Labels start with : */
   if (relevant[0] == ':') {
     najeSync();
     najeAddLabel((char *)token + 1, latest);
   }
-
   /* Directives start with . */
   if (relevant[0] == '.') {
     switch (relevant[1]) {
@@ -270,8 +235,6 @@ void najeAssemble(char *source) {
                 break;
     }
   }
-
-
   /* Instructions */
   if (strcmp(relevant, "no") == 0)
     najeInst(0);
@@ -340,80 +303,59 @@ void najeAssemble(char *source) {
   if (strcmp(relevant, "en") == 0)
     najeInst(26);
 }
-
 void prepare() {
   np = 0;
   latest = 0;
   packMode = 1;
-
   strcpy(outputName, "ngaImage");
-
   /* assemble the standard preamble (a jump to :main) */
   najeInst(1);  /* LIT */
   najeData(0, 0);  /* placeholder */
   najeInst(7);  /* JUMP */
 }
-
-
 void finish() {
   CELL entry = najeLookup("main");
   memory[1] = entry;
 }
-
-
 void read_line(FILE *file, char *line_buffer) {
   if (file == NULL) {
     printf("Error: file pointer is null.");
     exit(1);
   }
-
   if (line_buffer == NULL) {
     printf("Error allocating memory for line buffer.");
     exit(1);
   }
-
   char ch = getc(file);
   CELL count = 0;
-
   while ((ch != '\n') && (ch != EOF)) {
     line_buffer[count] = ch;
     count++;
     ch = getc(file);
   }
-
   line_buffer[count] = '\0';
 }
-
-
 void process_file(char *fname) {
   char source[64000];
-
   FILE *fp;
-
   fp = fopen(fname, "r");
   if (fp == NULL)
     return;
-
   while (!feof(fp)) {
     read_line(fp, source);
     najeAssemble(source);
   }
-
   fclose(fp);
 }
-
 void save() {
   FILE *fp;
-
   if ((fp = fopen(outputName, "wb")) == NULL) {
     printf("Unable to save the ngaImage!\n");
     exit(2);
   }
-
   fwrite(&memory, sizeof(CELL), latest, fp);
   fclose(fp);
 }
-
 CELL main(int argc, char **argv) {
   prepare();
     process_file(argv[1]);
@@ -422,7 +364,6 @@ CELL main(int argc, char **argv) {
     najeSync();
   finish();
   save();
-
   printf("\nBytecode\n[");
   for (CELL i = 0; i < latest; i++)
     printf("%d, ", memory[i]);
@@ -430,8 +371,6 @@ CELL main(int argc, char **argv) {
   for (CELL i = 0; i < np; i++)
     printf("%s^%d.%d ", najeLabels[i], najePointers[i], najeRefCount[i]);
   printf("\n");
-
   najeWriteMap();
-
   return 0;
 }

@@ -65,7 +65,8 @@ void extract(char *fname) {
         inBlock = 0;
     } else {
       if (inBlock == 1) {
-        printf("%s\n", source);
+        if (strlen(source) != 0)
+          printf("%s\n", source);
       }
    }
   }

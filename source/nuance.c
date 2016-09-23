@@ -1,33 +1,24 @@
 /* nuance
  * copyright (c)2013 - 2016, charles childers
  */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 char reform[999];
-
 void resetReform() {
   memset(reform, '\0', 999);
 }
-
-
 int cycle = 0;
-
 int compile(char *source) {
   char *token;
   char *state;
   char prefix;
   int scratch;
   int i;
-
   int nest;
   int nmax;
-
   nmax = 0;
   nest = 0;
-
   for (token = strtok_r(source, " ", &state); token != NULL; token = strtok_r(NULL, " ", &state)) {
     prefix = (char)token[0];
     switch (prefix) {
@@ -41,7 +32,6 @@ int compile(char *source) {
           resetReform();
           memset(reform, '\0', 999);
           memcpy(reform, &token[1], strlen(token) - 1);
-
           i = 0;
           while (i == 0) {
             strcat(reform, " ");
@@ -124,13 +114,6 @@ int compile(char *source) {
           printf("  push\n");
         } else if (strcmp(token, "pop") == 0) {
           printf("  pop\n");
-        } else if (strcmp(token, "if") == 0) {
-          if (nmax > 0 && nest == 0)
-            cycle = cycle + 1;
-          nest = nest + 1;
-          printf("  lit &%d<%d>", cycle, nest);
-          printf("  lit #-1\n  xor\n  ccall\n");
-        } else if (strcmp(token, "then") == 0) {
         } else {
           if (strcmp(token, ";") == 0)
             printf("  ret\n");
@@ -143,50 +126,36 @@ int compile(char *source) {
   cycle = cycle + 1;
   return 0;
 }
-
-
 void read_line(FILE *file, char *line_buffer) {
   if (file == NULL) {
     printf("Error: file pointer is null.");
     exit(1);
   }
-
   if (line_buffer == NULL) {
     printf("Error allocating memory for line buffer.");
     exit(1);
   }
-
   char ch = getc(file);
   int count = 0;
-
   while ((ch != '\n') && (ch != EOF)) {
     line_buffer[count] = ch;
     count++;
     ch = getc(file);
   }
-
   line_buffer[count] = '\0';
 }
-
-
 void parse(char *fname) {
   char source[64000];
-
   FILE *fp;
-
   fp = fopen(fname, "r");
   if (fp == NULL)
     return;
-
   while (!feof(fp)) {
     read_line(fp, source);
     compile(source);
   }
-
   fclose(fp);
 }
-
-
 int main(int argc, char **argv) {
   int i = 1;
   if (argc > 1) {

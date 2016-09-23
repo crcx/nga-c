@@ -4,12 +4,10 @@
 #include <string.h>
 #include <termios.h>
 #include "nga.c"
-
 #define NGURA_TTY
 #define NGURA_KBD
 #define NGURA_FS
 #define NGURA_BLK
-
 #include "ngura.c"
 void processOpcodes() {
   CELL opcode;
@@ -32,15 +30,11 @@ int main(int argc, char **argv) {
       ngaLoadImage(argv[1]);
   else
       ngaLoadImage("ngaImage");
-
   nguraInitialize();
   processOpcodes();
   nguraCleanup();
-
   for (CELL i = 1; i <= sp; i++)
     printf("%d ", data[i]);
   printf("\n");
-
   exit(0);
-
 }
