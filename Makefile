@@ -3,6 +3,7 @@ d: s
 	cd source && $(CC) -DVERBOSE ngita.c -Wall -o ../bin/ngita
 	cd source && $(CC) naje.c -DALLOW_FORWARD_REFS -DENABLE_MAP -Wall -o ../bin/naje
 	cd source && $(CC) nuance.c -Wall -o ../bin/nuance
+	cd source && $(CC) embedimage.c -Wall -o ../bin/embedimage
 
 s:
 	$(CC) source/unu.c -o bin/unu
@@ -13,6 +14,7 @@ s:
 	./bin/unu Ngura.md >source/ngura.c
 	./bin/unu Nuance.md >source/nuance.c
 	./bin/unu Naje.md >source/naje.c
+	./bin/unu EmbedImage.md >source/embedimage.c
 	./bin/unu sdk/Tiro.md >sdk/tiro.py
 	./bin/unu sdk/Naje.md >sdk/naje.py
 	./bin/unu sdk/Nabk.md >sdk/nabk.py
