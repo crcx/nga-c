@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 import sys
-
 src = []
 with open(sys.argv[1]) as f:
     src = f.readlines()
-
 for line in src:
     tokens = line.strip().split()
     if len(tokens) > 0:

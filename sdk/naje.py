@@ -12,7 +12,6 @@ map = []
 def addToMap(type, id, offset):
     global map
     map.append((type, id, offset))
-
 def saveMap(basename):
     with open('{0}.map'.format(basename), 'w') as mapFile:
         for row in map:
@@ -69,8 +68,6 @@ def define(id):
     sync()
     labels.append((id, i))
     addToMap('label', id, i)
-
-
 def lookup(id):
     for label in labels:
         if label[0] == id:
@@ -111,7 +108,6 @@ def preamble():
     data('&main')  # value will be patched to point to :main
     inst(7)  # JUMP
     sync()
-
 def patch_entry():
     memory[1] = lookup('main')
 def clean_source(raw):
@@ -123,7 +119,6 @@ def clean_source(raw):
         if line != '':
             final.append(line)
     return final
-
 def load_source(filename):
     with open(filename, 'r') as f:
         raw = f.readlines()
@@ -133,13 +128,11 @@ def is_label(token):
         return True
     else:
         return False
-
 def is_directive(token):
     if token[0:1] == '.':
         return True
     else:
         return False
-
 def is_inst(token):
     if map_to_inst(token) == -1:
         return False
@@ -195,7 +188,6 @@ def resolve_label(name):
             print('Label: ' + name[1:])
             exit()
     return value
-
 def resolve_labels():
     global memory
     results = []
@@ -203,7 +195,6 @@ def resolve_labels():
         value = resolve_label(cell)
         results.append(value)
     memory = results
-
 def resolve_labels_in_map():
     global map
     results = []
@@ -234,23 +225,19 @@ if __name__ == '__main__':
         src = clean_source(raw)
     else:
         src = load_source(sys.argv[1])
-
     preamble()
     for line in src:
         assemble(line)
     sync()
     resolve_labels()
     patch_entry()
-
     if len(sys.argv) < 3:
         if output == '':
             output = 'output.nga'
         save(output)
     else:
         save(sys.argv[2])
-
     resolve_labels_in_map()
     saveMap(output)
-
     print(memory)
     print('{0} cells written'.format(len(memory)))

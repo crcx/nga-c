@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-
 import os, sys, math, time, struct
 from struct import pack, unpack
 map = []
-
 def tiroLoadMap(imgpath):
   global map
   if os.path.exists('{0}.map'.format(imgpath)):
@@ -45,8 +43,6 @@ def tiroUnpack(cell):
     c = (cell >> 16) & 0xFF
     d = (cell >> 24) & 0xFF
     return a, b, c, d
-
-
 def tiroIsValidPacked(cell):
     a, b, c, d = tiroUnpack(cell)
     valid = True
@@ -58,11 +54,9 @@ def tiroIsValidPacked(cell):
 def tiroStringFromPacked(cell):
     a, b, c, d = tiroUnpack(cell)
     return '{0}\t{1}\t{2}\t{3}'.format(name(a), name(b), name(c), name(d))
-
 def tiroOpcodeStringFromPacked(cell):
     a, b, c, d = tiroUnpack(cell)
     return '{0}\t{1}\t{2}\t{3}'.format(a, b, c, d)
-
 def tiroMappedElement(i, cell):
   done = False
   for line in map:
@@ -78,8 +72,6 @@ def tiroMappedElement(i, cell):
         print('{0}\t{1}'.format(i, v))
         done = True
   return done
-
-
 def tiroDisplayCellContents(i, cell):
   if not tiroMappedElement(i, cell):
     if tiroIsValidPacked(cell):
@@ -91,7 +83,6 @@ def tiroLoadImageFile(named):
   with open(named, 'rb') as f:
     memory = list(struct.unpack( cells * 'i', f.read() ))
   return memory
-
 if __name__ == "__main__":
   imgpath = sys.argv[1]
   cells = int(os.path.getsize(imgpath) / 4)
