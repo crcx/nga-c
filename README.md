@@ -7,7 +7,7 @@ Nga is a lightweight, stack based virtual machine.
 It features:
 
 * Small core (under 300 lines of C code)
-* Configurable (16, 32, 64 bit models)
+* Dual stack, MISC instruction set
 * 27 instructions
 * No defined I/O model
 * Extensible design
