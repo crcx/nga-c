@@ -8,30 +8,23 @@ void read_line(FILE *file, char *line_buffer) {
     printf("Error: file or line buffer pointer is null.");
     exit(1);
   }
-
   char ch = getc(file);
   int count = 0;
-
   while ((ch != '\n') && (ch != EOF)) {
     line_buffer[count] = ch;
     count++;
     ch = getc(file);
   }
-
   line_buffer[count] = '\0';
 }
 void extract(char *fname) {
   char source[32*1024];
-
   FILE *fp;
   int inBlock;
-
   inBlock = 0;
-
   fp = fopen(fname, "r");
   if (fp == NULL)
     return;
-
   while (!feof(fp)) {
     read_line(fp, source);
     if (strcmp(source, "````") == 0) {
@@ -46,7 +39,6 @@ void extract(char *fname) {
       }
    }
   }
-
   fclose(fp);
 }
 int main(int argc, char **argv) {

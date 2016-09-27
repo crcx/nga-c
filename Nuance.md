@@ -165,13 +165,6 @@ int compile(char *source) {
           printf("  push\n");
         } else if (strcmp(token, "pop") == 0) {
           printf("  pop\n");
-        } else if (strcmp(token, "if") == 0) {
-          if (nmax > 0 && nest == 0)
-            cycle = cycle + 1;
-          nest = nest + 1;
-          printf("  lit &%d<%d>", cycle, nest);
-          printf("  lit #-1\n  xor\n  ccall\n");
-        } else if (strcmp(token, "then") == 0) {
         } else {
           if (strcmp(token, ";") == 0)
             printf("  ret\n");
