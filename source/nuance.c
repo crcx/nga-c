@@ -2,6 +2,7 @@
  * copyright (c)2013 - 2016, charles childers
  */
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 char reform[999];

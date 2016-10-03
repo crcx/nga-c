@@ -103,6 +103,7 @@ dat structures from Nga)
 
 ````
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -580,6 +581,8 @@ CELL main(int argc, char **argv) {
   for (CELL i = 0; i < np; i++)
     printf("%s^%d.%d ", najeLabels[i], najePointers[i], najeRefCount[i]);
   printf("\n");
+
+  printf("%d cells written to %s\n", latest, outputName);
 
   najeWriteMap();
 

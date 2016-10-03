@@ -38,6 +38,7 @@ Since the code is in C, we have to include some headers.
 
 ````
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
