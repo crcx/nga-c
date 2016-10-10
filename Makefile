@@ -18,10 +18,7 @@ s:
 	./bin/unu Nuance.md >source/nuance.c
 	./bin/unu Naje.md >source/naje.c
 	./bin/unu EmbedImage.md >source/embedimage.c
-	./bin/unu sdk/Tiro.md >sdk/tiro.py
-	./bin/unu sdk/Naje.md >sdk/naje.py
-	./bin/unu sdk/Nabk.md >sdk/nabk.py
-
+	./bin/unu Tiro.md >source/tiro.py
 
 c:
 	rm -f bin/*
