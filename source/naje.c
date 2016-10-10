@@ -196,6 +196,8 @@ void najeAssemble(char *source) {
                 najeData(0, najeLookup((char *)token));
 #endif
                 break;
+      case 'c': /* .comment */
+                break;
       case 'd': /* .data */
                 token = strtok_r(ptr, " ,", &rest);
                 najeSync();
