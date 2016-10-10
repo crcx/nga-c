@@ -20,6 +20,7 @@ int compile(char *source) {
   int nmax;
   nmax = 0;
   nest = 0;
+  printf(".comment %s\n", source);
   for (token = strtok_r(source, " ", &state); token != NULL; token = strtok_r(NULL, " ", &state)) {
     prefix = (char)token[0];
     switch (prefix) {
