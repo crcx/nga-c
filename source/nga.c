@@ -180,10 +180,16 @@ void inst_xor() {
   inst_drop();
 }
 void inst_shift() {
+  CELL y = TOS;
+  CELL x = NOS;
   if (TOS < 0)
     NOS = NOS << (TOS * -1);
-  else
-    NOS >>= TOS;
+  else {
+    if (x < 0 && y > 0)
+      NOS = x >> y | ~(~0U >> y);
+    else
+      NOS = x >> y;
+  }
   inst_drop();
 }
 void inst_zret() {
