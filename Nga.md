@@ -18,6 +18,8 @@ Instructions each take one cell. The **LIT** instruction requires a value in the
 
 Instruction processing: the **IP** is incremented and the opcode at the current address is invoked. This process then repeats. Execution ends if the **END** instruction is run or end of memory is reached.
 
+Endian: the image files are stored in little endian format.
+
 ## Legal
 
 Nga derives from my earlier work on Ngaro. The following block lists the people who helped work on the C implementation.
