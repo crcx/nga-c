@@ -56,7 +56,7 @@ For smaller targets, drop the IMAGE_SIZE considerably as that's the biggest pool
 
 ````
 #define CELL         int32_t
-#define IMAGE_SIZE   262144
+#define IMAGE_SIZE   524288
 #define ADDRESSES    128
 #define STACK_DEPTH  32
 ````
