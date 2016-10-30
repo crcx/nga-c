@@ -1,0 +1,51 @@
+@charset "UTF-8";
+
+body {
+  margin: 0 auto;
+  padding: 0px;
+  width: 100vw;
+  height: 100vh;
+  background-color: #fffff0;
+}
+
+#test {
+  color: gray;
+}
+
+#code {
+  float: left;
+  width: 50%;
+  height: 99vh;
+  background-color: #fffff0;
+  overflow: auto;
+}
+
+#output {
+  float: right;
+  width: 50%;
+  height: 100vh;
+  background-color: #ccc;
+  overflow: auto;
+}
+
+pre, button {
+  font-family: monospace, sans-serif;
+  font-size: large;
+}
+
+#input {
+  width: 100%;
+  height: 99vh;
+  font-family: monospace, sans-serif;
+  font-size: large;
+  width:99%;
+  padding:0.5%;
+  margin:0;
+  border:1px solid #fffff0;
+  background-color:#fffff0;
+  overflow: auto;
+}
+
+#tools {
+   text-align: right;
+}

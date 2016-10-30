@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <title>RETRO 12</title>
+  <link rel="stylesheet" href="retro.css" />
+  <script src="nga.js"></script>
+</head>
+<body>
+  <div id="code">
+<textarea id="input">
+# Retro Forth
+
+This is the editor. Code in blocks (starting and ending with ````) will be passed to the runtime when "Go" is clicked.
+
+````
+:str:append-with-space '_ str:temp #32 over store str:prepend str:append ;
+'Hello 'World str:append-with-space puts
+````
+</textarea>
+  </div>
+  <div id="output">
+    <div id="tools"><button onclick="cls()">Clear</button> <button onclick="go()">Go</button></div>
+    <hr/>
+    <div id="log">
+<pre id="console">
+</pre>
+    </div>
+  </div>
+</body>
+</html>
