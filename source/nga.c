@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <string.h>
 #define CELL         int32_t
-#define IMAGE_SIZE   262144
+#define IMAGE_SIZE   524288
 #define ADDRESSES    128
 #define STACK_DEPTH  32
 enum vm_opcode {
