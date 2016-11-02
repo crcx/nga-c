@@ -141,7 +141,11 @@ void inst_gt() {
   inst_drop();
 }
 void inst_fetch() {
-  TOS = memory[TOS];
+  switch (TOS) {
+    case -1: TOS = sp - 1; break;
+    case -2: TOS = rp; break;
+    default: TOS = memory[TOS]; break;
+  }
 }
 void inst_store() {
   memory[TOS] = NOS;
