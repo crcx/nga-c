@@ -20,6 +20,7 @@ int main(int argc, char **argv) {
 
   CELL i;
 
+  printf("CELL ngaImageCells = %d;\n", size);
   printf("CELL ngaImage[] = { ");
 
   i = 0;

@@ -11,6 +11,7 @@ int main(int argc, char **argv) {
   else
       size = ngaLoadImage("ngaImage");
   CELL i;
+  printf("CELL ngaImageCells = %d;\n", size);
   printf("CELL ngaImage[] = { ");
   i = 0;
   while (i < size) {
