@@ -9,22 +9,13 @@
   <link rel="stylesheet" href="retro.css" />
   <script src="nga.js"></script>
 </head>
-<body>
+<body onload="load()">
   <div id="code">
-<textarea id="input">
-# Retro Forth
-
-This is the editor. Code in blocks (starting and ending with ````) will be passed to the runtime when "Go" is clicked.
-
-````
-:str:append-with-space '_ str:temp #32 over store str:prepend str:append ;
-'Hello 'World str:append-with-space puts
-````
+<textarea id="input" onchange="save()">
 </textarea>
   </div>
   <div id="output">
     <div id="tools"><button onclick="cls()">Clear</button> <button onclick="go()">Go</button></div>
-    <hr/>
     <div id="log">
 <pre id="console">
 </pre>
