@@ -28,7 +28,7 @@ void read_line(FILE *file, char *line_buffer) {
     exit(1);
   }
 
-  char ch = getc(file);
+  int ch = getc(file);
   int count = 0;
 
   while ((ch != '\n') && (ch != EOF)) {

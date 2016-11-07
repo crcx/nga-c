@@ -329,7 +329,7 @@ void read_line(FILE *file, char *line_buffer) {
     printf("Error allocating memory for line buffer.");
     exit(1);
   }
-  char ch = getc(file);
+  int ch = getc(file);
   CELL count = 0;
   while ((ch != '\n') && (ch != EOF)) {
     line_buffer[count] = ch;

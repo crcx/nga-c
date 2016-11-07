@@ -8,7 +8,7 @@ void read_line(FILE *file, char *line_buffer) {
     printf("Error: file or line buffer pointer is null.");
     exit(1);
   }
-  char ch = getc(file);
+  int ch = getc(file);
   int count = 0;
   while ((ch != '\n') && (ch != EOF)) {
     line_buffer[count] = ch;
