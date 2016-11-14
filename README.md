@@ -26,6 +26,27 @@ You can obtain a current copy of the code by doing:
 
 Nga comes with a variety of documents describing the language, virtual machine, and implementation details. All of these are in Markdown, with code fencing and tables from GitHub's variant.
 
+## Source Files
+
+The main sources are:
+
+| File          | Contains                        |
+| ------------- | ------------------------------- |
+| Nga.md        | Nga virtual machine             |
+| nga.h         | Headers for Nga                 |
+| Naje.md       | Naje: assembler for Nga         |
+| Unu.md        | Unu: extract source from .md    |
+
+There are also some other source files that may be of use:
+
+| File          | Contains                        |
+| ------------- | ------------------------------- |
+| EmbedImage.md | Tool to export image to C array |
+| Ngita.md      | Example interface layer         |
+| Ngura.md      | I/O devices for Ngita           |
+| Nuance.md     | A MachineForth to Naje compiler |
+| Tiro.md       | A disassembler                  |
+
 ## Getting Help
 
 We have an irc channel on the freenode network. Join *#retro* on *irc.freenode.net*. If you ask a question, please be patient. We have large idle times, but the channel is logged (see http://rx-core.org/dev/rancid) and we generally try to answer questions in a reasonible time period.
