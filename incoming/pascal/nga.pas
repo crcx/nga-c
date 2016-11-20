@@ -8,6 +8,9 @@ unit nga;
 
 {$mode objfpc}{$H+}
 
+{$define STANDALONE}
+{$define DEBUG}
+
 interface
 
 uses
@@ -47,6 +50,7 @@ begin
     fileLen := sr.Size div sizeof(Cell);
     // Read the file into memory
     Assignfile(f, imageFile);
+    Reset(f);
     try
       BlockRead(f, memory, fileLen, imageSize);
     finally
@@ -54,10 +58,7 @@ begin
     end;
   end
   else
-  begin
-    writeln('Unable to find ', imageFile + '!' + #13);
-    exit();
-  end;
+    writeln(format('Unable to find %s!', [imageFile]));
   FindClose(sr);
   result := imageSize;
 end;
@@ -331,7 +332,7 @@ end;
 function ngaValidatePackedOpcodes(opcode : Cell) : Integer;
 var
   raw, current : Cell;
-  valid : Integer = - 1;               // value for "true" in Unix-land
+  valid : Integer = -1;               // value for "true" in Unix-land
   i : Integer;
 begin
   raw := opcode;
@@ -361,14 +362,19 @@ end;
 // ********************************************************
 //  Main program
 // ********************************************************
+{$ifdef STANDALONE}
 var
   i, opcode, size : Cell;
 begin
   ngaPrepare();
+
   if ParamCount > 0 then
     size := ngaLoadImage(ParamStr(1))
   else
     size := ngaLoadImage('ngaImage');
+
+  if size = 0 then
+    exit();
 
   for ip := 1 to size do
   begin
@@ -379,14 +385,16 @@ begin
       ngaProcessOpcode(opcode)
     else
     begin
-      writeln('Invalid instruction loaded!' + #13);
-      writeln('at offset %d, opcode %d.', ip, opcode);
+      writeln('Invalid instruction loaded!');
+      writeln(format('at offset %d, opcode %d.', [ip, opcode]));
       exit();
     end;
   end;
+{$ifdef DEBUG}
   // Screen dump addresses for testing
   for i := 1 to ap do
-    writeln(' %d', data[i]);
-  writeln(#13);
+    write(format('%d ', [data[i]]));
+  writeln();
+{$endif}
 end.
-
+{$endif}
