@@ -1,8 +1,19 @@
+/* naje
+ * copyright (c)2016, charles childers
+ * Copyright (c)2016 - Rob Judd <judd@ob-wan.com>
+ */
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef _WIN32
+#include "strtok_r.c"
+#endif
 #include "nga.c"
+
+
 CELL latest;
 CELL packed[4];
 CELL pindex;
@@ -18,6 +29,8 @@ CELL najeRefCount[MAX_NAMES];
 CELL np;
 CELL references[IMAGE_SIZE];
 char outputName[STRING_LEN];
+
+
 CELL najeLookup(char *name) {
   CELL slice = -1;
   CELL n = np;
@@ -28,6 +41,8 @@ CELL najeLookup(char *name) {
   }
   return slice;
 }
+
+
 CELL najeLookupPtr(char *name) {
   CELL slice = -1;
   CELL n = np;
@@ -38,6 +53,8 @@ CELL najeLookupPtr(char *name) {
   }
   return slice;
 }
+
+
 void najeAddLabel(char *name, CELL slice) {
   if (najeLookup(name) == -1) {
     strcpy(najeLabels[np], name);
@@ -49,6 +66,8 @@ void najeAddLabel(char *name, CELL slice) {
     exit(0);
   }
 }
+
+
 #ifdef ALLOW_FORWARD_REFS
 #define MAX_REFS 64*1024
 char ref_names[MAX_NAMES][STRING_LEN];
@@ -60,6 +79,8 @@ void najeAddReference(char *name) {
   refp++;
 #endif
 }
+
+
 void najeResolveReferences() {
 #ifdef ALLOW_FORWARD_REFS
   CELL offset, matched;
@@ -81,6 +102,8 @@ void najeResolveReferences() {
   }
 #endif
 }
+
+
 void najeWriteMap() {
 #ifdef ENABLE_MAP
   FILE *fp;
@@ -103,6 +126,8 @@ void najeWriteMap() {
   return;
 #endif
 }
+
+
 void najeStore(CELL type, CELL value) {
   memory[latest] = value;
   references[latest] = type;
@@ -135,6 +160,8 @@ void najeSync() {
   packed[2] = 0;
   packed[3] = 0;
 }
+
+
 void najeInst(CELL opcode) {
   if (packMode == 0)
     najeStore(0, opcode);
@@ -155,6 +182,8 @@ void najeInst(CELL opcode) {
     }
   }
 }
+
+
 void najeData(CELL type, CELL data) {
   if (packMode == 0)
     najeStore(type, data);
@@ -164,6 +193,8 @@ void najeData(CELL type, CELL data) {
     dindex++;
   }
 }
+
+
 void najeAssemble(char *source) {
   CELL i;
   char *token;
@@ -306,6 +337,8 @@ void najeAssemble(char *source) {
   if (strcmp(relevant, "en") == 0)
     najeInst(26);
 }
+
+
 void prepare() {
   np = 0;
   latest = 0;
@@ -316,6 +349,8 @@ void prepare() {
   najeData(0, 0);  /* placeholder */
   najeInst(7);  /* JUMP */
 }
+
+
 void finish() {
   CELL entry = najeLookup("main");
   memory[1] = entry;
@@ -338,6 +373,8 @@ void read_line(FILE *file, char *line_buffer) {
   }
   line_buffer[count] = '\0';
 }
+
+
 void process_file(char *fname) {
   char source[64000];
   FILE *fp;
@@ -350,6 +387,8 @@ void process_file(char *fname) {
   }
   fclose(fp);
 }
+
+
 void save() {
   FILE *fp;
   if ((fp = fopen(outputName, "wb")) == NULL) {
@@ -359,6 +398,8 @@ void save() {
   fwrite(&memory, sizeof(CELL), latest, fp);
   fclose(fp);
 }
+
+
 CELL main(int argc, char **argv) {
   prepare();
     process_file(argv[1]);
@@ -367,6 +408,8 @@ CELL main(int argc, char **argv) {
     najeSync();
   finish();
   save();
+  najeWriteMap();
+#ifdef DEBUG
   printf("\nBytecode\n[");
   for (CELL i = 0; i < latest; i++)
     printf("%d, ", memory[i]);
@@ -375,6 +418,6 @@ CELL main(int argc, char **argv) {
     printf("%s^%d.%d ", najeLabels[i], najePointers[i], najeRefCount[i]);
   printf("\n");
   printf("%d cells written to %s\n", latest, outputName);
-  najeWriteMap();
+#endif
   return 0;
 }
