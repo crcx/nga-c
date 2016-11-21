@@ -1,24 +1,31 @@
-/* nuance
- * copyright (c)2013 - 2016, charles childers
- * Copyright (c)2016 - Rob Judd <judd@ob-wan.com>
- */
-
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-
-#ifdef _WIN32
-#include "strtok_r.c"
+#ifndef strtok_r
+char* strtok_r(char *str, const char *delim, char **nextp) {
+  char *ret;
+  if (str == NULL) {
+    str = *nextp;
+  }
+  str += strspn(str, delim);
+  if (*str == '\0') {
+    return NULL;
+  }
+  ret = str;
+  str += strcspn(str, delim);
+  if (*str) {
+    *str++ = '\0';
+  }
+  *nextp = str;
+  return ret;
+}
 #endif
-
 char reform[999];
 void resetReform() {
   memset(reform, '\0', 999);
 }
 int cycle = 0;
-
-
 int compile(char *source) {
   char *token;
   char *state;
@@ -137,8 +144,6 @@ int compile(char *source) {
   cycle = cycle + 1;
   return 0;
 }
-
-
 void read_line(FILE *file, char *line_buffer) {
   if (file == NULL) {
     printf("Error: file pointer is null.");
@@ -157,8 +162,6 @@ void read_line(FILE *file, char *line_buffer) {
   }
   line_buffer[count] = '\0';
 }
-
-
 void parse(char *fname) {
   char source[64000];
   FILE *fp;
@@ -171,8 +174,6 @@ void parse(char *fname) {
   }
   fclose(fp);
 }
-
-
 int main(int argc, char **argv) {
   int i = 1;
   if (argc > 1) {
