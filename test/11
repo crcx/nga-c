@@ -1,0 +1,10 @@
+.output 11.nga
+
+:main
+  lit 100
+  lit 200
+  eq?
+  lit 100
+  lit 100
+  eq?
+  end

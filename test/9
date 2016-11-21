@@ -1,0 +1,22 @@
+.output 9.nga
+
+:c1
+  lit 100
+  ret
+
+:c2
+  lit 200
+  ret
+
+:main
+  lit 100
+  lit 100
+  eq?
+  lit &c1
+  ccall
+  lit 100
+  lit 200
+  eq?
+  lit &c2
+  ccall
+  end

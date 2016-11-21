@@ -1,0 +1,13 @@
+.output 23.nga
+
+:main
+  lit -1
+  lit -1
+  xor
+  lit 0
+  lit -1
+  xor
+  lit 0
+  lit 0
+  xor
+  end

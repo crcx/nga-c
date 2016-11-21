@@ -1,0 +1,18 @@
+.output 16.nga
+
+:abc
+  .string abc
+
+:main
+  lit &abc
+  fetch
+  lit &abc
+  lit 1
+  add
+  fetch
+  lit 48
+  lit &abc
+  store
+  lit &abc
+  fetch
+  end

@@ -1,0 +1,13 @@
+.output 20.nga
+
+:main
+  lit 100
+  lit 200
+  divmod
+  lit 100
+  lit -99
+  divmod
+  lit 355
+  lit 133
+  divmod
+  end

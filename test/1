@@ -1,0 +1,8 @@
+.output 1.nga
+
+:main
+  li 1
+  li -1
+  li 99
+  li -99
+  end

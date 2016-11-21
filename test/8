@@ -1,0 +1,10 @@
+.output 8.nga
+
+:subr
+  li #10
+  ret
+
+:main
+  li &subr
+  call
+  end

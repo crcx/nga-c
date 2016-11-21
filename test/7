@@ -1,0 +1,12 @@
+.output 7.nga
+
+:subr
+  li #10
+  end
+  ret
+
+:main
+  li &subr
+  jump
+  li #89
+  end

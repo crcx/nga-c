@@ -1,0 +1,8 @@
+.output 2.nga
+
+:main
+  lit 100
+  dup
+  lit 200
+  dup
+  end
