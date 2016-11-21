@@ -6,20 +6,23 @@
    Copyright (c) 2011,        Kenneth Keating
    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+
 #define CELL         int32_t
-#define IMAGE_SIZE   262144
+#define IMAGE_SIZE   524288
 #define ADDRESSES    128
 #define STACK_DEPTH  32
-#define CELLSIZE     32
+
 enum vm_opcode {
   VM_NOP,  VM_LIT,    VM_DUP,   VM_DROP,    VM_SWAP,   VM_PUSH,  VM_POP,
-  VM_JUMP, VM_CALL,   VM_CJUMP, VM_RETURN,  VM_EQ,     VM_NEQ,   VM_LT,
+  VM_JUMP, VM_CALL,   VM_CCALL, VM_RETURN,  VM_EQ,     VM_NEQ,   VM_LT,
   VM_GT,   VM_FETCH,  VM_STORE, VM_ADD,     VM_SUB,    VM_MUL,   VM_DIVMOD,
   VM_AND,  VM_OR,     VM_XOR,   VM_SHIFT,   VM_ZRET,   VM_END
 };
+
 #define NUM_OPS VM_END + 1
 CELL sp, rp, ip;
 CELL data[STACK_DEPTH];
@@ -28,17 +31,17 @@ CELL memory[IMAGE_SIZE];
 #define TOS  data[sp]
 #define NOS  data[sp-1]
 #define TORS address[rp]
+
+
 CELL ngaLoadImage(char *imageFile) {
   FILE *fp;
   CELL imageSize;
   long fileLen;
-
   if ((fp = fopen(imageFile, "rb")) != NULL) {
     /* Determine length (in cells) */
     fseek(fp, 0, SEEK_END);
     fileLen = ftell(fp) / sizeof(CELL);
     rewind(fp);
-
     /* Read the file into memory */
     imageSize = fread(&memory, sizeof(CELL), fileLen, fp);
     fclose(fp);
@@ -49,73 +52,86 @@ CELL ngaLoadImage(char *imageFile) {
   }
   return imageSize;
 }
+
+
 void ngaPrepare() {
   ip = sp = rp = 0;
-
   for (ip = 0; ip < IMAGE_SIZE; ip++)
     memory[ip] = VM_NOP;
-
   for (ip = 0; ip < STACK_DEPTH; ip++)
     data[ip] = 0;
-
   for (ip = 0; ip < ADDRESSES; ip++)
     address[ip] = 0;
 }
+
+
 void inst_nop() {
 }
+
 void inst_lit() {
   sp++;
   ip++;
   TOS = memory[ip];
 }
+
 void inst_dup() {
   sp++;
   data[sp] = NOS;
 }
+
 void inst_drop() {
   data[sp] = 0;
    if (--sp < 0)
      ip = IMAGE_SIZE;
 }
+
 void inst_swap() {
   int a;
   a = TOS;
   TOS = NOS;
   NOS = a;
 }
+
 void inst_push() {
   rp++;
   TORS = TOS;
   inst_drop();
 }
+
 void inst_pop() {
   sp++;
   TOS = TORS;
   rp--;
 }
+
 void inst_jump() {
   ip = TOS - 1;
   inst_drop();
 }
+
 void inst_call() {
   rp++;
   TORS = ip;
   ip = TOS - 1;
   inst_drop();
 }
-void inst_cjump() {
+
+void inst_ccall() {
   int a, b;
-  rp++;
-  TORS = ip;
   a = TOS; inst_drop();  /* False */
   b = TOS; inst_drop();  /* Flag  */
-  if (b != 0)
+  if (b != 0) {
+    rp++;
+    TORS = ip;
     ip = a - 1;
+  }
 }
+
 void inst_return() {
   ip = TORS;
   rp--;
 }
+
 void inst_eq() {
   if (NOS == TOS)
     NOS = -1;
@@ -123,6 +139,7 @@ void inst_eq() {
     NOS = 0;
   inst_drop();
 }
+
 void inst_neq() {
   if (NOS != TOS)
     NOS = -1;
@@ -130,6 +147,7 @@ void inst_neq() {
     NOS = 0;
   inst_drop();
 }
+
 void inst_lt() {
   if (NOS < TOS)
     NOS = -1;
@@ -137,6 +155,7 @@ void inst_lt() {
     NOS = 0;
   inst_drop();
 }
+
 void inst_gt() {
   if (NOS > TOS)
     NOS = -1;
@@ -144,26 +163,36 @@ void inst_gt() {
     NOS = 0;
   inst_drop();
 }
+
 void inst_fetch() {
-  TOS = memory[TOS];
+  switch (TOS) {
+    case -1: TOS = sp - 1; break;
+    case -2: TOS = rp; break;
+    default: TOS = memory[TOS]; break;
+  }
 }
+
 void inst_store() {
   memory[TOS] = NOS;
   inst_drop();
   inst_drop();
 }
+
 void inst_add() {
   NOS += TOS;
   inst_drop();
 }
+
 void inst_sub() {
   NOS -= TOS;
   inst_drop();
 }
+
 void inst_mul() {
   NOS *= TOS;
   inst_drop();
 }
+
 void inst_divmod() {
   int a, b;
   a = TOS;
@@ -171,25 +200,36 @@ void inst_divmod() {
   TOS = b / a;
   NOS = b % a;
 }
+
 void inst_and() {
   NOS = TOS & NOS;
   inst_drop();
 }
+
 void inst_or() {
   NOS = TOS | NOS;
   inst_drop();
 }
+
 void inst_xor() {
   NOS = TOS ^ NOS;
   inst_drop();
 }
+
 void inst_shift() {
+  CELL y = TOS;
+  CELL x = NOS;
   if (TOS < 0)
     NOS = NOS << (TOS * -1);
-  else
-    NOS >>= TOS;
+  else {
+    if (x < 0 && y > 0)
+      NOS = x >> y | ~(~0U >> y);
+    else
+      NOS = x >> y;
+  }
   inst_drop();
 }
+
 void inst_zret() {
   if (TOS == 0) {
     inst_drop();
@@ -197,20 +237,26 @@ void inst_zret() {
     rp--;
   }
 }
+
 void inst_end() {
   ip = IMAGE_SIZE;
 }
-typedef void (*Handler)(void);
 
+
+typedef void (*Handler)(void);
 Handler instructions[NUM_OPS] = {
   inst_nop, inst_lit, inst_dup, inst_drop, inst_swap, inst_push, inst_pop,
-  inst_jump, inst_call, inst_cjump, inst_return, inst_eq, inst_neq, inst_lt,
+  inst_jump, inst_call, inst_ccall, inst_return, inst_eq, inst_neq, inst_lt,
   inst_gt, inst_fetch, inst_store, inst_add, inst_sub, inst_mul, inst_divmod,
   inst_and, inst_or, inst_xor, inst_shift, inst_zret, inst_end
 };
+
+
 void ngaProcessOpcode(CELL opcode) {
   instructions[opcode]();
 }
+
+
 int ngaValidatePackedOpcodes(CELL opcode) {
   CELL raw = opcode;
   CELL current;
@@ -224,6 +270,7 @@ int ngaValidatePackedOpcodes(CELL opcode) {
   return valid;
 }
 
+
 void ngaProcessPackedOpcodes(int opcode) {
   CELL raw = opcode;
   for (int i = 0; i < 4; i++) {
@@ -231,6 +278,8 @@ void ngaProcessPackedOpcodes(int opcode) {
     raw = raw >> 8;
   }
 }
+
+
 #ifdef STANDALONE
 int main(int argc, char **argv) {
   ngaPrepare();
@@ -238,9 +287,7 @@ int main(int argc, char **argv) {
       ngaLoadImage(argv[1]);
   else
       ngaLoadImage("ngaImage");
-
   CELL opcode, i;
-
   ip = 0;
   while (ip < IMAGE_SIZE) {
     opcode = memory[ip];
@@ -255,7 +302,6 @@ int main(int argc, char **argv) {
     }
     ip++;
   }
-
   for (i = 1; i <= sp; i++)
     printf("%d ", data[i]);
   printf("\n");

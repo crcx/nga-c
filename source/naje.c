@@ -1,151 +1,33 @@
-# Naje
+/* naje
+ * copyright (c)2016, charles childers
+ * Copyright (c)2016 - Rob Judd <judd@ob-wan.com>
+ */
 
-Naje is a minimalistic assembler for the Nga instruction set. It provides:
-
-* Two passes: assemble, then resolve lables
-* Lables
-* Basic literals
-* Symbolic names for all instructions
-* Facilities for inlining simple data
-
-Naje is intended to be a stepping stone for supporting larger applications.
-It wasn't designed to be easy or fun to use, just to provide the essentials
-needed to build useful things.
-
-## Instruction Set
-
-Nga has a very small set of instructions. These can be briefly listed in a
-short table:
-
-    0  nop        7  jump      14  gt        21  and
-    1  lit <v>    8  call      15  fetch     22  or
-    2  dup        9  ccall     16  store     23  xor
-    3  drop      10  return    17  add       24  shift
-    4  swap      11  eq        18  sub       25  zret
-    5  push      12  neq       19  mul       26  end
-    6  pop       13  lt        20  divmod
-
-All instructions except for **lit** are one cell long. **lit** takes two: one
-for the instruction and one for the value to push to the stack.
-
-Naje provides a simple syntax. A short example:
-
-    .output test.nga
-    :add
-      add
-      return
-    :subtract
-      sub
-      return
-    :increment
-      lit 1
-      lit &add
-      call
-      return
-    :main
-      lit 100
-      lit 95
-      lit &subtract
-      call
-      lit &increment
-      call
-      end
-
-Delving a bit deeper:
-
-* Blank lines are ok and will be stripped out
-* One instruction (or assembler directive) per line
-* Labels start with a colon
-* A **lit** can be followed by a number or a label name
-* References to labels must start with an &
-
-### Technical Notes
-
-Naje has a trivial parser. In deciding how to deal with a line, it will first
-strip it to its core elements, then proceed. So given a line like:
-
-    lit 100 ... push 100 to the stack! ...
-
-Naje will take the first two characters of the first token (*li*) to identify
-the instruction and the second token for the value. The rest is ignored.
-
-## Instruction Packing
-
-Nga allows for packing multiple instructions per memory location. The Nga code
-does this automatically.
-
-What this does is effectively reduce the memory a program takes significantly.
-In a standard configuration, cells are 32-bits in length.  With one
-instruction per cell, much potential space is wasted. Packing allows up to
-four to be stored in each cell.
-
-Some notes on this:
-
-- unused slots are stored as NOP instructions
-- packing ends when:
-
-  * four instructions have been queued
-  * a flow control instruction has been queued
-
-    - JUMP
-    - CCALL
-    - CALL
-    - RET
-    - ZRET
-
-  * a label is being declared
-  * when a **.data** directive is issued
-
-## Code
-
-Include the standard headers and Nga. (This uses various constants and some
-dat structures from Nga)
-
-````
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _WIN32
+#include "strtok_r.c"
+#endif
 #include "nga.c"
-````
 
-Global variables.
 
-| name         | description                                                |
-| ------------ | ---------------------------------------------------------- |
-| latest       | index into the **memory** buffer (buffer in *nga.c*)       |
-| packed       | array of opcodes for packing                               |
-| pindex       | index into **packed**                                      |
-| dataList     | array of data elements waiting to be stored                |
-| dataType     | array of type codes for data elements                      |
-| dindex       | index into **dataList** and **dataType**                   |
-| najeLabels   | array of label names                                       |
-| najePointers | array of pointers that go with **najeLabels**              |
-| np           | index into **najeLabels** and **najePointers**             |
-| references   | array of types used to identify references needing patched |
-
-````
 CELL latest;
 CELL packed[4];
 CELL pindex;
-
 CELL dataList[1024];
 CELL dataType[1024];
 CELL dindex;
-
 #define MAX_NAMES 1024
 #define STRING_LEN 64
-
 CELL packMode;
-
 char najeLabels[MAX_NAMES][STRING_LEN];
 CELL najePointers[MAX_NAMES];
 CELL najeRefCount[MAX_NAMES];
 CELL np;
-
 CELL references[IMAGE_SIZE];
-
 char outputName[STRING_LEN];
 
 
@@ -184,19 +66,13 @@ void najeAddLabel(char *name, CELL slice) {
     exit(0);
   }
 }
-````
 
-Naje can be configured to allow for forward references. This can use a
-significant amount of RAM, so is disabled by default. To enable, compile with
--DALLOW_FORWARD_REFERENCES
 
-````
 #ifdef ALLOW_FORWARD_REFS
 #define MAX_REFS 64*1024
 char ref_names[MAX_NAMES][STRING_LEN];
 CELL refp;
 #endif
-
 void najeAddReference(char *name) {
 #ifdef ALLOW_FORWARD_REFS
   strcpy(ref_names[refp], name);
@@ -204,10 +80,10 @@ void najeAddReference(char *name) {
 #endif
 }
 
+
 void najeResolveReferences() {
 #ifdef ALLOW_FORWARD_REFS
   CELL offset, matched;
-
   for (CELL i = 0; i < refp; i++) {
     offset = najeLookup(ref_names[i]);
     matched = 0;
@@ -226,68 +102,42 @@ void najeResolveReferences() {
   }
 #endif
 }
-````
 
-A *map* is a file which, along with the image file, can be used to identify
-specific stored elements.
 
-Mapfiles are stored as tab separated values with a format like:
-
-    type <tab> identifier/value <tab> offset
-
-| type    | usage                 |
-| ------- | --------------------- |
-| label   | a named offset        |
-| literal | a numeric value       |
-| pointer | pointer to an address |
-
-To enable this, compile with -DENABLE_MAP.
-
-````
 void najeWriteMap() {
 #ifdef ENABLE_MAP
   FILE *fp;
-
   if ((fp = fopen(strcat(outputName, ".map"), "w")) == NULL) {
     printf("Unable to save the ngaImage.map!\n");
     exit(2);
   }
-
   for (CELL i = 0; i < np; i++)
     fprintf(fp, "LABEL\t%s\t%d\n", najeLabels[i], najePointers[i]);
-
   for (CELL i = 0; i < latest; i++) {
     if (references[i] == 0)
       fprintf(fp, "LITERAL\t%d\t%d\n", memory[i], i);
   }
-
   for (CELL i = 0; i < latest; i++) {
     if (references[i] == -1)
       fprintf(fp, "POINTER\t%d\t%d\n", memory[i], i);
   }
-
   fclose(fp);
 #else
   return;
 #endif
 }
-````
 
-````
+
 void najeStore(CELL type, CELL value) {
   memory[latest] = value;
   references[latest] = type;
   latest = latest + 1;
 }
-
-
 void najeSync() {
   if (packMode == 0)
     return;
-
   if (pindex == 0 && dindex == 0)
     return;
-
   if (pindex != 0) {
     unsigned int opcode = 0;
     opcode = packed[3];
@@ -311,6 +161,7 @@ void najeSync() {
   packed[3] = 0;
 }
 
+
 void najeInst(CELL opcode) {
   if (packMode == 0)
     najeStore(0, opcode);
@@ -318,10 +169,8 @@ void najeInst(CELL opcode) {
     if (pindex == 4) {
       najeSync();
     }
-
     packed[pindex] = opcode;
     pindex++;
-
     switch (opcode) {
       case 7:
       case 8:
@@ -334,6 +183,7 @@ void najeInst(CELL opcode) {
   }
 }
 
+
 void najeData(CELL type, CELL data) {
   if (packMode == 0)
     najeStore(type, data);
@@ -344,31 +194,27 @@ void najeData(CELL type, CELL data) {
   }
 }
 
+
 void najeAssemble(char *source) {
   CELL i;
   char *token;
   char *rest;
   char *ptr = source;
-
   char relevant[3];
   relevant[0] = 0;
   relevant[1] = 0;
   relevant[2] = 0;
-
   if (strlen(source) == 0)
     return;
-
   token = strtok_r(ptr, " ,", &rest);
   ptr = rest;
   relevant[0] = (char)token[0];
   relevant[1] = (char)token[1];
-
   /* Labels start with : */
   if (relevant[0] == ':') {
     najeSync();
     najeAddLabel((char *)token + 1, latest);
   }
-
   /* Directives start with . */
   if (relevant[0] == '.') {
     switch (relevant[1]) {
@@ -423,8 +269,6 @@ void najeAssemble(char *source) {
                 break;
     }
   }
-
-
   /* Instructions */
   if (strcmp(relevant, "no") == 0)
     najeInst(0);
@@ -494,13 +338,12 @@ void najeAssemble(char *source) {
     najeInst(26);
 }
 
+
 void prepare() {
   np = 0;
   latest = 0;
   packMode = 1;
-
   strcpy(outputName, "ngaImage");
-
   /* assemble the standard preamble (a jump to :main) */
   najeInst(1);  /* LIT */
   najeData(0, 0);  /* placeholder */
@@ -512,60 +355,50 @@ void finish() {
   CELL entry = najeLookup("main");
   memory[1] = entry;
 }
-
-
 void read_line(FILE *file, char *line_buffer) {
   if (file == NULL) {
     printf("Error: file pointer is null.");
     exit(1);
   }
-
   if (line_buffer == NULL) {
     printf("Error allocating memory for line buffer.");
     exit(1);
   }
-
   int ch = getc(file);
   CELL count = 0;
-
   while ((ch != '\n') && (ch != EOF)) {
     line_buffer[count] = ch;
     count++;
     ch = getc(file);
   }
-
   line_buffer[count] = '\0';
 }
 
 
 void process_file(char *fname) {
   char source[64000];
-
   FILE *fp;
-
   fp = fopen(fname, "r");
   if (fp == NULL)
     return;
-
   while (!feof(fp)) {
     read_line(fp, source);
     najeAssemble(source);
   }
-
   fclose(fp);
 }
 
+
 void save() {
   FILE *fp;
-
   if ((fp = fopen(outputName, "wb")) == NULL) {
     printf("Unable to save the ngaImage!\n");
     exit(2);
   }
-
   fwrite(&memory, sizeof(CELL), latest, fp);
   fclose(fp);
 }
+
 
 CELL main(int argc, char **argv) {
   prepare();
@@ -575,7 +408,8 @@ CELL main(int argc, char **argv) {
     najeSync();
   finish();
   save();
-
+  najeWriteMap();
+#ifdef DEBUG
   printf("\nBytecode\n[");
   for (CELL i = 0; i < latest; i++)
     printf("%d, ", memory[i]);
@@ -583,11 +417,7 @@ CELL main(int argc, char **argv) {
   for (CELL i = 0; i < np; i++)
     printf("%s^%d.%d ", najeLabels[i], najePointers[i], najeRefCount[i]);
   printf("\n");
-
   printf("%d cells written to %s\n", latest, outputName);
-
-  najeWriteMap();
-
+#endif
   return 0;
 }
-````
