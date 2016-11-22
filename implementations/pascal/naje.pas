@@ -21,19 +21,16 @@ type
   Cell = Longint;
 
 var
-//  MAX_NAMES : Word = 1024;
-//  STRING_LEN : Byte = 64;
   latest, dindex, pindex, packmode, np : Cell;
-  packet : array[1..4] of Cell;
-  dataList, dataType, najePointers, najeRefCount : array[1..1024] of Cell;
-  najeLabels : array[1..1024] of PChar;
-  outputName : array[1..64] of Char;
-  memory : array [1..524288] of Cell;  // image size
-  references : array[1..524288] of Cell;
+  packet : array[0..3] of Cell;
+  dataList, dataType, najePointers, najeRefCount : array[0..1023] of Cell;
+  najeLabels : array[0..1023] of PChar;
+  outputName : array[0..63] of Char;
+  memory : array [0..524287] of Cell;
+  references : array[0..524287] of Cell;
 
 {$ifdef ALLOW_FORWARD_REFS}
-//  MAX_REFS : Word = 65535;             // 64*1024 - 1
-  ref_names : array[1..1024] of PChar;
+  ref_names : array[0..1023] of PChar;
   refp : Cell;
 {$endif}
 
@@ -77,6 +74,7 @@ procedure najeAddLabel(name : PChar; slice : Cell);
 begin
   if najeLookup(name) = -1 then
   begin
+    najeLabels[np] := stralloc(strlen(name) + 1);
     strcopy(najeLabels[np], name);
     najePointers[np] := slice;
     najeRefCount[np] := 0;
@@ -106,13 +104,13 @@ var
 {$endif}
 begin
 {$ifdef ALLOW_FORWARD_REFS}
-  for i := 1 to refp do
+  for i := 0 to refp - 1 do
   begin
     offset := najeLookup(ref_names[i]);
     matched := 0;
     if offset <> -1 then
     begin
-      for j := 1 to latest do
+      for j := 0 to latest - 1 do
       begin
         if (references[j] = 1) and (matched = 0) then
         begin
@@ -124,7 +122,7 @@ begin
       end;
     end
     else
-      writeln('Error: Failed to resolve a reference: ', ref_names[i]);
+      writeln(#10, 'Error: Failed to resolve a reference: ', ref_names[i]);
   end;
 {$endif}
 end;
@@ -139,9 +137,9 @@ begin
   AssignFile(f, strcat(@outputName, '.map'));
   ReWrite(f);
   try
-    for i := 1 to np do
+    for i := 0 to np - 1 do
       writeln(f, format('LABEL%6s%4d', [najeLabels[i], najePointers[i]]));
-    for i := 1 to latest do
+    for i := 0 to latest - 1 do
       if references[i] = 0 then
         writeln(f, format('LITERAL%4d%4d', [memory[i], i]))
       else if references[i] = -1 then
@@ -172,26 +170,26 @@ begin
   if pindex <> 0 then
   begin
     opcode := 0;
-    opcode := packet[4];               // 'packed' is a Pascal reserved word
-    opcode := opcode shl 8;
-    opcode += packet[3];
+    opcode := packet[3];               // 'packed' is a Pascal reserved word
     opcode := opcode shl 8;
     opcode += packet[2];
     opcode := opcode shl 8;
     opcode += packet[1];
+    opcode := opcode shl 8;
+    opcode += packet[0];
     najeStore(2, opcode);
   end;
   if dindex <> 0 then
   begin
-    for i := 1 to dindex do
+    for i := 0 to dindex - 1 do
       najeStore(dataType[i], dataList[i]);
   end;
   pindex := 0;
   dindex := 0;
+  packet[0] := 0;
   packet[1] := 0;
   packet[2] := 0;
   packet[3] := 0;
-  packet[4] := 0;
 end;
 
 
@@ -227,31 +225,31 @@ end;
 
 
 // Combination of strspn() and strcspn() for compactness
-function strspan(const strg : PByte; const delim : PByte; flag : Boolean) : Integer;
+function strspan(const strg : PChar; const delim : PChar; flag : Boolean) : Integer;
 var
-  str, del : PByte;
+  str, del : PChar;
   map : array[0..31] of Byte;
   count : Integer;
 begin
-  str := strg;
+  str := PChar(strg);
   del := delim;
   // init the map
   for count := 0 to 31 do
     map[count] := 0;
 
-  while del^ <> 0 do
+  while del^ <> #0 do
   begin
-    map[del^ shr 3] := map[del^ shr 3] or (1 shl (del^ and 7));
+    map[Byte(del^) shr 3] := map[Byte(del^) shr 3] or (1 shl (Byte(del^) and 7));
     inc(del);
   end;
 
   if flag then                         // strspn()
   begin
     // first character NOT in map stops search
-    if str^ <> 0 then
+    if str^ <> #0 then
     begin
       count := 0;
-      while (map[str^ shr 3] and (1 shl (str^ and 7))) <> 0 do
+      while (map[Byte(str^) shr 3] and (1 shl (Byte(str^) and 7))) <> 0 do
       begin
         inc(count);
         inc(str);
@@ -265,7 +263,7 @@ begin
     // first character in map stops search
     count := 0;
     map[0] := map[0] or 1;             // no null chars
-    while (map[str^ shr 3] and (1 shl (str^ and 7))) = 0 do
+    while (map[Byte(str^) shr 3] and (1 shl (Byte(str^) and 7))) = 0 do
     begin
       inc(count);
       inc(str);
@@ -276,23 +274,25 @@ end;
 
 
 // Inspired by public domain strtok_r() by Charlie Gordon
-function strtok_r(str : PByte; const delim: String; nextp: PPByte) : PByte;
+function strtok_r(str : PChar; const delim: String; nextp: PPChar) : PChar;
 var
-  del : PByte;
+  del : PChar;
 begin
-  del := PByte(delim);
+  del := PChar(delim);
 
   if str = nil then
     str := nextp^;
+  //writeln('str = ', str);
   str += strspan(str, del, true);
-  if str^ = 0 then
+  if str^ = #0 then
     exit(nil);
   result := str;
+  writeln('result = ', str);
   str += strspan(str, del, false);
-  if str^ <> 0 then
+  if str^ <> #0 then
   begin
     inc(str);
-    str^ := 0;
+    str^ := #0;
   end;
   nextp^ := str;
 end;
@@ -301,10 +301,10 @@ end;
 procedure najeAssemble(source : PChar);
 var
   i : Cell;
-  token, rest, ptr : PByte;
+  token, rest, ptr : PChar;
   relevant : array [0..2] of Char;
 begin
-  ptr := PByte(source);
+  ptr := source;
   relevant[0] := #0;
   relevant[1] := #0;
   relevant[2] := #0;
@@ -312,13 +312,13 @@ begin
     exit();
   token := strtok_r(ptr, ' ,', @rest);
   ptr := rest;
-  relevant[0] := Char(token[0]);
-  relevant[1] := Char(token[1]);
+  relevant[0] := token[0];
+  relevant[1] := token[1];
   // Labels start with ':'
   if relevant[0] = ':' then
   begin
     najeSync();
-    najeAddLabel(PChar(token) + 1, latest);
+    najeAddLabel(token + 1, latest);
   end;
   // Directives start with '.'
   if relevant[0] = '.' then
@@ -327,22 +327,22 @@ begin
       'r': begin                                      // .reference
              token := strtok_r(ptr, ' ,', @rest);
 {$ifdef ALLOW_FORWARD_REFS}
-             najeAddReference(PChar(token));
+             najeAddReference(token);
              najeData(1, -9999);
 {$else}
-             najeData(0, najeLookup(PChar(token)));
+             najeData(0, najeLookup(token));
 {$endif}
            end;
       'c': ;                                          // .comment
       'd': begin                                      // .data
              token := strtok_r(ptr, ' ,', @rest);
              najeSync();
-             najeData(0, StrToInt(PChar(token)));
+             najeData(0, strtoint(token));
              najeSync();
            end;
       'o': begin                                      // .output
              token := strtok_r(ptr, ' ,', @rest);
-             strcopy(@outputName, PChar(token));
+             strcopy(@outputName, token);
            end;
       'p': packMode := 1;                             // set packed mode
       'u': begin                                      // set unpacked mode
@@ -351,7 +351,7 @@ begin
            end;
       'a': begin                                      // .allocate
              token := strtok_r(ptr, ' ,', @rest);
-             i := StrToInt(PChar(token));
+             i := strtoint(token);
              najeSync();
              while i > 0 do
              begin
@@ -360,13 +360,13 @@ begin
              end;
              najeSync();
            end;
-      's': begin                                 // .string
+      's': begin                                      // .string
              token := strtok_r(ptr, #10, @rest);
              i := 0;
              najeSync();
-             while i < strlen(PChar(token)) do
+             while i < strlen(token) do
              begin
-               najeData(0, Cell (Char(token[i])));
+               najeData(0, Cell (token[i]));
                inc(i);
              end;
              najeData(0, 0);
@@ -381,17 +381,18 @@ begin
   begin
     token := strtok_r(ptr, ' ,', @rest);
     najeInst(1);
-    if Char(token[0]) = '&' then
+    writeln('token', token[0]);
+    if token[0] = '&' then
     begin
 {$ifdef ALLOW_FORWARD_REFS}
-      najeAddReference(PChar(token) + 1);
+      najeAddReference(token + 1);
       najeData(1, -9999);
 {$else}
-      najeData(0, najeLookup(PChar(token) + 1));
+      najeData(0, najeLookup(token + 1));
 {$endif}
     end
     else
-      najeData(0, StrToInt(PChar(token)));
+      najeData(0, strtoint(token));
   end;
   if strcomp(relevant, 'du') = 0 then
     najeInst(2);
@@ -453,12 +454,12 @@ begin
   np := 0;
   latest := 0;
   packMode := 1;
-  for i := 1 to 1024 do
+  for i := 0 to 1023 do
     najeLabels[i] := nil;
   strcopy(@outputName, 'ngaImage');
   // assemble the standard preamble (a jump to :main)
   najeInst(1);                         // LIT
-  najeData(1, 1);                      // placeholder
+  najeData(0, 0);                      // placeholder
   najeInst(7);                         // JUMP
 end;
 
@@ -468,14 +469,14 @@ var
   entry : Cell = 0;
 begin
   entry := najeLookup('main');
-  memory[2] := entry;
+  memory[1] := entry;
 end;
 
 
 procedure read_line(var fptr : TextFile; line_buffer : PChar);
 var
   ch : Char;
-  count : Cell = 1;
+  count : Cell = 0;
 begin
   if line_buffer = nil then
   begin
@@ -483,7 +484,7 @@ begin
     halt();
   end;
   read(fptr, ch);
-  while (ch <> #10) and (ch <> #0) do
+  while (ch <> #10) and (not eof(fptr)) do
   begin
     line_buffer[count] := ch;
     inc(count);
@@ -496,7 +497,7 @@ end;
 procedure process_file(fname : string);
 var
   f : TextFile;
-  source : array [1..64000] of Char;
+  source : array [0..63999] of Char;
 begin
   try
     AssignFile(f, fname);
@@ -569,12 +570,12 @@ begin
 {$endif}
 {$ifdef DEBUG}
   write(#10, 'Bytecode', #10, '[ ');
-  for i := 1 to latest do
+  for i := 0 to latest - 1 do
     write(format('%d, ', [memory[i]]));
   write(']', #10, 'Labels', #10);
-  for i := 1 to np do
+  for i := 0 to np - 1 do
     write(format('%s^%d.%d ', [najeLabels[i], najePointers[i], najeRefCount[i]]));
   writeln();
-  write(format('%d cells written to ngaImage', [latest]), #10);
+  writeln(format('%d cells written to ngaImage', [latest]));
 {$endif}
 end.
