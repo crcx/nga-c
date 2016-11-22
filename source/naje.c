@@ -168,7 +168,8 @@ void najeInst(CELL opcode) {
       case 8:
       case 9:
       case 10:
-      case 25: najeSync();
+      case 25:
+      case 26: najeSync();
                break;
       default: break;
     }

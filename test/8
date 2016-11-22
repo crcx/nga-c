@@ -1,7 +1,7 @@
 .output 8.nga
 
 :subr
-  li #10
+  li 10
   ret
 
 :main
