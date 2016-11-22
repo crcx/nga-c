@@ -1,0 +1,10 @@
+.output 24.nga
+
+:main
+  lit 455
+  lit -3
+  shift
+  lit 3640
+  lit 3
+  shift
+  end

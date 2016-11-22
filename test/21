@@ -1,0 +1,13 @@
+.output 21.nga
+
+:main
+  lit -1
+  lit -1
+  and
+  lit 0
+  lit -1
+  and
+  lit 0
+  lit 0
+  and
+  end

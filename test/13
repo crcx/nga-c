@@ -1,0 +1,13 @@
+.output 13.nga
+
+:main
+  lit 100
+  lit 200
+  lt?
+  lit 100
+  lit 100
+  lt?
+  lit 200
+  lit 100
+  lt?
+  end

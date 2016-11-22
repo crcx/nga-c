@@ -3,6 +3,25 @@
 #include <stdlib.h>
 #include <string.h>
 #include "nga.c"
+#ifndef strtok_r
+char* strtok_r(char *str, const char *delim, char **nextp) {
+  char *ret;
+  if (str == NULL) {
+    str = *nextp;
+  }
+  str += strspn(str, delim);
+  if (*str == '\0') {
+    return NULL;
+  }
+  ret = str;
+  str += strcspn(str, delim);
+  if (*str) {
+    *str++ = '\0';
+  }
+  *nextp = str;
+  return ret;
+}
+#endif
 CELL latest;
 CELL packed[4];
 CELL pindex;
@@ -367,6 +386,8 @@ CELL main(int argc, char **argv) {
     najeSync();
   finish();
   save();
+  najeWriteMap();
+#ifdef DEBUG
   printf("\nBytecode\n[");
   for (CELL i = 0; i < latest; i++)
     printf("%d, ", memory[i]);
@@ -375,6 +396,6 @@ CELL main(int argc, char **argv) {
     printf("%s^%d.%d ", najeLabels[i], najePointers[i], najeRefCount[i]);
   printf("\n");
   printf("%d cells written to %s\n", latest, outputName);
-  najeWriteMap();
+#endif
   return 0;
 }
