@@ -4,7 +4,7 @@ CFLAGS =
 d: s
 	cd source && $(CC) $(CFLAGS) nga.c -DSTANDALONE -Wall -o ../bin/nga
 	cd source && $(CC) $(CFLAGS) -DVERBOSE ngita.c -Wall -o ../bin/ngita
-	cd source && $(CC) $(CFLAGS) naje.c -DALLOW_FORWARD_REFS -DENABLE_MAP -Wall -o ../bin/naje
+	cd source && $(CC) $(CFLAGS) naje.c -DDEBUG -DALLOW_FORWARD_REFS -DENABLE_MAP -Wall -o ../bin/naje
 	cd source && $(CC) $(CFLAGS) nuance.c -Wall -o ../bin/nuance
 	cd source && $(CC) $(CFLAGS) embedimage.c -Wall -o ../bin/embedimage
 

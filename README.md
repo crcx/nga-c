@@ -49,7 +49,7 @@ There are also some other source files that may be of use:
 
 ## Getting Help
 
-We have an irc channel on the freenode network. Join *#retro* on *irc.freenode.net*. If you ask a question, please be patient. We have large idle times, but the channel is logged (see http://rx-core.org/dev/rancid) and we generally try to answer questions in a reasonible time period.
+We have an irc channel on the freenode network. Join *#retro* on *irc.freenode.net*. If you ask a question, please be patient. We have large idle times, but the channel is logged (see http://rx-core.org/dev/rancid) and we generally try to answer questions in a reasonable time period.
 
 *Please read the documentation before asking questions.*
 

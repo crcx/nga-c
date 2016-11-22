@@ -1,0 +1,10 @@
+.output 17.nga
+
+:main
+  lit 100
+  lit 200
+  add
+  lit 100
+  lit -99
+  add
+  end

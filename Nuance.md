@@ -39,15 +39,37 @@ Compiles to:
 ## The Code
 
 ````
-/* nuance
- * copyright (c)2013 - 2016, charles childers
- */
-
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+````
 
+Rob Judd has made me aware that some platforms (Windows) lack **strtok_r** which is used by the simple parser code. This will enable it if it's not present. It's from a public domain implemenation from Charlie Gordon.
+
+````
+#ifndef strtok_r
+char* strtok_r(char *str, const char *delim, char **nextp) {
+  char *ret;
+  if (str == NULL) {
+    str = *nextp;
+  }
+  str += strspn(str, delim);
+  if (*str == '\0') {
+    return NULL;
+  }
+  ret = str;
+  str += strcspn(str, delim);
+  if (*str) {
+    *str++ = '\0';
+  }
+  *nextp = str;
+  return ret;
+}
+#endif
+````
+
+````
 char reform[999];
 
 void resetReform() {

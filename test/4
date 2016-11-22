@@ -1,0 +1,9 @@
+.output 4.nga
+
+:main
+  lit 100
+  lit 200
+  swap
+  lit 300
+  swap
+  end

@@ -1,0 +1,9 @@
+.output 5.nga
+
+:main
+  lit 100
+  lit 200
+  push
+  lit 300
+  pop
+  end

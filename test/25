@@ -1,0 +1,16 @@
+.output 25.nga
+
+:c1
+  zret
+  drop
+  lit 2
+  ret
+
+:main
+  lit 100
+  lit &c1
+  call
+  lit 0
+  lit &c1
+  call
+  end

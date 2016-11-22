@@ -10,19 +10,16 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-
 #define CELL         int32_t
 #define IMAGE_SIZE   524288
 #define ADDRESSES    128
 #define STACK_DEPTH  32
-
 enum vm_opcode {
   VM_NOP,  VM_LIT,    VM_DUP,   VM_DROP,    VM_SWAP,   VM_PUSH,  VM_POP,
   VM_JUMP, VM_CALL,   VM_CCALL, VM_RETURN,  VM_EQ,     VM_NEQ,   VM_LT,
   VM_GT,   VM_FETCH,  VM_STORE, VM_ADD,     VM_SUB,    VM_MUL,   VM_DIVMOD,
   VM_AND,  VM_OR,     VM_XOR,   VM_SHIFT,   VM_ZRET,   VM_END
 };
-
 #define NUM_OPS VM_END + 1
 CELL sp, rp, ip;
 CELL data[STACK_DEPTH];
@@ -31,8 +28,6 @@ CELL memory[IMAGE_SIZE];
 #define TOS  data[sp]
 #define NOS  data[sp-1]
 #define TORS address[rp]
-
-
 CELL ngaLoadImage(char *imageFile) {
   FILE *fp;
   CELL imageSize;
@@ -52,8 +47,6 @@ CELL ngaLoadImage(char *imageFile) {
   }
   return imageSize;
 }
-
-
 void ngaPrepare() {
   ip = sp = rp = 0;
   for (ip = 0; ip < IMAGE_SIZE; ip++)
@@ -63,59 +56,48 @@ void ngaPrepare() {
   for (ip = 0; ip < ADDRESSES; ip++)
     address[ip] = 0;
 }
-
-
 void inst_nop() {
 }
-
 void inst_lit() {
   sp++;
   ip++;
   TOS = memory[ip];
 }
-
 void inst_dup() {
   sp++;
   data[sp] = NOS;
 }
-
 void inst_drop() {
   data[sp] = 0;
    if (--sp < 0)
      ip = IMAGE_SIZE;
 }
-
 void inst_swap() {
   int a;
   a = TOS;
   TOS = NOS;
   NOS = a;
 }
-
 void inst_push() {
   rp++;
   TORS = TOS;
   inst_drop();
 }
-
 void inst_pop() {
   sp++;
   TOS = TORS;
   rp--;
 }
-
 void inst_jump() {
   ip = TOS - 1;
   inst_drop();
 }
-
 void inst_call() {
   rp++;
   TORS = ip;
   ip = TOS - 1;
   inst_drop();
 }
-
 void inst_ccall() {
   int a, b;
   a = TOS; inst_drop();  /* False */
@@ -126,12 +108,10 @@ void inst_ccall() {
     ip = a - 1;
   }
 }
-
 void inst_return() {
   ip = TORS;
   rp--;
 }
-
 void inst_eq() {
   if (NOS == TOS)
     NOS = -1;
@@ -139,7 +119,6 @@ void inst_eq() {
     NOS = 0;
   inst_drop();
 }
-
 void inst_neq() {
   if (NOS != TOS)
     NOS = -1;
@@ -147,7 +126,6 @@ void inst_neq() {
     NOS = 0;
   inst_drop();
 }
-
 void inst_lt() {
   if (NOS < TOS)
     NOS = -1;
@@ -155,7 +133,6 @@ void inst_lt() {
     NOS = 0;
   inst_drop();
 }
-
 void inst_gt() {
   if (NOS > TOS)
     NOS = -1;
@@ -163,7 +140,6 @@ void inst_gt() {
     NOS = 0;
   inst_drop();
 }
-
 void inst_fetch() {
   switch (TOS) {
     case -1: TOS = sp - 1; break;
@@ -171,28 +147,23 @@ void inst_fetch() {
     default: TOS = memory[TOS]; break;
   }
 }
-
 void inst_store() {
   memory[TOS] = NOS;
   inst_drop();
   inst_drop();
 }
-
 void inst_add() {
   NOS += TOS;
   inst_drop();
 }
-
 void inst_sub() {
   NOS -= TOS;
   inst_drop();
 }
-
 void inst_mul() {
   NOS *= TOS;
   inst_drop();
 }
-
 void inst_divmod() {
   int a, b;
   a = TOS;
@@ -200,22 +171,18 @@ void inst_divmod() {
   TOS = b / a;
   NOS = b % a;
 }
-
 void inst_and() {
   NOS = TOS & NOS;
   inst_drop();
 }
-
 void inst_or() {
   NOS = TOS | NOS;
   inst_drop();
 }
-
 void inst_xor() {
   NOS = TOS ^ NOS;
   inst_drop();
 }
-
 void inst_shift() {
   CELL y = TOS;
   CELL x = NOS;
@@ -229,7 +196,6 @@ void inst_shift() {
   }
   inst_drop();
 }
-
 void inst_zret() {
   if (TOS == 0) {
     inst_drop();
@@ -237,12 +203,9 @@ void inst_zret() {
     rp--;
   }
 }
-
 void inst_end() {
   ip = IMAGE_SIZE;
 }
-
-
 typedef void (*Handler)(void);
 Handler instructions[NUM_OPS] = {
   inst_nop, inst_lit, inst_dup, inst_drop, inst_swap, inst_push, inst_pop,
@@ -250,13 +213,9 @@ Handler instructions[NUM_OPS] = {
   inst_gt, inst_fetch, inst_store, inst_add, inst_sub, inst_mul, inst_divmod,
   inst_and, inst_or, inst_xor, inst_shift, inst_zret, inst_end
 };
-
-
 void ngaProcessOpcode(CELL opcode) {
   instructions[opcode]();
 }
-
-
 int ngaValidatePackedOpcodes(CELL opcode) {
   CELL raw = opcode;
   CELL current;
@@ -269,8 +228,6 @@ int ngaValidatePackedOpcodes(CELL opcode) {
   }
   return valid;
 }
-
-
 void ngaProcessPackedOpcodes(int opcode) {
   CELL raw = opcode;
   for (int i = 0; i < 4; i++) {
@@ -278,8 +235,6 @@ void ngaProcessPackedOpcodes(int opcode) {
     raw = raw >> 8;
   }
 }
-
-
 #ifdef STANDALONE
 int main(int argc, char **argv) {
   ngaPrepare();

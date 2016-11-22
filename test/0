@@ -1,0 +1,5 @@
+.output 0.nga
+
+:main
+  nop
+  end
