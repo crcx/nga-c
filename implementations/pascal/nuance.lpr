@@ -4,7 +4,7 @@
 //  ISC License - see included file LICENSE
 // ********************************************************
 
-unit nuance;
+program nuance;
 
 {$mode objfpc}{$H+}
 
@@ -19,7 +19,7 @@ var
   reform : array[0..998] of Char;
   cycle : Integer = 0;
 
-implementation
+//implementation
 
 
 // Combination of strspn() and strcspn() for compactness
