@@ -4,7 +4,7 @@
 //  ISC License - see included file LICENSE
 // ********************************************************
 
-unit naje;
+program naje;
 
 {$mode objfpc}{$H+}
 
@@ -12,7 +12,7 @@ unit naje;
 {$define ENABLE_MAP}
 {$define DEBUG}
 
-interface
+//interface
 
 uses
   Classes, SysUtils;
@@ -35,7 +35,7 @@ var
 {$endif}
 
 
-implementation
+//implementation
 
 function najeLookup(name : PChar) : Cell;
 var
@@ -514,3 +514,4 @@ begin
   writeln(format('%d cells written to %s', [latest, outputName]));
 {$endif}
 end.
+

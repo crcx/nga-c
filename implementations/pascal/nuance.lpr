@@ -81,8 +81,7 @@ end;
 
 procedure compile(source : PChar);
 var
-  token : PChar;
-  state : PChar;
+  token, state : PChar;
   prefix : Char;
   scratch : Integer;
   nmax : Integer = 0;
