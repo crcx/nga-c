@@ -34,6 +34,7 @@
       <Unit0>
         <Filename Value="embed.lpr"/>
         <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
         <CursorPos X="25" Y="10"/>
         <UsageCount Value="20"/>
         <Loaded Value="True"/>
@@ -41,7 +42,6 @@
       <Unit1>
         <Filename Value="nga.pas"/>
         <IsPartOfProject Value="True"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
         <TopLine Value="8"/>
         <CursorPos X="49" Y="20"/>
@@ -138,6 +138,16 @@
       <OtherUnitFiles Value="lib\$(TargetCPU)-$(TargetOS)"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
+    <CodeGeneration>
+      <Optimizations>
+        <OptimizationLevel Value="2"/>
+      </Optimizations>
+    </CodeGeneration>
+    <Linking>
+      <Debugging>
+        <GenerateDebugInfo Value="False"/>
+      </Debugging>
+    </Linking>
   </CompilerOptions>
   <Debugging>
     <Exceptions Count="3">
