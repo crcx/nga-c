@@ -9,7 +9,7 @@ unit nga;
 {$mode objfpc}{$H+}
 
 //{$define STANDALONE}
-{$MACRO ON}
+{$macro on}
 
 interface
 
@@ -18,6 +18,9 @@ type
 
 procedure ngaPrepare();
 function ngaLoadImage(imageFile : string) : Cell;
+function ngaValidatePackedOpcodes(opcode : Cell) : Integer;
+procedure ngaProcessPackedOpcodes(opcode : Cell);
+procedure ngaProcessOpcode(opcode : Cell);
 
 var
   ip, ap, sp : Cell;                   // instruction, address & stack pointers
