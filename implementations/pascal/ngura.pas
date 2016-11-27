@@ -11,7 +11,7 @@ unit ngura;
 
 //{$define NGURA_KBD}
 //{$define NGURA_TTY}
-//{$define NGURA_FS}
+{$define NGURA_FS}
 
 interface
 
@@ -22,58 +22,57 @@ procedure nguraInitialize();
 procedure nguraCleanup();
 procedure nguraProcessOpcode(opcode : Cell);
 
-var
-  memory : array[0..524287] of Cell;
-  ip, sp : Cell;
-  request : array[0..8191] of Char;
-
-{$DEFINE IMAGE_SIZE:=524288}
-
-{$if defined (NGURA_TTY) or defined (NGURA_KBD)}
-{$include <termios.h>}
-  struct termios nguraConsoleOriginalTermios;
-  struct termios nguraConsoleTermios;
-{$endif}
-{$ifdef NGURA_FS}
-{$define MAX_OPEN_FILES 128}
-  nguraFileHandles : array[1..128] of File;
-{$endif}
-
-{$ifdef NGURA_TTY}
-{$define NGURA_TTY_PUTC   100}
-{$define NGURA_TTY_PUTN   101}
-{$define NGURA_TTY_PUTS   102}
-{$define NGURA_TTY_PUTSC  103}
-{$define NGURA_TTY_CLEAR  104}
-{$endif}
-
-{$ifdef NGURA_KBD}
-{$define NGURA_KBD_GETC   110}
-{$define NGURA_KBD_GETN   111}
-{$define NGURA_KBD_GETS   112}
-{$endif}
-
-{$ifdef NGURA_FS}
-{$define NGURA_FS_OPEN    118}
-{$define NGURA_FS_CLOSE   119}
-{$define NGURA_FS_READ    120}
-{$define NGURA_FS_WRITE   121}
-{$define NGURA_FS_TELL    122}
-{$define NGURA_FS_SEEK    123}
-{$define NGURA_FS_SIZE    124}
-{$define NGURA_FS_DELETE  125}
-{$endif}
-
-{$define NGURA_SAVE_IMAGE := 130}
-
-{$define TOS:=data[sp]}
-{$define NOS:=data[sp-1]}
-{$define TOA:=address[ap]}
-
 implementation
 
 uses
   Classes, SysUtils;
+
+var
+  sp : Cell;
+  data : array [0..31] of Cell;
+  memory : array[0..524287] of Cell;
+  request : array[0..8191] of Char;
+
+{$define IMAGE_SIZE:=524288}
+{$define TOS:=data[sp]}
+{$define NOS:=data[sp-1]}
+{$define TOA:=address[ap]}
+
+{$if false} //defined (NGURA_TTY) or defined (NGURA_KBD)}
+{$include <termios.h>}
+  struct termios nguraConsoleOriginalTermios;
+  struct termios nguraConsoleTermios;
+{$endif}
+
+{$ifdef NGURA_TTY}
+{$define NGURA_TTY_PUTC   := 100}
+{$define NGURA_TTY_PUTN   := 101}
+{$define NGURA_TTY_PUTS   := 102}
+{$define NGURA_TTY_PUTSC  := 103}
+{$define NGURA_TTY_CLEAR  := 104}
+{$endif}
+
+{$ifdef NGURA_KBD}
+{$define NGURA_KBD_GETC   := 110}
+{$define NGURA_KBD_GETN   := 111}
+{$define NGURA_KBD_GETS   := 112}
+{$endif}
+
+{$ifdef NGURA_FS}
+{$define NGURA_FS_OPEN    := 118}
+{$define NGURA_FS_CLOSE   := 119}
+{$define NGURA_FS_READ    := 120}
+{$define NGURA_FS_WRITE   := 121}
+{$define NGURA_FS_TELL    := 122}
+{$define NGURA_FS_SEEK    := 123}
+{$define NGURA_FS_SIZE    := 124}
+{$define NGURA_FS_DELETE  := 125}
+{$define MAX_OPEN_FILES   := 128}
+  nguraFileHandles : array[1..128] of THandle;
+{$endif}
+
+{$define NGURA_SAVE_IMAGE := 130}
+
 
 procedure nguraGetString(starting : Integer);
 var
@@ -89,7 +88,8 @@ begin
 end;
 
 {$if defined(NGURA_TTY) or defined(NGURA_KBD)}
-void nguraConsoleInit() {
+procedure nguraConsoleInit();
+begin
   tcgetattr(0, @nguraConsoleOriginalTermios);
   nguraConsoleTermios := nguraConsoleOriginalTermios;
   nguraConsoleTermios.c_iflag &= ~(BRKINT+ISTRIP+IXON+IXOFF);
@@ -98,10 +98,12 @@ void nguraConsoleInit() {
   nguraConsoleTermios.c_cc[VMIN] := 1;
   nguraConsoleTermios.c_cc[VTIME] := 0;
   tcsetattr(0, TCSANOW, @nguraConsoleTermios);
-}
-void nguraConsoleCleanup() {
+end;
+
+procedure nguraConsoleCleanup();
+begin
   tcsetattr(0, TCSANOW, @nguraConsoleOriginalTermios);
-}
+end;
 {$endif}
 
 {$ifdef NGURA_TTY}
@@ -138,7 +140,7 @@ end;
 
 procedure nguraTTYClearDisplay();
 begin
-  write(format('\033[2J\033[1;1H'));   // eek!
+  write('\033[2J\033[1;1H');
 end;
 {$endif}
 
@@ -177,7 +179,7 @@ begin
   memory[i] := 0;
 end;
 
-nguraKBDGetNumber(delim : Integer) : Cell
+procedure nguraKBDGetNumber(delim : Integer) : Cell
 var
   i : Cell = 0;
   k : Cell = 0;
@@ -198,7 +200,7 @@ end;
 {$endif}
 
 {$ifdef NGURA_FS}
-nguraGetFileHandle() : Cell;
+function nguraGetFileHandle() : Cell;
 var
   i : Cell;
 begin
@@ -208,7 +210,7 @@ begin
       result := i
 end;
 
-nguraOpenFile() : Cell;
+function nguraOpenFile() : Cell;
 var
   slot, mode, name : Cell;
 begin
@@ -220,12 +222,24 @@ begin
   nguraGetString(name);
   if slot > 0 then
   begin
-    if mode = 0 then nguraFileHandles[slot] = fopen(request, "r");
-    if mode = 1 then nguraFileHandles[slot] = fopen(request, "w");
-    if mode = 2 then nguraFileHandles[slot] = fopen(request, "a");
-    if mode = 3 then nguraFileHandles[slot] = fopen(request, "r+");
+    if FileExists(request) then
+      case mode of
+        0 : nguraFileHandles[slot] := FileOpen(request, fmOpenRead);      // r
+        1 : nguraFileHandles[slot] := FileOpen(request, fmOpenWrite);     // w
+        2 :
+        begin
+          nguraFileHandles[slot] := FileOpen(request, fmOpenWrite);       // a
+          FileSeek(nguraFileHandles[slot], 0, fsFromEnd);
+        end;
+        3 : nguraFileHandles[slot] := FileOpen(request, fmOpenReadWrite); // r+
+      end
+    else
+      case mode of
+        2, 3 : nguraFileHandles[slot] := FileCreate(request, fmOpenWrite);
+        1, 4 : writeln('Error: File doesn''t exist!');
+      end;
   end;
-  if nguraFileHandles[slot] = nil then
+  if nguraFileHandles[slot] = THandle(-1) then
   begin
     nguraFileHandles[slot] := 0;
     slot := 0;
@@ -233,51 +247,51 @@ begin
   result := slot;
 end;
 
-nguraReadFile() : Cell;
+function nguraReadFile() : Cell;
 var
-  c : Cell;
+  c, err : Cell;
 begin
-  c := fgetc(nguraFileHandles[TOS]);
+  err := FileRead(nguraFileHandles[TOS], c, SizeOf(Cell));
   dec(sp);
-  if c := eof then
+  if err = -1 then
     result := 0
   else
     result := c;
-}
+end;
 
-nguraWriteFile() : Cell;
+function nguraWriteFile() : Cell;
 var
-  slot, c, r : Cell;
+  slot, c, err : Cell;
 begin
   slot := TOS;
   dec(sp);
   c := TOS;
   dec(sp);
-  r := fputc(c, nguraFileHandles[slot]);
-  if r = eof then
+  err := FileWrite(nguraFileHandles[slot], c, SizeOf(Cell));
+  if err = -1 then
     result := 0
   else
     result := 1;
 end;
 
-nguraCloseFile() : Cell;
+function nguraCloseFile() : Cell;
 begin
-  close(nguraFileHandles[TOS]);
+  FileClose(nguraFileHandles[TOS]);
   nguraFileHandles[TOS] := 0;
   dec(sp);
   result := 0;
 end;
 
-nguraGetFilePosition() : Cell;
+function nguraGetFilePosition() : Cell;
 var
   slot : Cell;
 begin
   slot := TOS;
   dec(sp);
-  result := Cell(ftell(nguraFileHandles[slot]));
+  result := FileSeek(nguraFileHandles[slot], 0, fsFromCurrent);
 end;
 
-nguraSetFilePosition() : Cell;
+function nguraSetFilePosition() : Cell;
 var
   slot, pos : Cell;
 begin
@@ -285,37 +299,36 @@ begin
   dec(sp);
   pos := TOS;
   dec(sp);
-  result := fseek(nguraFileHandles[slot], pos, SEEK_SET);
+  result := FileSeek(nguraFileHandles[slot], pos, fsFromBeginning);
 end;
 
-nguraGetFileSize() : Cell;
+function nguraGetFileSize() : Cell;
 var
-  slot, current, r, size : Cell;
+  slot, current, size : Cell;
 begin
   slot := TOS;
   dec(sp);
-  current := ftell(nguraFileHandles[slot]);
-  r := fseek(nguraFileHandles[slot], 0, SEEK_END);
-  size := ftell(nguraFileHandles[slot]);
-  fseek(nguraFileHandles[slot], current, SEEK_SET);
-  if r = 0 then
+  current := FileSeek(nguraFileHandles[slot], 0, fsFromCurrent);
+  size := FileSeek(nguraFileHandles[slot], 0, fsFromEnd);
+  FileSeek(nguraFileHandles[slot], current, fsFromBeginning);
+  if size <> -1 then
     result := size
   else
     result := 0;
 end;
 
-nguraDeleteFile() : Cell;
+function nguraDeleteFile() : Cell;
 var
   name : Cell;
 begin
   name := TOS;
   dec(sp);
   nguraGetString(name);
-  if unlink(request) = 0 then
+  if DeleteFile(request) then
     result := -1
   else
     result := 0;
-}
+end;
 {$endif}
 
 procedure nguraSaveImage();

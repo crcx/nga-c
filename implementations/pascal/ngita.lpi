@@ -34,17 +34,17 @@
       <Unit0>
         <Filename Value="ngita.lpr"/>
         <IsPartOfProject Value="True"/>
-        <IsVisibleTab Value="True"/>
         <CursorPos X="60" Y="13"/>
-        <UsageCount Value="30"/>
+        <UsageCount Value="43"/>
         <Loaded Value="True"/>
       </Unit0>
       <Unit1>
         <Filename Value="nga.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="1"/>
-        <CursorPos Y="9"/>
-        <UsageCount Value="30"/>
+        <TopLine Value="44"/>
+        <CursorPos Y="43"/>
+        <UsageCount Value="43"/>
         <Loaded Value="True"/>
       </Unit1>
       <Unit2>
@@ -52,138 +52,136 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="4"/>
         <CursorPos Y="30"/>
-        <UsageCount Value="29"/>
+        <UsageCount Value="28"/>
       </Unit2>
       <Unit3>
         <Filename Value="ngura.pas"/>
         <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="2"/>
-        <CursorPos X="15" Y="358"/>
-        <UsageCount Value="30"/>
+        <TopLine Value="335"/>
+        <CursorPos X="23" Y="349"/>
+        <UsageCount Value="43"/>
         <Loaded Value="True"/>
       </Unit3>
     </Units>
-    <JumpHistory Count="30" HistoryIndex="29">
+    <JumpHistory Count="29" HistoryIndex="28">
       <Position1>
         <Filename Value="ngura.pas"/>
-        <Caret Line="361" Column="4" TopLine="353"/>
+        <Caret Line="329" Column="25" TopLine="307"/>
       </Position1>
       <Position2>
         <Filename Value="ngura.pas"/>
-        <Caret Line="361" Column="16" TopLine="353"/>
+        <Caret Line="71" Column="19" TopLine="58"/>
       </Position2>
       <Position3>
         <Filename Value="ngura.pas"/>
-        <Caret Line="68" Column="40" TopLine="59"/>
+        <Caret Line="209" Column="37" TopLine="196"/>
       </Position3>
       <Position4>
-        <Filename Value="ngita.lpr"/>
-        <Caret Line="59" Column="3" TopLine="7"/>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="259" Column="32" TopLine="244"/>
       </Position4>
       <Position5>
-        <Filename Value="ngita.lpr"/>
-        <Caret Line="23" Column="25" TopLine="18"/>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="269" Column="12" TopLine="253"/>
       </Position5>
       <Position6>
-        <Filename Value="ngita.lpr"/>
-        <Caret Line="28" TopLine="12"/>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="271" Column="12" TopLine="256"/>
       </Position6>
       <Position7>
-        <Filename Value="ngita.lpr"/>
-        <Caret Line="20" Column="11" TopLine="19"/>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="272" Column="29" TopLine="256"/>
       </Position7>
       <Position8>
-        <Filename Value="ngita.lpr"/>
-        <Caret Line="34" TopLine="29"/>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="231" TopLine="212"/>
       </Position8>
       <Position9>
-        <Filename Value="ngita.lpr"/>
-        <Caret Line="56" Column="14" TopLine="39"/>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="209" Column="30" TopLine="196"/>
       </Position9>
       <Position10>
-        <Filename Value="ngita.lpr"/>
-        <Caret Line="65" TopLine="39"/>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="242" Column="33" TopLine="242"/>
       </Position10>
       <Position11>
         <Filename Value="ngura.pas"/>
-        <Caret Line="35" Column="19" TopLine="22"/>
+        <Caret Line="252" Column="17" TopLine="241"/>
       </Position11>
       <Position12>
-        <Filename Value="ngita.lpr"/>
-        <Caret Line="65"/>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="270" Column="19" TopLine="250"/>
       </Position12>
       <Position13>
         <Filename Value="ngura.pas"/>
-        <Caret Line="38" Column="3" TopLine="21"/>
+        <Caret Line="279" Column="8" TopLine="266"/>
       </Position13>
       <Position14>
-        <Filename Value="ngita.lpr"/>
-        <Caret Line="65" TopLine="39"/>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="291" Column="63" TopLine="272"/>
       </Position14>
       <Position15>
-        <Filename Value="ngita.lpr"/>
-        <Caret Line="65" TopLine="39"/>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="314" Column="8" TopLine="297"/>
       </Position15>
       <Position16>
-        <Filename Value="ngita.lpr"/>
-        <Caret Line="44" Column="8" TopLine="33"/>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="313" Column="16" TopLine="298"/>
       </Position16>
       <Position17>
-        <Filename Value="ngita.lpr"/>
-        <Caret Line="34" TopLine="29"/>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="314" Column="16" TopLine="308"/>
       </Position17>
       <Position18>
-        <Filename Value="ngita.lpr"/>
-        <Caret Line="55" TopLine="29"/>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="331" Column="5" TopLine="323"/>
       </Position18>
       <Position19>
         <Filename Value="ngura.pas"/>
-        <Caret Line="328" Column="38" TopLine="318"/>
+        <Caret Line="242" Column="42" TopLine="226"/>
       </Position19>
       <Position20>
         <Filename Value="ngura.pas"/>
-        <Caret Line="327" Column="24" TopLine="314"/>
+        <Caret Line="307" Column="18" TopLine="294"/>
       </Position20>
       <Position21>
-        <Filename Value="ngita.lpr"/>
-        <Caret Line="52" Column="3"/>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="31" Column="3" TopLine="22"/>
       </Position21>
       <Position22>
-        <Filename Value="ngita.lpr"/>
-        <Caret Line="31" Column="13" TopLine="12"/>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="32" Column="3" TopLine="19"/>
       </Position22>
       <Position23>
-        <Filename Value="nga.pas"/>
-        <Caret Line="24"/>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="33" Column="9" TopLine="20"/>
       </Position23>
       <Position24>
-        <Filename Value="ngita.lpr"/>
-        <Caret Line="25" Column="12"/>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="81" Column="16" TopLine="59"/>
       </Position24>
       <Position25>
-        <Filename Value="ngita.lpr"/>
-        <Caret Line="58" TopLine="33"/>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="83" Column="30" TopLine="61"/>
       </Position25>
       <Position26>
         <Filename Value="ngura.pas"/>
-        <Caret Line="28" TopLine="10"/>
+        <Caret Line="134" Column="15" TopLine="112"/>
       </Position26>
       <Position27>
-        <Filename Value="ngita.lpr"/>
-        <Caret Line="58" TopLine="33"/>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="135" Column="32" TopLine="113"/>
       </Position27>
       <Position28>
         <Filename Value="ngura.pas"/>
-        <Caret Line="26" Column="28" TopLine="13"/>
+        <Caret Line="173" Column="13" TopLine="151"/>
       </Position28>
       <Position29>
         <Filename Value="ngura.pas"/>
-        <Caret Line="358" Column="3" TopLine="354"/>
+        <Caret Line="179" Column="9" TopLine="157"/>
       </Position29>
-      <Position30>
-        <Filename Value="ngita.lpr"/>
-        <Caret Line="13" Column="60" TopLine="11"/>
-      </Position30>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
@@ -197,6 +195,21 @@
       <OtherUnitFiles Value="lib\$(TargetCPU)-$(TargetOS)"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
+    <CodeGeneration>
+      <Optimizations>
+        <OptimizationLevel Value="2"/>
+      </Optimizations>
+    </CodeGeneration>
+    <Linking>
+      <Debugging>
+        <GenerateDebugInfo Value="False"/>
+      </Debugging>
+    </Linking>
+    <Other>
+      <CompilerMessages>
+        <IgnoredMessages idx5061="True"/>
+      </CompilerMessages>
+    </Other>
   </CompilerOptions>
   <Debugging>
     <Exceptions Count="3">
