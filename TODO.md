@@ -25,7 +25,7 @@ YYYY.MM [ ] not started
         [ ] Library of common routines ?
         [ ] Python implementation
         [ ] Objective-C wrapper
-        [-] Pascal implementation
+        [x] Pascal implementation
         [ ] Swift implementation
 2016.05 [x] C implementation
 2016.05 [x] Tool to extract sources from Markdown

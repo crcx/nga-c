@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectOptions>
+    <Version Value="9"/>
+    <PathDelim Value="\"/>
+    <General>
+      <Flags>
+        <MainUnitHasCreateFormStatements Value="False"/>
+        <MainUnitHasTitleStatement Value="False"/>
+      </Flags>
+      <MainUnit Value="0"/>
+      <Title Value="ngita"/>
+      <UseAppBundle Value="False"/>
+      <ResourceType Value="res"/>
+    </General>
+    <i18n>
+      <EnableI18N LFM="False"/>
+    </i18n>
+    <VersionInfo>
+      <StringTable ProductVersion=""/>
+    </VersionInfo>
+    <BuildModes Count="1" Active="Default">
+      <Item1 Name="Default" Default="True"/>
+    </BuildModes>
+    <PublishOptions>
+      <Version Value="2"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+      </local>
+    </RunParams>
+    <Units Count="6">
+      <Unit0>
+        <Filename Value="ngita.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <CursorPos X="60" Y="13"/>
+        <UsageCount Value="53"/>
+        <Loaded Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="nga.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="1"/>
+        <CursorPos X="32" Y="8"/>
+        <UsageCount Value="53"/>
+        <Loaded Value="True"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="ngit.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="4"/>
+        <CursorPos Y="30"/>
+        <UsageCount Value="27"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="ngura.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="2"/>
+        <CursorPos Y="12"/>
+        <UsageCount Value="53"/>
+        <Loaded Value="True"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="termios.inc"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="4"/>
+        <CursorPos X="25" Y="62"/>
+        <UsageCount Value="26"/>
+        <Loaded Value="True"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="termioz.pas"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="11"/>
+        <CursorPos X="15" Y="29"/>
+        <UsageCount Value="22"/>
+        <Loaded Value="True"/>
+      </Unit5>
+    </Units>
+    <JumpHistory Count="23" HistoryIndex="22">
+      <Position1>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="455" TopLine="430"/>
+      </Position1>
+      <Position2>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="102" Column="2" TopLine="87"/>
+      </Position2>
+      <Position3>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="43" Column="3" TopLine="26"/>
+      </Position3>
+      <Position4>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="106" Column="3" TopLine="93"/>
+      </Position4>
+      <Position5>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="42" Column="25" TopLine="29"/>
+      </Position5>
+      <Position6>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="455"/>
+      </Position6>
+      <Position7>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="455" TopLine="430"/>
+      </Position7>
+      <Position8>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="98" Column="70" TopLine="85"/>
+      </Position8>
+      <Position9>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="455" TopLine="430"/>
+      </Position9>
+      <Position10>
+        <Filename Value="ngita.lpr"/>
+        <Caret Line="9" Column="14"/>
+      </Position10>
+      <Position11>
+        <Filename Value="ngita.lpr"/>
+        <Caret Line="61" TopLine="36"/>
+      </Position11>
+      <Position12>
+        <Filename Value="ngita.lpr"/>
+        <Caret Line="25" TopLine="16"/>
+      </Position12>
+      <Position13>
+        <Filename Value="ngura.pas"/>
+        <Caret Line="88" TopLine="74"/>
+      </Position13>
+      <Position14>
+        <Filename Value="ngita.lpr"/>
+        <Caret Line="20" TopLine="7"/>
+      </Position14>
+      <Position15>
+        <Filename Value="termios.inc"/>
+        <Caret Line="113" TopLine="99"/>
+      </Position15>
+      <Position16>
+        <Filename Value="termios.inc"/>
+        <Caret Line="90" Column="13" TopLine="77"/>
+      </Position16>
+      <Position17>
+        <Filename Value="termios.inc"/>
+        <Caret Line="90" Column="13" TopLine="77"/>
+      </Position17>
+      <Position18>
+        <Filename Value="termios.inc"/>
+        <Caret Line="103" TopLine="77"/>
+      </Position18>
+      <Position19>
+        <Filename Value="termios.inc"/>
+        <Caret Line="90" Column="13" TopLine="77"/>
+      </Position19>
+      <Position20>
+        <Filename Value="termios.inc"/>
+        <Caret Line="112" Column="3" TopLine="100"/>
+      </Position20>
+      <Position21>
+        <Filename Value="termios.inc"/>
+        <Caret Line="90" Column="13" TopLine="77"/>
+      </Position21>
+      <Position22>
+        <Filename Value="termios.inc"/>
+        <Caret Line="2" Column="50"/>
+      </Position22>
+      <Position23>
+        <Filename Value="termioz.pas"/>
+        <Caret Line="34" Column="15"/>
+      </Position23>
+    </JumpHistory>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="11"/>
+    <PathDelim Value="\"/>
+    <Target>
+      <Filename Value="ngita"/>
+    </Target>
+    <SearchPaths>
+      <IncludeFiles Value="$(ProjOutDir)"/>
+      <OtherUnitFiles Value="lib\$(TargetCPU)-$(TargetOS)"/>
+      <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
+    </SearchPaths>
+    <CodeGeneration>
+      <Optimizations>
+        <OptimizationLevel Value="2"/>
+      </Optimizations>
+    </CodeGeneration>
+    <Linking>
+      <Debugging>
+        <GenerateDebugInfo Value="False"/>
+      </Debugging>
+    </Linking>
+    <Other>
+      <CompilerMessages>
+        <IgnoredMessages idx5061="True"/>
+      </CompilerMessages>
+    </Other>
+  </CompilerOptions>
+  <Debugging>
+    <Exceptions Count="3">
+      <Item1>
+        <Name Value="EAbort"/>
+      </Item1>
+      <Item2>
+        <Name Value="ECodetoolError"/>
+      </Item2>
+      <Item3>
+        <Name Value="EFOpenError"/>
+      </Item3>
+    </Exceptions>
+  </Debugging>
+</CONFIG>

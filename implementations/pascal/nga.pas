@@ -9,14 +9,18 @@ unit nga;
 {$mode objfpc}{$H+}
 
 //{$define STANDALONE}
-{$MACRO ON}
+{$macro on}
 
 interface
 
-uses
-  Classes, SysUtils;
+type
+  Cell = Longint;
 
-type Cell = Longint;
+procedure ngaPrepare();
+function ngaLoadImage(imageFile : string) : Cell;
+function ngaValidatePackedOpcodes(opcode : Cell) : Integer;
+procedure ngaProcessPackedOpcodes(opcode : Cell);
+procedure ngaProcessOpcode(opcode : Cell);
 
 var
   ip, ap, sp : Cell;                   // instruction, address & stack pointers
@@ -30,7 +34,11 @@ var
 {$DEFINE NOS:=data[sp-1]}
 {$DEFINE TOA:=address[ap]}
 
+
 implementation
+
+uses
+  Classes, SysUtils;
 
 function ngaLoadImage(imageFile : string) : Cell;
 var
@@ -386,5 +394,7 @@ begin
   for i := 1 to sp do
     write(format('%d ', [data[i]]));
   writeln();
+end.
+{$else}
 end.
 {$endif}
