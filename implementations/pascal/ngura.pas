@@ -9,8 +9,8 @@ unit ngura;
 {$mode objfpc}{$H+}
 {$macro on}
 
-//{$define NGURA_KBD}
-//{$define NGURA_TTY}
+{$define NGURA_KBD}
+{$define NGURA_TTY}
 {$define NGURA_FS}
 
 interface
@@ -25,7 +25,7 @@ procedure nguraProcessOpcode(opcode : Cell);
 implementation
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, termioz in 'termioz.pas';
 
 var
   sp : Cell;
@@ -38,10 +38,11 @@ var
 {$define NOS:=data[sp-1]}
 {$define TOA:=address[ap]}
 
-{$if false} //defined (NGURA_TTY) or defined (NGURA_KBD)}
-{$include <termios.h>}
-  struct termios nguraConsoleOriginalTermios;
-  struct termios nguraConsoleTermios;
+{$if defined (NGURA_TTY) or defined (NGURA_KBD)}
+{$include termios.inc}
+var
+  nguraConsoleOriginalTermios : termios;
+  nguraConsoleTermios : termios;
 {$endif}
 
 {$ifdef NGURA_TTY}
@@ -92,9 +93,9 @@ procedure nguraConsoleInit();
 begin
   tcgetattr(0, @nguraConsoleOriginalTermios);
   nguraConsoleTermios := nguraConsoleOriginalTermios;
-  nguraConsoleTermios.c_iflag &= ~(BRKINT+ISTRIP+IXON+IXOFF);
-  nguraConsoleTermios.c_iflag |= (IGNBRK+IGNPAR);
-  nguraConsoleTermios.c_lflag &= ~(ICANON+ISIG+IEXTEN+ECHO);
+  nguraConsoleTermios.c_iflag := nguraConsoleTermios.c_iflag and not(BRKINT+ISTRIP+IXON+IXOFF);
+  nguraConsoleTermios.c_iflag := nguraConsoleTermios.c_iflag or (IGNBRK+IGNPAR);
+  nguraConsoleTermios.c_lflag := nguraConsoleTermios.c_lflag and not(ICANON+ISIG+IEXTEN+ECHO);
   nguraConsoleTermios.c_cc[VMIN] := 1;
   nguraConsoleTermios.c_cc[VTIME] := 0;
   tcsetattr(0, TCSANOW, @nguraConsoleTermios);
@@ -106,16 +107,17 @@ begin
 end;
 {$endif}
 
-{$ifdef NGURA_TTY}
-procedure nguraTTYPutChar(char c);
+procedure nguraTTYPutChar(c : Char);
 begin
-  putchar(c);
-  if c = 8 then
-    putchar(32);
-    putchar(8);
+  write(c);
+  if c = #8 then
+  begin
+    write(#32);
+    write(#8);
   end;
 end;
 
+{$ifdef NGURA_TTY}
 procedure nguraTTYPutNumber(i : Integer);
 begin
   write(format('%d', [i]));
@@ -132,6 +134,7 @@ var
   i : Cell = 0;
 begin
   while(memory[addr] <> 0) and (i < length) do
+  begin
     nguraTTYPutChar(Char(memory[addr]));
     inc(i);
     inc(addr);
@@ -147,13 +150,13 @@ end;
 {$ifdef NGURA_KBD}
 function nguraKBDGetChar() : Integer;
 var
-  i : Integer = 0;
+  i : Char = #0;
 begin
-  i := Integer(getc(stdin));
+  read(i);
   if (i = #10) or (i = #13) then
-    i := 32;
-  nguraTTYPutChar(Char(i));
-  result := i;
+    i := #32;
+  nguraTTYPutChar(i);
+  result := Integer(i);
 end;
 
 procedure nguraKBDGetString(delim, limit, starting: Cell);
@@ -179,7 +182,7 @@ begin
   memory[i] := 0;
 end;
 
-procedure nguraKBDGetNumber(delim : Integer) : Cell
+function nguraKBDGetNumber(delim : Integer) : Cell;
 var
   i : Cell = 0;
   k : Cell = 0;
@@ -191,11 +194,11 @@ begin
     if (k = delim) or (i > 8192) then
       done := 1;
     if done = 0 then
-      request[i] := k;
+      request[i] := Char(k);
     inc(i);
   end;
-  request[i] := 0;
-  result := strtolong(request);
+  request[i] := #0;
+  result := strtoint(request);
 end;
 {$endif}
 
@@ -335,27 +338,27 @@ procedure nguraSaveImage();
 var
   f : FILE;
 begin
-try
-  Assignfile(f, 'rx.nga');
-  ReWrite(f, IMAGE_SIZE);
-except
-  on E: EInOutError do
-  begin
-    writeln('Unable to save the ngaImage!', E.Message, ': rx.nga');
-    halt();
+  try
+    Assignfile(f, 'rx.nga');
+    ReWrite(f, IMAGE_SIZE);
+  except
+    on E: EInOutError do
+    begin
+      writeln('Unable to save the ngaImage!', E.Message, ': rx.nga');
+      halt();
+    end;
   end;
-end;
-try
-  BlockWrite(f, memory, sizeOf(Cell));
-finally
-  CloseFile(f);
-end;
+  try
+    BlockWrite(f, memory, sizeOf(Cell));
+  finally
+    CloseFile(f);
+  end;
 end;
 
 procedure nguraInitialize();
 begin
 {$if defined(NGURA_TTY) or defined(NGURA_KBD)}
-    nguraConsoleInit();
+  nguraConsoleInit();
 {$endif}
 end;
 
@@ -367,8 +370,9 @@ begin
 end;
 
 procedure nguraProcessOpcode(opcode : Cell);
+{$if defined (NGURA_TTY) or defined (NGURA_KBD)}
 var
-  dummy : Byte;
+{$endif}
 {$ifdef NGURA_TTY}
   addr, length : Cell;
 {$endif}
