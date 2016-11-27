@@ -13,10 +13,11 @@ unit nga;
 
 interface
 
-uses
-  Classes, SysUtils;
+type
+  Cell = Longint;
 
-type Cell = Longint;
+procedure ngaPrepare();
+function ngaLoadImage(imageFile : string) : Cell;
 
 var
   ip, ap, sp : Cell;                   // instruction, address & stack pointers
@@ -30,7 +31,11 @@ var
 {$DEFINE NOS:=data[sp-1]}
 {$DEFINE TOA:=address[ap]}
 
+
 implementation
+
+uses
+  Classes, SysUtils;
 
 function ngaLoadImage(imageFile : string) : Cell;
 var
@@ -386,5 +391,7 @@ begin
   for i := 1 to sp do
     write(format('%d ', [data[i]]));
   writeln();
+end.
+{$else}
 end.
 {$endif}

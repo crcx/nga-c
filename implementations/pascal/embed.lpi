@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectOptions>
+    <Version Value="9"/>
+    <PathDelim Value="\"/>
+    <General>
+      <Flags>
+        <MainUnitHasCreateFormStatements Value="False"/>
+        <MainUnitHasTitleStatement Value="False"/>
+      </Flags>
+      <MainUnit Value="0"/>
+      <Title Value="embed"/>
+      <UseAppBundle Value="False"/>
+      <ResourceType Value="res"/>
+    </General>
+    <i18n>
+      <EnableI18N LFM="False"/>
+    </i18n>
+    <VersionInfo>
+      <StringTable ProductVersion=""/>
+    </VersionInfo>
+    <BuildModes Count="1" Active="Default">
+      <Item1 Name="Default" Default="True"/>
+    </BuildModes>
+    <PublishOptions>
+      <Version Value="2"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+      </local>
+    </RunParams>
+    <Units Count="2">
+      <Unit0>
+        <Filename Value="embed.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <CursorPos X="25" Y="10"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="nga.pas"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="8"/>
+        <CursorPos X="49" Y="20"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit1>
+    </Units>
+    <JumpHistory Count="19" HistoryIndex="18">
+      <Position1>
+        <Filename Value="nga.pas"/>
+      </Position1>
+      <Position2>
+        <Filename Value="nga.pas"/>
+        <Caret Line="7" Column="5"/>
+      </Position2>
+      <Position3>
+        <Filename Value="embed.lpr"/>
+        <Caret Line="14" Column="25"/>
+      </Position3>
+      <Position4>
+        <Filename Value="embed.lpr"/>
+        <Caret Line="16" Column="3" TopLine="10"/>
+      </Position4>
+      <Position5>
+        <Filename Value="embed.lpr"/>
+        <Caret Line="19" Column="36" TopLine="7"/>
+      </Position5>
+      <Position6>
+        <Filename Value="embed.lpr"/>
+        <Caret Line="17" TopLine="6"/>
+      </Position6>
+      <Position7>
+        <Filename Value="embed.lpr"/>
+        <Caret Line="16" Column="60" TopLine="11"/>
+      </Position7>
+      <Position8>
+        <Filename Value="embed.lpr"/>
+        <Caret Line="46" TopLine="21"/>
+      </Position8>
+      <Position9>
+        <Filename Value="nga.pas"/>
+        <Caret Line="17" Column="50" TopLine="6"/>
+      </Position9>
+      <Position10>
+        <Filename Value="nga.pas"/>
+        <Caret Line="20" TopLine="4"/>
+      </Position10>
+      <Position11>
+        <Filename Value="nga.pas"/>
+        <Caret Line="25"/>
+      </Position11>
+      <Position12>
+        <Filename Value="nga.pas"/>
+        <Caret Line="17" Column="52"/>
+      </Position12>
+      <Position13>
+        <Filename Value="nga.pas"/>
+        <Caret Line="20" Column="22" TopLine="14"/>
+      </Position13>
+      <Position14>
+        <Filename Value="embed.lpr"/>
+        <Caret Line="17"/>
+      </Position14>
+      <Position15>
+        <Filename Value="embed.lpr"/>
+        <Caret Line="46" TopLine="21"/>
+      </Position15>
+      <Position16>
+        <Filename Value="embed.lpr"/>
+        <Caret Line="26" Column="7"/>
+      </Position16>
+      <Position17>
+        <Filename Value="embed.lpr"/>
+        <Caret Line="31" Column="17" TopLine="21"/>
+      </Position17>
+      <Position18>
+        <Filename Value="embed.lpr"/>
+        <Caret Line="16" Column="14" TopLine="2"/>
+      </Position18>
+      <Position19>
+        <Filename Value="embed.lpr"/>
+        <Caret Line="33" Column="3" TopLine="18"/>
+      </Position19>
+    </JumpHistory>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="11"/>
+    <PathDelim Value="\"/>
+    <Target>
+      <Filename Value="embed"/>
+    </Target>
+    <SearchPaths>
+      <IncludeFiles Value="$(ProjOutDir)"/>
+      <OtherUnitFiles Value="lib\$(TargetCPU)-$(TargetOS)"/>
+      <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
+    </SearchPaths>
+  </CompilerOptions>
+  <Debugging>
+    <Exceptions Count="3">
+      <Item1>
+        <Name Value="EAbort"/>
+      </Item1>
+      <Item2>
+        <Name Value="ECodetoolError"/>
+      </Item2>
+      <Item3>
+        <Name Value="EFOpenError"/>
+      </Item3>
+    </Exceptions>
+  </Debugging>
+</CONFIG>
