@@ -58,19 +58,16 @@ void extract(char *fname) {
 
   while (!feof(fp)) {
     read_line(fp, source);
-    if (strcmp(source, "````") == 0) {
+    if (!strcmp(source, "````")) {
       if (inBlock == 0)
         inBlock = 1;
       else
         inBlock = 0;
     } else {
-      if (inBlock == 1) {
-        if (strlen(source) != 0)
-          printf("%s\n", source);
-      }
-   }
+      if ((inBlock == 1) && (strlen(source) != 0))
+        printf("%s\n", source);
+    }
   }
-
   fclose(fp);
 }
 ````
@@ -79,9 +76,9 @@ void extract(char *fname) {
 
 ````
 int main(int argc, char **argv) {
-  int i = 0;
+  int i = 1;
   if (argc > 1) {
-    while (i <= argc) {
+    while (i < argc) {
       extract(argv[i++]);
     }
   }

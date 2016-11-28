@@ -18,10 +18,12 @@ void read_line(FILE *file, char *line_buffer) {
   line_buffer[count] = '\0';
 }
 void extract(char *fname) {
-  char source[4096];
+  char source[4*1024*1024];
   FILE *fp;
-  int inBlock = 0;
-  if ((fp = fopen(fname, "r"))  == NULL)
+  int inBlock;
+  inBlock = 0;
+  fp = fopen(fname, "r");
+  if (fp == NULL)
     return;
   while (!feof(fp)) {
     read_line(fp, source);
