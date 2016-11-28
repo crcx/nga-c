@@ -18,33 +18,29 @@ void read_line(FILE *file, char *line_buffer) {
   line_buffer[count] = '\0';
 }
 void extract(char *fname) {
-  char source[4*1024*1024];
+  char source[4096];
   FILE *fp;
-  int inBlock;
-  inBlock = 0;
-  fp = fopen(fname, "r");
-  if (fp == NULL)
+  int inBlock = 0;
+  if ((fp = fopen(fname, "r"))  == NULL)
     return;
   while (!feof(fp)) {
     read_line(fp, source);
-    if (strcmp(source, "````") == 0) {
+    if (!strcmp(source, "````")) {
       if (inBlock == 0)
         inBlock = 1;
       else
         inBlock = 0;
     } else {
-      if (inBlock == 1) {
-        if (strlen(source) != 0)
-          printf("%s\n", source);
-      }
-   }
+      if ((inBlock == 1) && (strlen(source) != 0))
+        printf("%s\n", source);
+    }
   }
   fclose(fp);
 }
 int main(int argc, char **argv) {
-  int i = 0;
+  int i = 1;
   if (argc > 1) {
-    while (i <= argc) {
+    while (i < argc) {
       extract(argv[i++]);
     }
   }

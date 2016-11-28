@@ -61,6 +61,7 @@
 {$define TCIFLUSH   :=  1}
 {$define TCOFLUSH   :=  2}
 {$define TCIOFLUSH  :=  3}
+
 {$define TCOOFF     :=  1}
 {$define TCOON      :=  2}
 {$define TCIOFF     :=  3}
