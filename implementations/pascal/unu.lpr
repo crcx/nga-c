@@ -9,7 +9,7 @@ program unu;
 {$mode objfpc}{$H+}
 
 uses
-  Classes, SysUtils;
+  SysUtils;
 
 
 procedure extract(fname : String);

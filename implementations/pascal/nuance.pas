@@ -11,7 +11,7 @@ unit nuance;
 interface
 
 uses
-  Classes, SysUtils;
+  SysUtils;
 
 //type
 

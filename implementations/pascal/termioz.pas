@@ -22,13 +22,12 @@ function tcsetattr(_fildes, _optional_actions : Integer; const _termios_p : Pter
 implementation
 
 uses
-  Classes, SysUtils;
+  SysUtils;
 
 function tcgetattr(_fildes : Integer; _termios_p : Ptermios) : Integer;
 begin
   result := 0;
 end;
-
 
 function tcsetattr(_fildes, _optional_actions : Integer; const _termios_p : Ptermios) : Integer;
 begin

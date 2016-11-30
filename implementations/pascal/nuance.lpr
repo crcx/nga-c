@@ -8,19 +8,14 @@ program nuance;
 
 {$mode objfpc}{$H+}
 
-//interface
-
 uses
-  Classes, SysUtils;
-
-//type
+  SysUtils;
 
 var
   reform : array[0..998] of Char;
   cycle : Integer = 0;
 
 //implementation
-
 
 // Combination of strspn() and strcspn() for compactness
 function strspan(const strg : PChar; const delim : PChar; flag : Boolean) : Word;
@@ -231,7 +226,8 @@ begin
     while not eof(f) do
     begin
       readln(f, source);
-      compile(source);
+      if strlen(source) <> 0 then
+        compile(source);
     end;
   finally
     CloseFile(f);
@@ -255,3 +251,4 @@ begin
   for i := 1 to ParamCount do
     parse(ParamStr(i));
 end.
+

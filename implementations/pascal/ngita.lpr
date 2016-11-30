@@ -10,12 +10,14 @@ program ngita;
 {$macro on}
 
 uses
-  Classes, SysUtils, nga in 'nga.pas', ngura in 'ngura.pas';
+  SysUtils, nga in 'nga.pas', ngura in 'ngura.pas';
 
 type
   Cell = Longint;
 
-{$DEFINE IMAGE_SIZE:=524288}
+{$define IMAGE_SIZE:=524288}
+
+// implementation
 
 procedure processOpcodes();
 var
