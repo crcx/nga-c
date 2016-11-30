@@ -43,9 +43,13 @@ void read_line(FILE *file, char *line_buffer) {
 
 ### extract(char *fname)
 
-````
-char source[4*1024*1024];
+The line buffer needs to be big enough for the longest lines in your source files. Here it's capped at 16KiB, which is sufficient for everything I've used Unu with so far.
 
+````
+char source[16*1024];
+````
+
+````
 void extract(char *fname) {
   char *buffer = (char *)source;
   FILE *fp;
