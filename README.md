@@ -37,6 +37,10 @@ The main sources are:
 | Naje.md       | Naje: assembler for Nga         |
 | Unu.md        | Unu: extract source from .md    |
 
+These are extracted into source code, in C. (The tools assume a Unix-style environment).
+
+Additional implementations can be found in the implementations directory.
+
 There are also some other source files that may be of use:
 
 | File          | Contains                        |
