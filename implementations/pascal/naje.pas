@@ -15,7 +15,7 @@ unit naje;
 interface
 
 uses
-  Classes, SysUtils;
+  SysUtils;
 
 type
   Cell = Longint;

@@ -25,18 +25,18 @@ procedure nguraProcessOpcode(opcode : Cell);
 implementation
 
 uses
-  Classes, SysUtils, termioz in 'termioz.pas';
-
-var
-  sp : Cell;
-  data : array [0..31] of Cell;
-  memory : array[0..524287] of Cell;
-  request : array[0..8191] of Char;
+  SysUtils, termioz in 'termioz.pas';
 
 {$define IMAGE_SIZE:=524288}
 {$define TOS:=data[sp]}
 {$define NOS:=data[sp-1]}
 {$define TOA:=address[ap]}
+
+var
+  sp : Cell;
+  data : array [0..31] of Cell;
+  memory : array[0..IMAGE_SIZE-1] of Cell;
+  request : array[0..8191] of Char;
 
 {$if defined (NGURA_TTY) or defined (NGURA_KBD)}
 {$include termios.inc}
@@ -210,7 +210,7 @@ begin
   result := 0;
   for i := 1 to MAX_OPEN_FILES do
     if nguraFileHandles[i] = 0 then
-      result := i
+      result := i;
 end;
 
 function nguraOpenFile() : Cell;
@@ -238,7 +238,7 @@ begin
       end
     else
       case mode of
-        2, 3 : nguraFileHandles[slot] := FileCreate(request, fmOpenWrite);
+        2, 3 : nguraFileHandles[slot] := FileCreate(request, fmOpenWrite);// w
         1, 4 : writeln('Error: File doesn''t exist!');
       end;
   end;

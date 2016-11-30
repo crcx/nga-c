@@ -7,18 +7,19 @@
 program naje;
 
 {$mode objfpc}{$H+}
+{$macro on}
 
 {$define ALLOW_FORWARD_REFS}
 {$define ENABLE_MAP}
 {$define DEBUG}
 
-//interface
-
 uses
-  Classes, SysUtils;
+  SysUtils;
 
 type
   Cell = Longint;
+
+{$define IMAGE_SIZE:=524288}
 
 var
   latest, dindex, pindex, packmode, np : Cell;
@@ -26,8 +27,8 @@ var
   dataList, dataType, najePointers, najeRefCount : array[0..1023] of Cell;
   najeLabels : array[0..1023] of PChar;
   outputName : array[0..63] of Char;
-  memory : array [0..524287] of Cell;
-  references : array[0..524287] of Cell;
+  memory : array [0..IMAGE_SIZE-1] of Cell;
+  references : array[0..IMAGE_SIZE-1] of Cell;
 
 {$ifdef ALLOW_FORWARD_REFS}
   ref_names : array[0..1023] of PChar;
@@ -431,7 +432,7 @@ end;
 procedure process_file(fname : string);
 var
   f : TextFile;
-  source : array [0..63999] of Char;
+  source : array [0..4095] of Char;
 begin
   try
     AssignFile(f, fname);

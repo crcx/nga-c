@@ -7,11 +7,17 @@
 unit nga;
 
 {$mode objfpc}{$H+}
-
-//{$define STANDALONE}
 {$macro on}
 
 interface
+
+{$define STACK_DEPTH  := 32}
+{$define ADDRESSES    := 128}
+{$define IMAGE_SIZE   := 524288}
+{$define NUM_OPS      := 27}
+{$define TOS          := data[sp]}
+{$define NOS          := data[sp-1]}
+{$define TOA          := address[ap]}
 
 type
   Cell = Longint;
@@ -23,22 +29,16 @@ procedure ngaProcessPackedOpcodes(opcode : Cell);
 procedure ngaProcessOpcode(opcode : Cell);
 
 var
-  ip, ap, sp : Cell;                   // instruction, address & stack pointers
-  data : array [0..31] of Cell;        // stack depth
-  address : array [0..127] of Cell;    // addresses
-  memory : array [0..524287] of Cell;  // image size
-
-{$DEFINE IMAGE_SIZE:=524288}
-{$DEFINE NUM_OPS:=27}
-{$DEFINE TOS:=data[sp]}
-{$DEFINE NOS:=data[sp-1]}
-{$DEFINE TOA:=address[ap]}
+  ip, ap, sp : Cell;                        // instruction, address & stack pointers
+  data : array [0..STACK_DEPTH-1] of Cell;  // stack depth
+  address : array [0..ADDRESSES-1] of Cell; // addresses
+  memory : array [0..IMAGE_SIZE-1] of Cell; // image size
 
 
 implementation
 
 uses
-  Classes, SysUtils;
+  SysUtils;
 
 function ngaLoadImage(imageFile : string) : Cell;
 var
@@ -54,7 +54,7 @@ begin
     fileLen := sr.Size div sizeof(Cell);
     // Read the file in 4 byte chunks
     Assignfile(f, imageFile);
-    Reset(f, 4);
+    Reset(f, SizeOf(Cell));
     try
       BlockRead(f, memory, fileLen, imageSize);
     finally
@@ -73,11 +73,11 @@ begin
   ip := 0;
   ap := 0;
   sp := 0;
-  for ip := 0 to length(data)-1 do
-    data[ip] := 0;                     //ord(VM_NOP);
-  for ip := 0 to length(address)-1 do
+  for ip := 0 to length(data) - 1 do
+    data[ip] := 0;                     // ord(VM_NOP);
+  for ip := 0 to length(address) - 1 do
     address[ip] := 0;
-  for ip := 0 to length(memory)-1 do
+  for ip := 0 to length(memory) - 1 do
     memory[ip] := 0;
 end;
 
@@ -104,7 +104,7 @@ begin
   data[sp] := 0;
   dec(sp);
   if sp < 0 then
-    ip := IMAGE_SIZE;
+    ip := IMAGE_SIZE - 1;
 end;
 
 procedure inst_swap();

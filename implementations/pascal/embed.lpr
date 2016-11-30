@@ -9,7 +9,7 @@ program embed;
 {$mode objfpc}{$H+}
 
 uses
-  Classes, SysUtils, nga;
+  SysUtils, nga;
 
 
 // ********************************************************
