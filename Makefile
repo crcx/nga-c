@@ -12,6 +12,7 @@ d: s
 	cd source && $(CC) $(CFLAGS) embedimage.c -Wall -o ../bin/embedimage$(EXT)
 
 s:
+	$(CC) $(CFLAGS) source/unu.c -o bin/unu$(EXT)
 	./bin/unu Unu.md >source/unu.c
 	$(CC) $(CFLAGS) source/unu.c -o bin/unu$(EXT)
 	./bin/unu Nga.md >source/nga.c
