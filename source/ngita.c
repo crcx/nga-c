@@ -3,7 +3,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#ifdef _WIN32
+#include "termios.h"
+#else
 #include <termios.h>
+#endif
 #include "nga.c"
 #define NGURA_TTY
 #define NGURA_KBD

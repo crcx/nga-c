@@ -134,7 +134,13 @@ The underlying I/O model is based on that of Ngaro, the predecessor to Nga. Term
 
 ````
 #if defined(NGURA_TTY) || defined(NGURA_KBD)
+#ifdef _WIN32
+#include "termios.h"
+int	tcgetattr(int _fildes, struct termios *_termios_p) {return 0;};
+int	tcsetattr(int _fildes, int _optional_actions, const struct termios *_termios_p) {return 0;};
+#else
 #include <termios.h>
+#endif
 struct termios nguraConsoleOriginalTermios;
 struct termios nguraConsoleTermios;
 

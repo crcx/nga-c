@@ -18,7 +18,11 @@ First up, a few standard headers.
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#ifdef _WIN32
+#include "termios.h"
+#else
 #include <termios.h>
+#endif
 ````
 
 And then include Nga and Ngura.
