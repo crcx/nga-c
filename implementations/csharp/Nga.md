@@ -21,7 +21,7 @@ namespace Nga
   public class VM
   {
     /* Registers */
-    int sp, rsp, ip, shrink;
+    int sp, rsp, ip;
     int[] data, address, memory;
     string request;
 
@@ -34,11 +34,10 @@ namespace Nga
       VM_POP,      VM_JUMP,       VM_CALL,
       VM_CCALL,    VM_RETURN,     VM_EQ,
       VM_NEQ,      VM_LT,         VM_GT,
-      VM_FETCH,
-      VM_STORE,    VM_ADD,        VM_SUB,
-      VM_MUL,      VM_DIVMOD,     VM_AND,
-      VM_OR,       VM_XOR,        VM_SHIFT,
-      VM_ZRET,     VM_END
+      VM_FETCH,    VM_STORE,      VM_ADD,
+      VM_SUB,      VM_MUL,        VM_DIVMOD,
+      VM_AND,      VM_OR,         VM_XOR,
+      VM_SHIFT,    VM_ZRET,       VM_END
     }
 
     void rxGetString(int starting)
@@ -91,41 +90,6 @@ namespace Nga
         binReader.Close();
       }
     }
-
-
-    /* Save the image */
-    public void saveImage() {
-      int i = 0, j = 1000000;
-      BinaryWriter binWriter = new BinaryWriter(File.Open("ngaImage", FileMode.Create));
-      try {
-        if (shrink != 0)
-          j = memory[3];
-        while (i < j) { binWriter.Write(memory[i]); i++; }
-      }
-      catch(EndOfStreamException e) {
-        Console.WriteLine("{0} caught and ignored." , e.GetType().Name);
-      }
-      finally {
-        binWriter.Close();
-      }
-    }
-
-
-    /* Read a key */
-    public int read_key() {
-      int a = 0;
-
-        ConsoleKeyInfo cki = Console.ReadKey();
-        a = (int)cki.KeyChar;
-        if (cki.Key == ConsoleKey.Backspace) {
-          a = 8;
-          Console.Write((char)32);
-        }
-        if ( a >= 32)
-          Console.Write((char)8);
-      return a;
-    }
-
 
     /* Process the current opcode */
     public void ngaProcessOpcode(int opcode) {
@@ -310,11 +274,8 @@ void ngaProcessPackedOpcodes(int opcode) {
     /* Calls all the other stuff and process the command line */
     public static void Main(string [] args) {
       VM vm = new VM();
-      vm.shrink = 0;
 
       for (int i = 0; i < args.Length; i++) {
-        if (args[i] == "--shrink")
-          vm.shrink = 1;
         if (args[i] == "--about") {
           Console.Write("Nga [VM: C#, .NET]\n\n");
           Environment.Exit(0);

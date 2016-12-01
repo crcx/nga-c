@@ -17,7 +17,7 @@ void read_line(FILE *file, char *line_buffer) {
   }
   line_buffer[count] = '\0';
 }
-char source[4*1024*1024];
+char source[16*1024];
 void extract(char *fname) {
   char *buffer = (char *)source;
   FILE *fp;
