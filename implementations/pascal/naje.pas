@@ -140,13 +140,13 @@ begin
   ReWrite(f);
   try
     for i := 0 to np - 1 do
-      writeln(f, format('LABEL%8s%4d', [najeLabels[i], najePointers[i]]));
+      writeln(f, 'LABEL',#9,najeLabels[i],#9,najePointers[i]);
     for i := 0 to latest - 1 do
       if references[i] = 0 then
-        writeln(f, format('LITERAL%6d%4d', [memory[i], i]));
+        writeln(f, 'LITERAL',#9,memory[i],#9,i);
     for i := 0 to latest - 1 do
       if references[i] = -1 then
-        writeln(f, format('POINTER%6d%4d', [memory[i], i]));
+        writeln(f, 'POINTER',#9,memory[i],#9,i);
   finally
     Close(f);
   end;
