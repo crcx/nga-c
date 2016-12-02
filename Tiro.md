@@ -9,7 +9,7 @@ The instructions are:
 
     0  nop        7  jump      14  gt        21  and
     1  lit <v>    8  call      15  fetch     22  or
-    2  dup        9  cjump     16  store     23  xor
+    2  dup        9  ccall     16  store     23  xor
     3  drop      10  return    17  add       24  shift
     4  swap      11  eq        18  sub       25  zret
     5  push      12  neq       19  mul       26  end
@@ -107,7 +107,7 @@ def name(s):
     if s == 6: return 'po'
     if s == 7: return 'ju'
     if s == 8: return 'ca'
-    if s == 9: return 'cj'
+    if s == 9: return 'cc'
     if s == 10: return 're'
     if s == 11: return 'eq'
     if s == 12: return 'ne'

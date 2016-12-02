@@ -18,7 +18,7 @@ def name(s):
     if s == 6: return 'po'
     if s == 7: return 'ju'
     if s == 8: return 'ca'
-    if s == 9: return 'cj'
+    if s == 9: return 'cc'
     if s == 10: return 're'
     if s == 11: return 'eq'
     if s == 12: return 'ne'
