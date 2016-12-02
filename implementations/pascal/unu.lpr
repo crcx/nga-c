@@ -14,7 +14,7 @@ uses
 
 procedure extract(fname : String);
 var
-  source : array[0..4095] of Char;
+  source : array[0..16383] of Char;
   f : TextFile;
   inBlock : Boolean = false;
 begin
