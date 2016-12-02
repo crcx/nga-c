@@ -9,24 +9,24 @@ program nga;
 {$mode objfpc}{$H+}
 {$macro on}
 
-{$define STANDALONE}
-
 uses
   SysUtils;
 
 type
   Cell = Longint;
 
-{$define IMAGE_SIZE:=524288}
-{$define NUM_OPS:=27}
-{$define TOS:=data[sp]}
-{$define NOS:=data[sp-1]}
-{$define TOA:=address[ap]}
+{$define STACK_DEPTH  := 32}
+{$define ADDRESSES    := 128}
+{$define IMAGE_SIZE   := 524288}
+{$define NUM_OPS      := 27}
+{$define TOS          := data[sp]}
+{$define NOS          := data[sp-1]}
+{$define TOA          := address[ap]}
 
 var
   ip, ap, sp : Cell;                        // instruction, address & stack pointers
-  data : array [0..31] of Cell;             // stack depth
-  address : array [0..127] of Cell;         // addresses
+  data : array [0..STACK_DEPTH-1] of Cell;  // stack depth
+  address : array [0..ADDRESSES-1] of Cell; // addresses
   memory : array [0..IMAGE_SIZE-1] of Cell; // image size
 
 //implementation
@@ -38,12 +38,9 @@ var
   fileLen : Cell;
   imageSize : Cell = 0;
 begin
-  // Does the file exist?
   if FindFirst(imageFile, faAnyFile-faDirectory, sr) = 0 then
   begin
-    // Determine number of Cells
     fileLen := sr.Size div sizeof(Cell);
-    // Read the file in 4 byte chunks
     Assignfile(f, imageFile);
     Reset(f, SizeOf(Cell));
     try
@@ -60,15 +57,14 @@ end;
 
 procedure ngaPrepare();
 begin
-  // Initialize pointers and arrays
   ip := 0;
   ap := 0;
   sp := 0;
-  for ip := 0 to length(data) - 1 do
+  for ip := 0 to STACK_DEPTH - 1 do
     data[ip] := 0;                     //ord(VM_NOP);
-  for ip := 0 to length(address) - 1 do
+  for ip := 0 to ADDRESSES - 1 do
     address[ip] := 0;
-  for ip := 0 to length(memory) - 1 do
+  for ip := 0 to IMAGE_SIZE - 1 do
     memory[ip] := 0;
 end;
 
@@ -354,7 +350,6 @@ end;
 // ********************************************************
 //  Main program
 // ********************************************************
-{$ifdef STANDALONE}
 var
   i, opcode, size : Cell;
 begin
@@ -386,5 +381,3 @@ begin
     write(format('%d ', [data[i]]));
   writeln();
 end.
-{$endif}
-
