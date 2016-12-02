@@ -9,14 +9,14 @@ unit ngura;
 {$mode objfpc}{$H+}
 {$macro on}
 
+
 {$define NGURA_KBD}
 {$define NGURA_TTY}
 {$define NGURA_FS}
 
 interface
 
-type
-  Cell = Longint;
+{$include 'nga.inc'}
 
 procedure nguraInitialize();
 procedure nguraCleanup();
@@ -25,24 +25,16 @@ procedure nguraProcessOpcode(opcode : Cell);
 implementation
 
 uses
-  SysUtils, termioz in 'termioz.pas';
-
-{$define IMAGE_SIZE:=524288}
-{$define TOS:=data[sp]}
-{$define NOS:=data[sp-1]}
-{$define TOA:=address[ap]}
+  SysUtils, vt100 in 'vt100.pas';
 
 var
   sp : Cell;
-  data : array [0..31] of Cell;
+  data : array [0..STACK_DEPTH-1] of Cell;
   memory : array[0..IMAGE_SIZE-1] of Cell;
   request : array[0..8191] of Char;
 
 {$if defined (NGURA_TTY) or defined (NGURA_KBD)}
 {$include termios.inc}
-var
-  nguraConsoleOriginalTermios : termios;
-  nguraConsoleTermios : termios;
 {$endif}
 
 {$ifdef NGURA_TTY}
@@ -60,6 +52,8 @@ var
 {$endif}
 
 {$ifdef NGURA_FS}
+var
+  nguraFileHandles : array[1..128] of THandle;
 {$define NGURA_FS_OPEN    := 118}
 {$define NGURA_FS_CLOSE   := 119}
 {$define NGURA_FS_READ    := 120}
@@ -69,7 +63,6 @@ var
 {$define NGURA_FS_SIZE    := 124}
 {$define NGURA_FS_DELETE  := 125}
 {$define MAX_OPEN_FILES   := 128}
-  nguraFileHandles : array[1..128] of THandle;
 {$endif}
 
 {$define NGURA_SAVE_IMAGE := 130}
@@ -87,25 +80,6 @@ begin
   end;
   request[i] := #0;
 end;
-
-{$if defined(NGURA_TTY) or defined(NGURA_KBD)}
-procedure nguraConsoleInit();
-begin
-  tcgetattr(0, @nguraConsoleOriginalTermios);
-  nguraConsoleTermios := nguraConsoleOriginalTermios;
-  nguraConsoleTermios.c_iflag := nguraConsoleTermios.c_iflag and not(BRKINT+ISTRIP+IXON+IXOFF);
-  nguraConsoleTermios.c_iflag := nguraConsoleTermios.c_iflag or (IGNBRK+IGNPAR);
-  nguraConsoleTermios.c_lflag := nguraConsoleTermios.c_lflag and not(ICANON+ISIG+IEXTEN+ECHO);
-  nguraConsoleTermios.c_cc[VMIN] := 1;
-  nguraConsoleTermios.c_cc[VTIME] := 0;
-  tcsetattr(0, TCSANOW, @nguraConsoleTermios);
-end;
-
-procedure nguraConsoleCleanup();
-begin
-  tcsetattr(0, TCSANOW, @nguraConsoleOriginalTermios);
-end;
-{$endif}
 
 procedure nguraTTYPutChar(c : Char);
 begin
@@ -143,7 +117,7 @@ end;
 
 procedure nguraTTYClearDisplay();
 begin
-  write('\033[2J\033[1;1H');
+  term_clear();
 end;
 {$endif}
 
@@ -358,14 +332,14 @@ end;
 procedure nguraInitialize();
 begin
 {$if defined(NGURA_TTY) or defined(NGURA_KBD)}
-  nguraConsoleInit();
+  term_setup();
 {$endif}
 end;
 
 procedure nguraCleanup();
 begin
 {$if defined(NGURA_TTY) or defined(NGURA_KBD)}
-  nguraConsoleCleanup();
+  term_cleanup();
 {$endif}
 end;
 

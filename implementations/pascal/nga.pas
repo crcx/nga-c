@@ -34,7 +34,6 @@ var
   address : array [0..ADDRESSES-1] of Cell; // addresses
   memory : array [0..IMAGE_SIZE-1] of Cell; // image size
 
-
 implementation
 
 uses

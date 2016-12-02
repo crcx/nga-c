@@ -12,10 +12,7 @@ program ngita;
 uses
   SysUtils, nga in 'nga.pas', ngura in 'ngura.pas';
 
-type
-  Cell = Longint;
-
-{$define IMAGE_SIZE:=524288}
+{$include 'nga.inc'}
 
 // implementation
 
@@ -45,12 +42,12 @@ end;
 var
   i, size : Cell;
 begin
-  ngaPrepare();
+  nga.ngaPrepare();
 
   if ParamCount > 0 then
-    size := ngaLoadImage(ParamStr(1))
+    size := nga.ngaLoadImage(PChar(ParamStr(1)))
   else
-    size := ngaLoadImage('ngaImage');
+    size := nga.ngaLoadImage('ngaImage');
   if size = 0 then
     exit();
 
