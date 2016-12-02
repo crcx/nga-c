@@ -24,7 +24,7 @@ enum vm_opcode {
 CELL sp, rp, ip;
 CELL data[STACK_DEPTH];
 CELL address[ADDRESSES];
-CELL memory[IMAGE_SIZE];
+CELL memory[IMAGE_SIZE + 1];
 #define TOS  data[sp]
 #define NOS  data[sp-1]
 #define TORS address[rp]

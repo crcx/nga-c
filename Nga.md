@@ -98,7 +98,7 @@ There are stack pointers (**sp** for **data** and **rp** for **address**), and a
 CELL sp, rp, ip;
 CELL data[STACK_DEPTH];
 CELL address[ADDRESSES];
-CELL memory[IMAGE_SIZE];
+CELL memory[IMAGE_SIZE + 1];
 ````
 
 ## A Little More Boilerplate
