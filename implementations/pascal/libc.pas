@@ -1,6 +1,5 @@
 // ********************************************************
 //  Copyright (c) 2016 Rob Judd <judd@ob-wan.com>
-//  Based on C version by Charles Childers et al
 //  ISC License - see included file LICENSE
 // ********************************************************
 
