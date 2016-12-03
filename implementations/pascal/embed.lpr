@@ -19,12 +19,12 @@ var
   i : Cell = 0;
   size : Cell;
 begin
-  nga.ngaPrepare();
+  ngaPrepare();
 
   if ParamCount > 0 then
-    size := nga.ngaLoadImage(ParamStr(1))
+    size := ngaLoadImage(ParamStr(1))
   else
-    size := nga.ngaLoadImage('ngaImage');
+    size := ngaLoadImage('ngaImage');
 
   if size = 0 then
     exit();

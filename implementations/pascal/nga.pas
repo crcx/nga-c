@@ -11,16 +11,7 @@ unit nga;
 
 interface
 
-{$define STACK_DEPTH  := 32}
-{$define ADDRESSES    := 128}
-{$define IMAGE_SIZE   := 524288}
-{$define NUM_OPS      := 27}
-{$define TOS          := data[sp]}
-{$define NOS          := data[sp-1]}
-{$define TOA          := address[ap]}
-
-type
-  Cell = Longint;
+{$include 'nga.inc'}
 
 procedure ngaPrepare();
 function ngaLoadImage(imageFile : string) : Cell;

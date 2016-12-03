@@ -24,13 +24,13 @@ begin
   while ip < IMAGE_SIZE - 1 do
   begin
     opcode := memory[ip];
-    if nga.ngaValidatePackedOpcodes(opcode) <> 0 then
-      nga.ngaProcessPackedOpcodes(opcode)
+    if ngaValidatePackedOpcodes(opcode) <> 0 then
+      ngaProcessPackedOpcodes(opcode)
     else
     if (opcode >= 0) and (opcode < 27) then
-      nga.ngaProcessOpcode(opcode)
+      ngaProcessOpcode(opcode)
     else
-      ngura.nguraProcessOpcode(opcode);
+      nguraProcessOpcode(opcode);
     inc(ip);
   end;
 end;
@@ -42,12 +42,12 @@ end;
 var
   i, size : Cell;
 begin
-  nga.ngaPrepare();
+  ngaPrepare();
 
   if ParamCount > 0 then
-    size := nga.ngaLoadImage(PChar(ParamStr(1)))
+    size := ngaLoadImage(PChar(ParamStr(1)))
   else
-    size := nga.ngaLoadImage('ngaImage');
+    size := ngaLoadImage('ngaImage');
   if size = 0 then
     exit();
 

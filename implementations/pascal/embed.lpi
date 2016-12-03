@@ -30,12 +30,12 @@
         <FormatVersion Value="1"/>
       </local>
     </RunParams>
-    <Units Count="2">
+    <Units Count="3">
       <Unit0>
         <Filename Value="embed.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <CursorPos X="3" Y="12"/>
+        <CursorPos X="3" Y="22"/>
         <UsageCount Value="20"/>
         <Loaded Value="True"/>
       </Unit0>
@@ -43,13 +43,20 @@
         <Filename Value="nga.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="8"/>
-        <CursorPos X="49" Y="20"/>
+        <CursorPos X="20" Y="14"/>
         <UsageCount Value="20"/>
         <Loaded Value="True"/>
       </Unit1>
+      <Unit2>
+        <Filename Value="nga.inc"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="2"/>
+        <CursorPos Y="24"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit2>
     </Units>
-    <JumpHistory Count="19" HistoryIndex="18">
+    <JumpHistory Count="20" HistoryIndex="19">
       <Position1>
         <Filename Value="nga.pas"/>
       </Position1>
@@ -125,6 +132,10 @@
         <Filename Value="embed.lpr"/>
         <Caret Line="33" Column="3" TopLine="18"/>
       </Position19>
+      <Position20>
+        <Filename Value="embed.lpr"/>
+        <Caret Line="27" Column="13"/>
+      </Position20>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
