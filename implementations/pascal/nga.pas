@@ -11,16 +11,7 @@ unit nga;
 
 interface
 
-{$define STACK_DEPTH  := 32}
-{$define ADDRESSES    := 128}
-{$define IMAGE_SIZE   := 524288}
-{$define NUM_OPS      := 27}
-{$define TOS          := data[sp]}
-{$define NOS          := data[sp-1]}
-{$define TOA          := address[ap]}
-
-type
-  Cell = Longint;
+{$include 'nga.inc'}
 
 procedure ngaPrepare();
 function ngaLoadImage(imageFile : string) : Cell;
@@ -46,12 +37,9 @@ var
   fileLen : Cell;
   imageSize : Cell = 0;
 begin
-  // Does the file exist?
   if FindFirst(imageFile, faAnyFile-faDirectory, sr) = 0 then
   begin
-    // Determine number of Cells
     fileLen := sr.Size div sizeof(Cell);
-    // Read the file in 4 byte chunks
     Assignfile(f, imageFile);
     Reset(f, SizeOf(Cell));
     try
@@ -68,15 +56,14 @@ end;
 
 procedure ngaPrepare();
 begin
-  // Initialize pointers and arrays
   ip := 0;
   ap := 0;
   sp := 0;
-  for ip := 0 to length(data) - 1 do
+  for ip := 0 to STACK_DEPTH - 1 do
     data[ip] := 0;                     // ord(VM_NOP);
-  for ip := 0 to length(address) - 1 do
+  for ip := 0 to ADDRESSES - 1 do
     address[ip] := 0;
-  for ip := 0 to length(memory) - 1 do
+  for ip := 0 to IMAGE_SIZE - 1 do
     memory[ip] := 0;
 end;
 
@@ -359,42 +346,4 @@ begin
     raw := raw shr 8;
   end;
 end;
-
-// ********************************************************
-//  Main program
-// ********************************************************
-{$ifdef STANDALONE}
-var
-  i, opcode, size : Cell;
-begin
-  ngaPrepare();
-
-  if ParamCount > 0 then
-    size := ngaLoadImage(ParamStr(1))
-  else
-    size := ngaLoadImage('ngaImage');
-
-  if size = 0 then
-    exit();
-
-  for ip := 0 to size - 1 do
-  begin
-    opcode := memory[ip];
-    if (ngaValidatePackedOpcodes(opcode)) <> 0 then
-      ngaProcessPackedOpcodes(opcode)
-    else if ((opcode >= 0) and (opcode < NUM_OPS)) = true then
-      ngaProcessOpcode(opcode)
-    else
-    begin
-      writeln('Invalid instruction loaded!');
-      writeln(format('at offset %d, opcode %d.', [ip, opcode]));
-      exit();
-    end;
-  end;
-  for i := 1 to sp do
-    write(format('%d ', [data[i]]));
-  writeln();
 end.
-{$else}
-end.
-{$endif}

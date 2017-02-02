@@ -42,9 +42,9 @@ procedure term_setup();
 begin
   tcgetattr(0, @old_termios);
   new_termios := old_termios;
-  new_termios.c_iflag := new_termios.c_iflag and not(BRKINT+ISTRIP+IXON+IXOFF);
-  new_termios.c_iflag := new_termios.c_iflag or (IGNBRK+IGNPAR);
-  new_termios.c_lflag := new_termios.c_lflag and not(ICANON+ISIG+IEXTEN+ECHO);
+  new_termios.c_iflag := new_termios.c_iflag and not(BRKINT or ISTRIP or IXON or IXOFF);
+  new_termios.c_iflag := new_termios.c_iflag or (IGNBRK or IGNPAR);
+  new_termios.c_lflag := new_termios.c_lflag and not(ICANON or ISIG or IEXTEN or ECHO);
   new_termios.c_cc[VMIN] := 1;
   new_termios.c_cc[VTIME] := 0;
   tcsetattr(0, TCSANOW, @new_termios);
