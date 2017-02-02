@@ -26,7 +26,7 @@ Nga derives from my earlier work on Ngaro. The following block lists the people 
 
 ````
 /* Nga ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   Copyright (c) 2008 - 2016, Charles Childers
+   Copyright (c) 2008 - 2017, Charles Childers
    Copyright (c) 2009 - 2010, Luke Parrish
    Copyright (c) 2010,        Marc Simpson
    Copyright (c) 2010,        Jay Skeer
@@ -52,7 +52,7 @@ To make it easier to adapt Nga to a specific target, we keep some important cons
 
 These defaults are targeted towards a 32-bit model, with several megabytes of RAM.
 
-For smaller targets, drop the IMAGE_SIZE considerably as that's the biggest pool of memory needed.
+For smaller targets, drop the IMAGE_SIZE considerably as that's the biggest pool of memory needed. Alternately, for use on machines with plenty of RAM, consider increasing these and reaping the benefits of a much larger memory and stack space.
 
 ````
 #define CELL         int32_t
@@ -544,6 +544,7 @@ void ngaProcessPackedOpcodes(int opcode) {
 }
 ````
 
+Nga is intended to be used as a part of a larger environment adding host-specific I/O and functionality. For testing purposes, it is possible to run non-interactive images by building defining STANDALONE when compiling this source. A sample `main()` is included below showing how to use this.
 
 ````
 #ifdef STANDALONE
