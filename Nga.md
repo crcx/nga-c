@@ -307,10 +307,7 @@ void inst_return() {
 
 ````
 void inst_eq() {
-  if (NOS == TOS)
-    NOS = -1;
-  else
-    NOS = 0;
+  NOS = (NOS == TOS) ? -1 : 0;
   inst_drop();
 }
 ````
@@ -319,10 +316,7 @@ void inst_eq() {
 
 ````
 void inst_neq() {
-  if (NOS != TOS)
-    NOS = -1;
-  else
-    NOS = 0;
+  NOS = (NOS != TOS) ? -1 : 0;
   inst_drop();
 }
 ````
@@ -331,10 +325,7 @@ void inst_neq() {
 
 ````
 void inst_lt() {
-  if (NOS < TOS)
-    NOS = -1;
-  else
-    NOS = 0;
+  NOS = (NOS < TOS) ? -1 : 0;
   inst_drop();
 }
 ````
@@ -343,15 +334,20 @@ void inst_lt() {
 
 ````
 void inst_gt() {
-  if (NOS > TOS)
-    NOS = -1;
-  else
-    NOS = 0;
+  NOS = (NOS > TOS) ? -1 : 0;
   inst_drop();
 }
 ````
 
 **FETCH** takes an address and returns the value stored there.
+
+This doubles as a means of introspection into the VM state. Negative addresses correspond to VM queries:
+
+| Address | Returns             |
+| ------- | ------------------- |
+| -1      | Data stack depth    |
+| -2      | Address stack depth |
+| -3      | Maximum Image Size  |
 
 ````
 void inst_fetch() {

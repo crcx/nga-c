@@ -113,31 +113,19 @@ void inst_return() {
   rp--;
 }
 void inst_eq() {
-  if (NOS == TOS)
-    NOS = -1;
-  else
-    NOS = 0;
+  NOS = (NOS == TOS) ? -1 : 0;
   inst_drop();
 }
 void inst_neq() {
-  if (NOS != TOS)
-    NOS = -1;
-  else
-    NOS = 0;
+  NOS = (NOS != TOS) ? -1 : 0;
   inst_drop();
 }
 void inst_lt() {
-  if (NOS < TOS)
-    NOS = -1;
-  else
-    NOS = 0;
+  NOS = (NOS < TOS) ? -1 : 0;
   inst_drop();
 }
 void inst_gt() {
-  if (NOS > TOS)
-    NOS = -1;
-  else
-    NOS = 0;
+  NOS = (NOS > TOS) ? -1 : 0;
   inst_drop();
 }
 void inst_fetch() {
