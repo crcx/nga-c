@@ -205,6 +205,7 @@ begin
   case TOS of
     -1 : TOS := sp - 1;
     -2 : TOS := ap;
+    -3 : TOS := IMAGE_SIZE;
   else
     TOS := memory[TOS];
   end;

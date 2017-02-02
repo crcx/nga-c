@@ -144,6 +144,7 @@ void inst_fetch() {
   switch (TOS) {
     case -1: TOS = sp - 1; break;
     case -2: TOS = rp; break;
+    case -3: TOS = IMAGE_SIZE; break;
     default: TOS = memory[TOS]; break;
   }
 }
