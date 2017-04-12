@@ -11,9 +11,9 @@
 #include <unistd.h>
 #include <string.h>
 #define CELL         int32_t
-#define IMAGE_SIZE   524288
-#define ADDRESSES    128
-#define STACK_DEPTH  32
+#define IMAGE_SIZE   524288 * 4
+#define ADDRESSES    2048
+#define STACK_DEPTH  512
 enum vm_opcode {
   VM_NOP,  VM_LIT,    VM_DUP,   VM_DROP,    VM_SWAP,   VM_PUSH,  VM_POP,
   VM_JUMP, VM_CALL,   VM_CCALL, VM_RETURN,  VM_EQ,     VM_NEQ,   VM_LT,
@@ -209,7 +209,8 @@ int ngaValidatePackedOpcodes(CELL opcode) {
   CELL raw = opcode;
   CELL current;
   int valid = -1;
-  for (int i = 0; i < 4; i++) {
+  int i;
+  for (i = 0; i < 4; i++) {
     current = raw & 0xFF;
     if (!(current >= 0 && current <= 26))
       valid = 0;
@@ -219,7 +220,8 @@ int ngaValidatePackedOpcodes(CELL opcode) {
 }
 void ngaProcessPackedOpcodes(int opcode) {
   CELL raw = opcode;
-  for (int i = 0; i < 4; i++) {
+  int i;
+  for (i = 0; i < 4; i++) {
     ngaProcessOpcode(raw & 0xFF);
     raw = raw >> 8;
   }
