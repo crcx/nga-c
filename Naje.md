@@ -213,11 +213,10 @@ void najeAddLabel(char *name, CELL slice) {
 
 Naje can be configured to allow for forward references. This can use a
 significant amount of RAM, so is disabled by default. To enable, compile with
--DALLOW_FORWARD_REFERENCES
+-DALLOW_FORWARD_REFS
 
 ````
 #ifdef ALLOW_FORWARD_REFS
-#define MAX_REFS 64*1024
 char ref_names[MAX_NAMES][STRING_LEN];
 CELL refp;
 #endif
