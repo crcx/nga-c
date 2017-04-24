@@ -370,7 +370,7 @@ void najeAssemble(char *source) {
                 if (pass == 0) {
                   najeData(1, -9999);
                 } else {
-                  najeData(0, najeLookup((char *) token));
+                  najeData(-1, najeLookup((char *) token));
 		  najeRefCount[najeLookupPtr((char *) token)]++;
 		}
                 break;
@@ -428,7 +428,7 @@ void najeAssemble(char *source) {
       if (pass == 0) {
         najeData(1, -9999);
       } else {
-        najeData(0, najeLookup((char *) token));
+        najeData(-1, najeLookup((char *) token+1));
         najeRefCount[najeLookupPtr((char *) token)]++;
       }
     } else {
