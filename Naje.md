@@ -367,11 +367,12 @@ void najeAssemble(char *source) {
     switch (relevant[1]) {
       case 'r': /* .reference */
                 token = strtok_r(ptr, " ,", &rest);
-                if (pass == 0)
+                if (pass == 0) {
                   najeData(1, -9999);
-                else
+                } else {
                   najeData(0, najeLookup((char *) token));
 		  najeRefCount[najeLookupPtr((char *) token)]++;
+		}
                 break;
       case 'c': /* .comment */
                 break;
@@ -424,11 +425,12 @@ void najeAssemble(char *source) {
     token = strtok_r(ptr, " ,", &rest);
     najeInst(1);
     if (token[0] == '&') {
-      if (pass == 0)
+      if (pass == 0) {
         najeData(1, -9999);
-      else
+      } else {
         najeData(0, najeLookup((char *) token));
         najeRefCount[najeLookupPtr((char *) token)]++;
+      }
     } else {
       najeData(0, atoi(token));
     }
