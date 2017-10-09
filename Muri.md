@@ -6,9 +6,17 @@
 
 Muri is a minimalistic assembler for Nga.
 
-The standard assembler for Nga is Naje. This is an attempt at making a
-much smaller assembler at a cost of requiring more manual knowledge of
-the Nga virtual machine and its encodings.
+The original assembler for Nga was Naje. I was never fully happy with
+Naje. While not difficult to use, it hid some of the underlying details
+away, and ultimately felt messy to me.
+
+Muri was written for use with RETRO 12. It has a far simpler syntax, but
+does require a deeper knowledge of Nga to understand how to pack the
+instruction bundles. For me the tradeoff is worth it. Muri lets me pack
+my bundles explicitly, which in turn has aided in debugging some hairy
+bits of code.
+
+........................................................................
 
 Input syntax
 
@@ -37,7 +45,7 @@ For a non operation, use '..' instead of 'no'.
 
 E.g., for a sequence of dup, multiply, no-op, drop:
 
-    i dupmu..dr
+    i dumu..dr
 
 An example of a small program:
 
@@ -53,10 +61,10 @@ An example of a small program:
 
 As mentioned earlier this requires some knowledge of Nga architecture.
 While you can pack up to four instructions per location, you should not
-place anything after an instruction that modifies the instruction
-pointer. These are: ju, ca, cc, re, and zr.
+place anything other than a nop after an instruction that modifies the
+instruction pointer. These are: ju, ca, cc, re, and zr.
 
-----
+........................................................................
 
 The code begins with the necessary C headers.
 
