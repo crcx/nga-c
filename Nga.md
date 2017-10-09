@@ -75,7 +75,7 @@ a much larger memory and stack space.
 
 ````
 #define CELL         int32_t
-#define IMAGE_SIZE   524288 * 4
+#define IMAGE_SIZE   524288 * 16
 #define ADDRESSES    2048
 #define STACK_DEPTH  512
 ````
@@ -475,6 +475,17 @@ void inst_xor() {
 ````
 
 **SHIFT** performs a bitwise arithmetic SHIFT operation.
+
+This takes two values:
+
+  xy
+
+And returns a single one:
+
+  z
+
+If `y` is positive, this shifts right. If negative, it shifts
+left.
 
 ````
 void inst_shift() {
