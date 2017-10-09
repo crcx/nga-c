@@ -1,4 +1,4 @@
-d: i r
+d: i r f
 
 i:
 	../bin/naje 0
@@ -57,6 +57,9 @@ r:
 	../bin/nga 24.nga >>RESULTS
 	../bin/nga 25.nga >>RESULTS
 	../bin/nga 26.nga >>RESULTS
+
+f:
+	diff -ur RESULTS EXPECTED
 
 c:
 	rm -f *.nga *.map RESULTS
