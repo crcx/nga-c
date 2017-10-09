@@ -23,7 +23,7 @@ repository is hosted on Github
 
 You can obtain a current copy of the code by doing:
 
-    git clone https://github.com/crcx/nga.git
+    git clone https://github.com/crcx/nga-c.git
 
 ## Documentation
 
@@ -49,10 +49,6 @@ There are also some other source files that may be of use:
 
 | File          | Contains                        |
 | ------------- | ------------------------------- |
-| EmbedImage.md | Tool to export image to C array |
-| Ngita.md      | Example interface layer         |
-| Ngura.md      | I/O devices for Ngita           |
-| Nuance.md     | A MachineForth to Naje compiler |
 | Tiro.md       | A disassembler                  |
 
 ## Getting Help
